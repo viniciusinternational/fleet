@@ -208,7 +208,6 @@ const AdminDashboard: React.FC = () => {
 
             {/* Recent Vehicles Table */}
             <VehicleTable
-              vehicles={recentVehicles}
               showFilters={false}
               showViewToggle={false}
               showAddButton={false}

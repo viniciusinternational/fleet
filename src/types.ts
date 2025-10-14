@@ -227,4 +227,3 @@ export interface VehicleFormData {
   // Shipping Documents
   shippingDocuments: File[];
 }
-

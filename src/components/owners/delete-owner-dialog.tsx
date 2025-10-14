@@ -50,12 +50,9 @@ export function DeleteOwnerDialog({ owner, isOpen, onClose, onConfirm }: DeleteO
           </DialogTitle>
           <DialogDescription>
             Are you sure you want to delete <strong>{owner.name}</strong>? This action cannot be undone.
-            {owner.vehicles && owner.vehicles.length > 0 && (
-              <div className="mt-2 p-2 bg-yellow-50 dark:bg-yellow-950/50 border border-yellow-200 dark:border-yellow-700 rounded text-yellow-800 dark:text-yellow-200">
-                <strong>Warning:</strong> This owner has {owner.vehicles.length} associated vehicle(s). 
-                Deleting this owner may affect vehicle records.
-              </div>
-            )}
+            <div className="mt-2 p-2 bg-yellow-50 dark:bg-yellow-950/50 border border-yellow-200 dark:border-yellow-700 rounded text-yellow-800 dark:text-yellow-200">
+              <strong>Warning:</strong> Deleting this owner may affect associated vehicle records.
+            </div>
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="flex gap-2">

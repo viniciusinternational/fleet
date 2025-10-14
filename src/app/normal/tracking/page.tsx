@@ -17,10 +17,7 @@ import {
   Clock, 
   Ship, 
   Building, 
-  Truck, 
   CheckCircle, 
-  AlertTriangle, 
-  FileText, 
   Search,
   RefreshCw,
   Activity,
@@ -674,7 +671,7 @@ const TrackingView: React.FC = () => {
                             <div className="text-center py-8 text-muted-foreground">
                               <History className="h-12 w-12 mx-auto mb-4 opacity-50" />
                               <p>No tracking events recorded yet.</p>
-                              <p className="text-sm">Add the first event to start tracking this vehicle's journey.</p>
+                              <p className="text-sm">Add the first event to start tracking this vehicle&apos;s journey.</p>
                             </div>
                           )}
                         </div>

@@ -22,7 +22,7 @@ import {
 } from 'lucide-react';
 import { VehicleStatus, LocationType } from '@/types';
 import type { Vehicle, Owner, Location, VehicleFormData } from '@/types';
-import { mockLocations, mockOwners } from '../../../../mockdata';
+import { mockLocations, mockOwners } from '@/mockdata';
 
 const AddVehicle: React.FC = () => {
   const router = useRouter();
@@ -119,7 +119,10 @@ const AddVehicle: React.FC = () => {
     notes: '',
     
     // Images
-    images: []
+    images: [],
+    
+    // Shipping Documents
+    shippingDocuments: []
   });
 
   const handleInputChange = (field: keyof VehicleFormData, value: string | number) => {
@@ -184,6 +187,7 @@ const AddVehicle: React.FC = () => {
         currentLocation: selectedLocation,
         estimatedDelivery: new Date(formData.estimatedDelivery),
         shippingDetails: {
+          id: `shipping-${Date.now()}`,
           originPort: formData.originPort,
           destinationPort: formData.destinationPort,
           shippingCompany: formData.shippingCompany,
@@ -244,7 +248,7 @@ const AddVehicle: React.FC = () => {
         {/* Success Alert */}
         {showSuccess && (
           <Alert className="mb-6 border-green-200 bg-green-50">
-            <CheckCircle className="h-4 w-4 text-green-600" />
+            <CheckCircle2 className="h-4 w-4 text-green-600" />
             <AlertDescription className="text-green-800">
               Vehicle added successfully! Redirecting to vehicles list...
             </AlertDescription>

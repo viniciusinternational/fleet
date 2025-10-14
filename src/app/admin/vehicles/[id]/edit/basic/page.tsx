@@ -531,7 +531,7 @@ const EditBasicInfo: React.FC = () => {
                   <SelectContent>
                     {locations.map((location) => (
                       <SelectItem key={location.id} value={location.id}>
-                        {(location as any).name || location.address?.name || 'Unknown Location'}
+                        {location.name || 'Unknown Location'}
                       </SelectItem>
                     ))}
                   </SelectContent>

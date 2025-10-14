@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
     // TODO: Get user role from authentication/session
     const userRole = Role.ADMIN; // This should come from your auth system
     
-    const stats = await LocationService.getLocationStats(userRole);
+    const stats = await LocationService.getLocationStats();
     
     return NextResponse.json(stats);
   } catch (error) {

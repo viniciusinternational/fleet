@@ -28,12 +28,11 @@ export async function GET(request: NextRequest) {
       limit: parseInt(searchParams.get('limit') || '10'),
     };
 
-    const result = await LocationService.getLocations(
-      filters,
-      sortOptions,
-      paginationOptions,
-      userRole
-    );
+    const result = await LocationService.getLocations({
+      ...filters,
+      ...sortOptions,
+      ...paginationOptions
+    });
 
     return NextResponse.json(result);
   } catch (error) {
@@ -53,7 +52,7 @@ export async function POST(request: NextRequest) {
     
     const body = await request.json();
     
-    const location = await LocationService.createLocation(body, userRole);
+    const location = await LocationService.createLocation(body);
     
     return NextResponse.json(location, { status: 201 });
   } catch (error) {

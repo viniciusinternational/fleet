@@ -15,11 +15,7 @@ export async function GET(
     const userRole = Role.ADMIN; // This should come from your auth system
     const userLocationId = undefined; // This should come from your auth system
     
-    const location = await LocationService.getLocationById(
-      id,
-      userRole,
-      userLocationId
-    );
+    const location = await LocationService.getLocationById(id);
 
     if (!location) {
       return NextResponse.json(
@@ -79,7 +75,7 @@ export async function DELETE(
     // TODO: Get user role from authentication/session
     const userRole = Role.ADMIN; // This should come from your auth system
     
-    await LocationService.deleteLocation(id, userRole);
+    await LocationService.deleteLocation(id);
     
     return NextResponse.json({ message: 'Location deleted successfully' });
   } catch (error) {

@@ -147,7 +147,7 @@ export async function POST(
         bookingNumber: validatedData.bookingNumber,
         departureDate: validatedData.departureDate ? new Date(validatedData.departureDate + 'T00:00:00.000Z') : null,
         expectedArrivalDate: validatedData.expectedArrivalDate ? new Date(validatedData.expectedArrivalDate + 'T00:00:00.000Z') : null,
-        documents: validatedData.documents || null,
+        documents: validatedData.documents || [],
       },
     });
 
@@ -283,7 +283,7 @@ export async function PUT(
         bookingNumber: validatedData.bookingNumber,
         departureDate: validatedData.departureDate ? new Date(validatedData.departureDate + 'T00:00:00.000Z') : null,
         expectedArrivalDate: validatedData.expectedArrivalDate ? new Date(validatedData.expectedArrivalDate + 'T00:00:00.000Z') : null,
-        documents: validatedData.documents || null,
+        documents: validatedData.documents || [],
       },
     });
 

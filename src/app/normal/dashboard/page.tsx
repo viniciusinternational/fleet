@@ -161,7 +161,6 @@ const NormalDashboard: React.FC = () => {
 
             {/* Recent Vehicles Table */}
             <VehicleTable
-              vehicles={vehicles}
               showFilters={false}
               showViewToggle={false}
               showAddButton={false}

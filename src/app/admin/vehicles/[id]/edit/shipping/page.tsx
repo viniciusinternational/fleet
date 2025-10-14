@@ -18,7 +18,7 @@ import {
   Upload,
   CheckCircle2
 } from 'lucide-react';
-import type { Vehicle, ShippingDetails } from '@/types';
+import type { Vehicle, shippingDetails } from '@/types';
 
 const EditShipping: React.FC = () => {
   const router = useRouter();
@@ -28,7 +28,7 @@ const EditShipping: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [vehicle, setVehicle] = useState<Vehicle | null>(null);
-  const [shippingDetails, setShippingDetails] = useState<ShippingDetails | null>(null);
+  const [shippingDetails, setShippingDetails] = useState<shippingDetails | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [success, setSuccess] = useState<string | null>(null);
 

@@ -15,10 +15,10 @@ const updateOwnerSchema = z.object({
 // GET /api/owners/[id] - Get owner by ID
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     
     const owner = await OwnerService.getOwnerById(id);
     
@@ -45,10 +45,10 @@ export async function GET(
 // PUT /api/owners/[id] - Update owner by ID
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
     
     // Validate input
@@ -117,10 +117,10 @@ export async function PUT(
 // DELETE /api/owners/[id] - Delete owner by ID
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     
     // Check if owner exists and has vehicles
     const existingOwner = await OwnerService.getOwnerById(id);
