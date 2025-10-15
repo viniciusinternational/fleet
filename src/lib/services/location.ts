@@ -71,8 +71,34 @@ export class LocationService {
       
       const totalPages = Math.ceil(total / limit);
       
+      // Transform database results to match Location type
+      const transformedLocations: Location[] = locations.map((loc: any) => ({
+        id: loc.id,
+        name: loc.name,
+        type: loc.type.toLowerCase().replace('_', ' ') as any,
+        coordinates: {
+          latitude: loc.latitude,
+          longitude: loc.longitude,
+        },
+        address: {
+          street: loc.street,
+          city: loc.city,
+          state: loc.state || undefined,
+          country: loc.country,
+          postalCode: loc.postalCode || undefined,
+        },
+        contactDetails: {
+          contactName: loc.contactName || undefined,
+          phone: loc.contactPhone || undefined,
+          email: loc.contactEmail || undefined,
+        },
+        status: loc.status.toLowerCase() as any,
+        lastUpdated: loc.lastUpdated.toISOString(),
+        notes: loc.notes || undefined,
+      }));
+
       return {
-        locations: locations as Location[],
+        locations: transformedLocations,
         total,
         totalPages,
         currentPage: page,
@@ -196,10 +222,54 @@ export class LocationService {
    */
   static async createLocation(locationData: Omit<Location, 'id'>): Promise<Location> {
     try {
+      // Transform nested Location data to flat structure for database
+      const flatData = {
+        name: locationData.name,
+        type: locationData.type.toUpperCase().replace(' ', '_') as any,
+        latitude: locationData.coordinates.latitude,
+        longitude: locationData.coordinates.longitude,
+        street: locationData.address.street,
+        city: locationData.address.city,
+        state: locationData.address.state,
+        country: locationData.address.country,
+        postalCode: locationData.address.postalCode,
+        contactName: locationData.contactDetails.contactName,
+        contactPhone: locationData.contactDetails.phone,
+        contactEmail: locationData.contactDetails.email,
+        status: locationData.status.toUpperCase() as any,
+        lastUpdated: locationData.lastUpdated,
+        notes: locationData.notes,
+      };
+
       const newLocation = await prisma.location.create({
-        data: locationData,
+        data: flatData,
       });
-      return newLocation;
+
+      // Transform back to Location type
+      return {
+        id: newLocation.id,
+        name: newLocation.name,
+        type: newLocation.type.toLowerCase().replace('_', ' ') as any,
+        coordinates: {
+          latitude: newLocation.latitude,
+          longitude: newLocation.longitude,
+        },
+        address: {
+          street: newLocation.street,
+          city: newLocation.city,
+          state: newLocation.state || undefined,
+          country: newLocation.country,
+          postalCode: newLocation.postalCode || undefined,
+        },
+        contactDetails: {
+          contactName: newLocation.contactName || undefined,
+          phone: newLocation.contactPhone || undefined,
+          email: newLocation.contactEmail || undefined,
+        },
+        status: newLocation.status.toLowerCase() as any,
+        lastUpdated: newLocation.lastUpdated.toISOString(),
+        notes: newLocation.notes || undefined,
+      };
     } catch (error) {
       console.error('Error creating location:', error);
       throw error;
@@ -211,11 +281,61 @@ export class LocationService {
    */
   static async updateLocation(id: string, locationData: Partial<Omit<Location, 'id'>>): Promise<Location | null> {
     try {
+      // Transform nested Location data to flat structure for database
+      const flatData: any = {};
+      
+      if (locationData.name) flatData.name = locationData.name;
+      if (locationData.type) flatData.type = locationData.type.toUpperCase().replace(' ', '_');
+      if (locationData.coordinates) {
+        flatData.latitude = locationData.coordinates.latitude;
+        flatData.longitude = locationData.coordinates.longitude;
+      }
+      if (locationData.address) {
+        flatData.street = locationData.address.street;
+        flatData.city = locationData.address.city;
+        flatData.state = locationData.address.state;
+        flatData.country = locationData.address.country;
+        flatData.postalCode = locationData.address.postalCode;
+      }
+      if (locationData.contactDetails) {
+        flatData.contactName = locationData.contactDetails.contactName;
+        flatData.contactPhone = locationData.contactDetails.phone;
+        flatData.contactEmail = locationData.contactDetails.email;
+      }
+      if (locationData.status) flatData.status = locationData.status.toUpperCase();
+      if (locationData.lastUpdated) flatData.lastUpdated = new Date(locationData.lastUpdated);
+      if (locationData.notes !== undefined) flatData.notes = locationData.notes;
+
       const updatedLocation = await prisma.location.update({
         where: { id },
-        data: locationData,
+        data: flatData,
       });
-      return updatedLocation;
+
+      // Transform back to Location type
+      return {
+        id: updatedLocation.id,
+        name: updatedLocation.name,
+        type: updatedLocation.type.toLowerCase().replace('_', ' ') as any,
+        coordinates: {
+          latitude: updatedLocation.latitude,
+          longitude: updatedLocation.longitude,
+        },
+        address: {
+          street: updatedLocation.street,
+          city: updatedLocation.city,
+          state: updatedLocation.state || undefined,
+          country: updatedLocation.country,
+          postalCode: updatedLocation.postalCode || undefined,
+        },
+        contactDetails: {
+          contactName: updatedLocation.contactName || undefined,
+          phone: updatedLocation.contactPhone || undefined,
+          email: updatedLocation.contactEmail || undefined,
+        },
+        status: updatedLocation.status.toLowerCase() as any,
+        lastUpdated: updatedLocation.lastUpdated.toISOString(),
+        notes: updatedLocation.notes || undefined,
+      };
     } catch (error) {
       console.error('Error updating location:', error);
       return null;

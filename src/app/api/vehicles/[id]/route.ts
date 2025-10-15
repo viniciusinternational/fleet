@@ -14,11 +14,7 @@ export async function GET(
     const userRole = Role.ADMIN; // This should come from your auth system
     const userLocationId = undefined; // This should come from your auth system
     
-    const vehicle = await VehicleService.getVehicleById(
-      id,
-      userRole,
-      userLocationId
-    );
+    const vehicle = await VehicleService.getVehicleById(id);
 
     if (!vehicle) {
       return NextResponse.json(
@@ -169,7 +165,7 @@ export async function DELETE(
     // TODO: Get user role from authentication/session
     const userRole = Role.ADMIN; // This should come from your auth system
     
-    await VehicleService.deleteVehicle(id, userRole);
+    await VehicleService.deleteVehicle(id);
     
     return NextResponse.json({ message: 'Vehicle deleted successfully' });
   } catch (error) {

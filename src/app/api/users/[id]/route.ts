@@ -5,15 +5,16 @@ import { Role } from '@/types';
 // GET /api/users/[id] - Get user by ID
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     // TODO: Get user role and ID from authentication/session
     const userRole = Role.ADMIN; // This should come from your auth system
     const requestingUserId = undefined; // This should come from your auth system
     console.log('getUserById', {userRole, requestingUserId, params});
     const user = await UserService.getUserById(
-      params.id,
+      id,
       userRole,
       requestingUserId
     );
@@ -38,9 +39,10 @@ export async function GET(
 // PUT /api/users/[id] - Update user
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     // TODO: Get user role and ID from authentication/session
     const userRole = Role.ADMIN; // This should come from your auth system
     const requestingUserId = undefined; // This should come from your auth system
@@ -48,7 +50,7 @@ export async function PUT(
     const body = await request.json();
     
     const user = await UserService.updateUser(
-      { id: params.id, ...body },
+      { id, ...body },
       userRole,
       requestingUserId
     );
@@ -66,13 +68,14 @@ export async function PUT(
 // DELETE /api/users/[id] - Delete user
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     // TODO: Get user role from authentication/session
     const userRole = Role.ADMIN; // This should come from your auth system
     
-    await UserService.deleteUser(params.id, userRole);
+    await UserService.deleteUser(id, userRole);
     
     return NextResponse.json({ message: 'User deleted successfully' });
   } catch (error) {

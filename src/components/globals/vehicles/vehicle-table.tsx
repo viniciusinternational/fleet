@@ -181,7 +181,7 @@ const VehicleTable: React.FC<VehicleTableProps> = ({
   const uniqueMakes = [...new Set(vehicles.map(v => v.make))].sort();
   const uniqueYears = [...new Set(vehicles.map(v => v.year))].sort((a, b) => b - a);
   const uniqueColors = [...new Set(vehicles.map(v => v.color))].sort();
-  const uniqueLocations = [...new Set(vehicles.map(v => v.currentLocation.name))].sort();
+  const uniqueLocations = [...new Set(vehicles.map(v => v.currentLocation?.name || 'Unknown Location'))].sort();
 
   // Reset to first page when filters change
   useEffect(() => {
@@ -582,9 +582,9 @@ const VehicleTable: React.FC<VehicleTableProps> = ({
                       onClick={() => handleVehicleClick(vehicle.id)}
                     >
                       <div>
-                        <div className="font-medium text-base">{vehicle.owner.name}</div>
-                        <div className="text-sm text-muted-foreground">{vehicle.owner.email}</div>
-                        <div className="text-xs text-muted-foreground">{vehicle.owner.phone}</div>
+                        <div className="font-medium text-base">{vehicle.owner?.name || 'Unknown Owner'}</div>
+                        <div className="text-sm text-muted-foreground">{vehicle.owner?.email || 'No Email'}</div>
+                        <div className="text-xs text-muted-foreground">{vehicle.owner?.phone || 'No Phone'}</div>
                       </div>
                     </TableCell>
                     <TableCell 
@@ -609,9 +609,9 @@ const VehicleTable: React.FC<VehicleTableProps> = ({
                       onClick={() => handleVehicleClick(vehicle.id)}
                     >
                       <div>
-                        <div className="font-medium text-base">{vehicle.currentLocation.name}</div>
-                        <div className="text-sm text-muted-foreground">{vehicle.currentLocation.city}</div>
-                        <div className="text-xs text-muted-foreground">{vehicle.currentLocation.country}</div>
+                        <div className="font-medium text-base">{vehicle.currentLocation?.name || 'Unknown Location'}</div>
+                        <div className="text-sm text-muted-foreground">{vehicle.currentLocation?.address?.city || 'Unknown City'}</div>
+                        <div className="text-xs text-muted-foreground">{vehicle.currentLocation?.address?.country || 'Unknown Country'}</div>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -652,11 +652,11 @@ const VehicleTable: React.FC<VehicleTableProps> = ({
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
                         <Users className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm font-medium">{vehicle.owner.name}</span>
+                        <span className="text-sm font-medium">{vehicle.owner?.name || 'Unknown Owner'}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <MapPin className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm text-muted-foreground">{vehicle.currentLocation.name}</span>
+                        <span className="text-sm text-muted-foreground">{vehicle.currentLocation?.name || 'Unknown Location'}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <Calendar className="h-4 w-4 text-muted-foreground" />
