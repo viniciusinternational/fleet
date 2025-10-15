@@ -228,3 +228,24 @@ export interface VehicleFormData {
   shippingDocuments: File[];
 }
 
+// Delivery Module Types
+export interface DeliveryVehicle {
+  id: string;
+  vin: string;
+  make: string;
+  model: string;
+  year: number;
+  color: string;
+  status: VehicleStatus;
+  trim?: string;
+  engineType?: string;
+}
+
+export interface DeliveryNote {
+  vehicles: DeliveryVehicle[];
+  owner: Owner;
+  deliveryDate: Date;
+  generatedAt: Date;
+  notes?: string;
+}
+

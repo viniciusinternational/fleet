@@ -52,6 +52,14 @@ export const navigationConfig: NavigationItem[] = [
     description: 'Manage vehicle owners and their information'
   },
   {
+    id: 'admin-delivery',
+    label: 'Delivery Notes',
+    icon: 'FileText',
+    href: '/admin/delivery',
+    roles: ['Admin'],
+    description: 'Generate delivery notes for vehicles'
+  },
+  {
     id: 'admin-users',
     label: 'User Management',
     icon: 'Users',
