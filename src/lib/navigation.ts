@@ -60,6 +60,14 @@ export const navigationConfig: NavigationItem[] = [
     description: 'Generate delivery notes for vehicles'
   },
   {
+    id: 'admin-chatbot',
+    label: 'AI Assistant',
+    icon: 'Bot',
+    href: '/admin/chatbot',
+    roles: ['Admin'],
+    description: 'Chat with AI about vehicles, owners, and locations'
+  },
+  {
     id: 'admin-users',
     label: 'User Management',
     icon: 'Users',

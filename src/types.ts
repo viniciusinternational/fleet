@@ -249,3 +249,23 @@ export interface DeliveryNote {
   notes?: string;
 }
 
+// AI Chatbot Types
+export interface ChatMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: Date;
+}
+
+export interface ChatContext {
+  vehicles: Vehicle[];
+  owners: Owner[];
+  locations: Location[];
+}
+
+export interface ChatResponse {
+  success: boolean;
+  message?: string;
+  error?: string;
+}
+
