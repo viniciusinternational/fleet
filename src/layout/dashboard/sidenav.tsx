@@ -167,9 +167,10 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ userRole, us
   const groupCEONavigation = (items: NavigationItem[]) => {
     if (effectiveRole !== 'CEO') return items;
 
-    // Simple grouping for basic analytics
+    // Group CEO navigation items by category
     const groups = {
       overview: items.filter(item => ['ceo-dashboard'].includes(item.id)),
+      analytics: items.filter(item => ['ceo-analytics', 'ceo-reports'].includes(item.id)),
       operations: items.filter(item => ['ceo-vehicles', 'ceo-locations'].includes(item.id)),
       financial: items.filter(item => ['ceo-financial'].includes(item.id))
     };
@@ -254,6 +255,7 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ userRole, us
   const renderCEONavigation = () => {
     const groupedItems = groupCEONavigation(navigationItems) as {
       overview: NavigationItem[];
+      analytics: NavigationItem[];
       operations: NavigationItem[];
       financial: NavigationItem[];
     };
@@ -267,6 +269,17 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ userRole, us
           <SidebarGroupContent>
             <SidebarMenu>
               {groupedItems.overview.map(renderNavigationItem)}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">
+            Analytics & Reports
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {groupedItems.analytics.map(renderNavigationItem)}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

@@ -242,11 +242,13 @@ export interface DeliveryVehicle {
 }
 
 export interface DeliveryNote {
+  id?: string;
   vehicles: DeliveryVehicle[];
   owner: Owner;
   deliveryDate: Date;
   generatedAt: Date;
   notes?: string;
+  vehicleIds?: string[];
 }
 
 // AI Chatbot Types

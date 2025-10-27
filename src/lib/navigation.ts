@@ -57,7 +57,7 @@ export const navigationConfig: NavigationItem[] = [
     icon: 'FileText',
     href: '/admin/delivery',
     roles: ['Admin'],
-    description: 'Generate delivery notes for vehicles'
+    description: 'View and manage all delivery notes'
   },
   {
     id: 'admin-chatbot',
@@ -82,30 +82,30 @@ export const navigationConfig: NavigationItem[] = [
     roles: ['Admin'],
   },
 
-  // CEO Navigation - Basic Analytics
+  // CEO Navigation - Strategic Analytics
   {
     id: 'ceo-dashboard',
-    label: 'Dashboard',
+    label: 'Executive Dashboard',
     icon: 'LayoutDashboard',
     href: '/ceo/dashboard',
     roles: ['CEO'],
-    description: 'Basic overview of vehicle operations and financial metrics'
+    description: 'Strategic overview and performance analytics'
   },
   {
-    id: 'ceo-financial',
-    label: 'Financial Summary',
-    icon: 'DollarSign',
-    href: '/ceo/financial',
+    id: 'ceo-analytics',
+    label: 'Analytics & Reports',
+    icon: 'BarChart3',
+    href: '/ceo/analytics',
     roles: ['CEO'],
-    description: 'Import duties and financial performance overview'
+    description: 'Comprehensive business intelligence and performance metrics'
   },
   {
-    id: 'ceo-locations',
-    label: 'Location Overview',
-    icon: 'MapPin',
-    href: '/ceo/locations',
+    id: 'ceo-reports',
+    label: 'Custom Reports',
+    icon: 'FileText',
+    href: '/ceo/reports',
     roles: ['CEO'],
-    description: 'Geographic distribution and location performance'
+    description: 'Generate and view custom business reports'
   },
 ];
 

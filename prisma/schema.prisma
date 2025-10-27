@@ -101,16 +101,17 @@ model ShippingDetails {
 }
 
 model Owner {
-  id          String    @id @default(cuid())
-  name        String
-  email       String
-  phone       String
-  address     String
-  nationality String
-  idNumber    String    @unique
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  vehicles    Vehicle[]
+  id            String         @id @default(cuid())
+  name          String
+  email         String
+  phone         String
+  address       String
+  nationality   String
+  idNumber      String         @unique
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  vehicles      Vehicle[]
+  deliveryNotes DeliveryNote[]
 
   @@map("owners")
 }
@@ -199,4 +200,17 @@ enum DocumentType {
   INVOICE
   INSURANCE
   OTHER
+}
+
+model DeliveryNote {
+  id          String   @id @default(cuid())
+  ownerId     String
+  deliveryDate DateTime
+  notes       String?
+  vehicleIds  Json     // Array of vehicle IDs
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  owner       Owner    @relation(fields: [ownerId], references: [id])
+
+  @@map("delivery_notes")
 }

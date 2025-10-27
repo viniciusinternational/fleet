@@ -31,8 +31,8 @@ export function SelectedVehiclesList({
   }
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between">
+    <div className="flex flex-col h-full space-y-3">
+      <div className="flex items-center justify-between flex-shrink-0">
         <div className="flex items-center gap-2">
           <Car className="h-5 w-5 text-primary" />
           <h3 className="font-semibold">Selected Vehicles</h3>
@@ -40,7 +40,7 @@ export function SelectedVehiclesList({
         </div>
       </div>
 
-      <div className="space-y-2 max-h-[400px] overflow-y-auto">
+      <div className="space-y-2 overflow-y-auto flex-1 min-h-0">
         {vehicles.map((vehicle) => (
           <Card
             key={vehicle.id}
