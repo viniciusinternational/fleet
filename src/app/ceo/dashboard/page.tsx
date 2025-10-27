@@ -213,6 +213,77 @@ const CEODashboard: React.FC = () => {
               </div>
             </div>
 
+            {/* Analytics Pages Section */}
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Analytics Modules</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <Button
+                  onClick={() => router.push('/ceo/lifecycle')}
+                  variant="outline"
+                  className="h-auto p-4 flex flex-col items-center gap-2"
+                >
+                  <Activity className="h-6 w-6" />
+                  <div className="text-sm font-semibold">Lifecycle</div>
+                </Button>
+                <Button
+                  onClick={() => router.push('/ceo/financial')}
+                  variant="outline"
+                  className="h-auto p-4 flex flex-col items-center gap-2"
+                >
+                  <DollarSign className="h-6 w-6" />
+                  <div className="text-sm font-semibold">Financial</div>
+                </Button>
+                <Button
+                  onClick={() => router.push('/ceo/locations')}
+                  variant="outline"
+                  className="h-auto p-4 flex flex-col items-center gap-2"
+                >
+                  <MapPin className="h-6 w-6" />
+                  <div className="text-sm font-semibold">Locations</div>
+                </Button>
+                <Button
+                  onClick={() => router.push('/ceo/customs')}
+                  variant="outline"
+                  className="h-auto p-4 flex flex-col items-center gap-2"
+                >
+                  <Package className="h-6 w-6" />
+                  <div className="text-sm font-semibold">Customs</div>
+                </Button>
+                <Button
+                  onClick={() => router.push('/ceo/fleet')}
+                  variant="outline"
+                  className="h-auto p-4 flex flex-col items-center gap-2"
+                >
+                  <Car className="h-6 w-6" />
+                  <div className="text-sm font-semibold">Fleet</div>
+                </Button>
+                <Button
+                  onClick={() => router.push('/ceo/owners')}
+                  variant="outline"
+                  className="h-auto p-4 flex flex-col items-center gap-2"
+                >
+                  <Users className="h-6 w-6" />
+                  <div className="text-sm font-semibold">Owners</div>
+                </Button>
+                <Button
+                  onClick={() => router.push('/ceo/delivery')}
+                  variant="outline"
+                  className="h-auto p-4 flex flex-col items-center gap-2"
+                >
+                  <Clock className="h-6 w-6" />
+                  <div className="text-sm font-semibold">Delivery</div>
+                </Button>
+                <Button
+                  onClick={() => router.push('/ceo/shipping')}
+                  variant="outline"
+                  className="h-auto p-4 flex flex-col items-center gap-2"
+                >
+                  <TrendingUp className="h-6 w-6" />
+                  <div className="text-sm font-semibold">Shipping</div>
+                </Button>
+              </div>
+            </div>
+
             {/* Status Distribution */}
             <div>
               <h3 className="text-lg font-semibold mb-4">Vehicle Status Distribution</h3>
