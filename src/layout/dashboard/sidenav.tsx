@@ -38,7 +38,8 @@ import {
   Zap,
   PieChart,
   LineChart,
-  AreaChart
+  AreaChart,
+  Bot
 } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -94,7 +95,8 @@ const iconMap = {
   Zap,
   PieChart,
   LineChart,
-  AreaChart
+  AreaChart,
+  Bot
 };
 
 interface DashboardSidebarProps {
