@@ -1,0 +1,55 @@
+name = "vini-fleet"
+main = ".open-next/worker.js"
+compatibility_date = "2024-12-30"
+compatibility_flags = ["nodejs_compat", "global_fetch_strictly_public"]
+
+# Account ID - replace with your Cloudflare account ID
+# Find it at: https://dash.cloudflare.com/
+account_id = "d3c3f9204ed90c5355100131fd14e290"
+
+# Zone ID - replace with your Cloudflare zone ID if you have a custom domain
+# Find it in your domain's DNS settings
+# zone_id = "your-zone-id"
+
+# Domain configuration (optional - for custom domain)
+# [route]
+# pattern = "your-domain.com/*"
+# zone_name = "your-domain.com"
+
+# Environment variables - set these in Cloudflare Dashboard or use secrets
+# Use `wrangler secret put VARIABLE_NAME` for sensitive values
+# See deployment documentation for details
+[vars]
+# DATABASE_URL = "postgresql://user:pass@your-vps:5432/dbname"
+# GEMINI_API_KEY = "your-gemini-api-key"
+# NEXTAUTH_SECRET = "your-nextauth-secret"
+# NEXTAUTH_URL = "https://your-app.pages.dev"
+
+# Asset settings for static files
+[assets]
+directory = ".open-next/assets"
+binding = "ASSETS"
+
+# KV namespaces for caching (optional)
+# Uncomment and configure if you want to use KV for Next.js cache
+# [[kv_namespaces]]
+# binding = "NEXT_CACHE"
+# id = "your-kv-namespace-id"
+# preview_id = "your-preview-kv-namespace-id"
+
+# R2 buckets for file storage and cache (optional but recommended)
+# Uncomment and configure if you want to use R2 for Next.js incremental cache
+# [[r2_buckets]]
+# binding = "NEXT_INC_CACHE_R2_BUCKET"
+# bucket_name = "vini-fleet-cache"
+
+# R2 buckets for file uploads (optional - for /public/uploads)
+# [[r2_buckets]]
+# binding = "UPLOADS"
+# bucket_name = "vini-fleet-uploads"
+
+# Limits (adjust based on your needs)
+# Note: CPU limits require a paid plan
+# [limits]
+# cpu_ms = 50
+
