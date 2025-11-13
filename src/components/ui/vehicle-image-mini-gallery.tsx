@@ -47,6 +47,7 @@ export const VehicleImageMiniGallery: React.FC<VehicleImageMiniGalleryProps> = (
     setFullscreenImageIndex((prev) => (prev - 1 + images.length) % images.length);
   };
 
+  const getImageSrc = (image: VehicleImage) => image.data || image.url || '';
   const currentImage = images[currentImageIndex];
   const fullscreenImage = images[fullscreenImageIndex];
 
@@ -58,7 +59,7 @@ export const VehicleImageMiniGallery: React.FC<VehicleImageMiniGalleryProps> = (
         <div className="relative group">
           <div className="relative w-full h-32 rounded-lg overflow-hidden bg-muted/50">
             <img
-              src={currentImage.url}
+              src={getImageSrc(currentImage)}
               alt={currentImage.alt}
               className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 cursor-pointer"
               onClick={() => openFullscreen(currentImageIndex)}
@@ -133,7 +134,7 @@ export const VehicleImageMiniGallery: React.FC<VehicleImageMiniGalleryProps> = (
                 }`}
               >
                 <img
-                  src={image.url}
+                  src={getImageSrc(image)}
                   alt={image.alt}
                   className="w-full h-full object-cover"
                 />
@@ -176,7 +177,7 @@ export const VehicleImageMiniGallery: React.FC<VehicleImageMiniGalleryProps> = (
             {/* Fullscreen Image */}
             <div className="relative w-full h-full flex items-center justify-center bg-black">
               <img
-                src={fullscreenImage.url}
+                src={getImageSrc(fullscreenImage)}
                 alt={fullscreenImage.alt}
                 className="max-w-full max-h-full object-contain"
               />
@@ -235,7 +236,7 @@ export const VehicleImageMiniGallery: React.FC<VehicleImageMiniGalleryProps> = (
                     }`}
                   >
                     <img
-                      src={image.url}
+                      src={getImageSrc(image)}
                       alt={image.alt}
                       className="w-full h-full object-cover"
                     />

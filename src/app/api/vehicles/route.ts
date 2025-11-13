@@ -3,7 +3,7 @@ import { VehicleService } from '@/lib/services/vehicle';
 import { z } from 'zod';
 
 // Validation schema for vehicle creation
-const createVehicleSchema = z.object({
+export const createVehicleSchema = z.object({
   vin: z.string().min(1, 'VIN is required'),
   make: z.string().min(1, 'Make is required'),
   model: z.string().min(1, 'Model is required'),
@@ -16,8 +16,8 @@ const createVehicleSchema = z.object({
   lengthMm: z.number().min(0).optional(),
   widthMm: z.number().min(0).optional(),
   heightMm: z.number().min(0).optional(),
-  orderDate: z.string().datetime(),
-  estimatedDelivery: z.string().datetime(),
+  orderDate: z.string().min(1, 'Order date is required'),
+  estimatedDelivery: z.string().min(1, 'Estimated delivery is required'),
   status: z.enum(['ORDERED', 'IN_TRANSIT', 'CLEARING_CUSTOMS', 'AT_PORT', 'IN_LOCAL_DELIVERY', 'DELIVERED']),
   currentLocationId: z.string().min(1, 'Current location is required'),
   ownerId: z.string().min(1, 'Owner is required'),
@@ -59,44 +59,46 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    // Parse FormData instead of JSON
-    const formData = await request.formData();
-    
-    // Extract all form fields
-    const vehicleData = {
-      vin: formData.get('vin') as string,
-      make: formData.get('make') as string,
-      model: formData.get('model') as string,
-      year: parseInt(formData.get('year') as string),
-      color: formData.get('color') as string,
-      trim: formData.get('trim') as string,
-      engineType: formData.get('engineType') as string,
-      fuelType: formData.get('fuelType') as string,
-      weightKg: parseInt(formData.get('weightKg') as string),
-      lengthMm: parseInt(formData.get('lengthMm') as string) || undefined,
-      widthMm: parseInt(formData.get('widthMm') as string) || undefined,
-      heightMm: parseInt(formData.get('heightMm') as string) || undefined,
-      orderDate: formData.get('orderDate') as string,
-      estimatedDelivery: formData.get('estimatedDelivery') as string,
-      status: formData.get('status') as string,
-      currentLocationId: formData.get('currentLocationId') as string,
-      ownerId: formData.get('ownerId') as string,
-      customsStatus: formData.get('customsStatus') as string,
-      importDuty: parseInt(formData.get('importDuty') as string),
-      customsNotes: formData.get('customsNotes') as string || undefined,
-      notes: formData.get('notes') as string || undefined,
+    const body = await request.json();
+
+    const {
+      images = [],
+      ...vehiclePayload
+    } = body ?? {};
+
+    const normalizedVehicleData = {
+      vin: String(vehiclePayload.vin ?? '').trim(),
+      make: String(vehiclePayload.make ?? '').trim(),
+      model: String(vehiclePayload.model ?? '').trim(),
+      year: Number(vehiclePayload.year),
+      color: String(vehiclePayload.color ?? '').trim(),
+      trim: String(vehiclePayload.trim ?? '').trim(),
+      engineType: String(vehiclePayload.engineType ?? '').trim(),
+      fuelType: String(vehiclePayload.fuelType ?? '').toUpperCase(),
+      weightKg: Number(vehiclePayload.weightKg ?? 0),
+      lengthMm: vehiclePayload.lengthMm !== undefined && vehiclePayload.lengthMm !== null
+        ? Number(vehiclePayload.lengthMm)
+        : undefined,
+      widthMm: vehiclePayload.widthMm !== undefined && vehiclePayload.widthMm !== null
+        ? Number(vehiclePayload.widthMm)
+        : undefined,
+      heightMm: vehiclePayload.heightMm !== undefined && vehiclePayload.heightMm !== null
+        ? Number(vehiclePayload.heightMm)
+        : undefined,
+      orderDate: String(vehiclePayload.orderDate ?? ''),
+      estimatedDelivery: String(vehiclePayload.estimatedDelivery ?? ''),
+      status: String(vehiclePayload.status ?? '').toUpperCase(),
+      currentLocationId: String(vehiclePayload.currentLocationId ?? '').trim(),
+      ownerId: String(vehiclePayload.ownerId ?? '').trim(),
+      customsStatus: String(vehiclePayload.customsStatus ?? '').toUpperCase(),
+      importDuty: Number(vehiclePayload.importDuty ?? 0),
+      customsNotes: vehiclePayload.customsNotes !== undefined ? String(vehiclePayload.customsNotes) : undefined,
     };
 
-    // Note: Shipping details are now handled separately via /api/vehicles/[id]/shipping endpoint
+    const validatedData = createVehicleSchema.parse(normalizedVehicleData);
 
-    // Extract images
-    const images = formData.getAll('images') as File[];
-    
-    // Validate the vehicle data
-    const validatedData = createVehicleSchema.parse(vehicleData);
-    
     // Check if VIN already exists
-    const existingVehicle = await VehicleService.getVehicleById(validatedData.vin);
+    const existingVehicle = await VehicleService.getVehicleByVin(validatedData.vin);
     if (existingVehicle) {
       return NextResponse.json(
         {
@@ -107,34 +109,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Handle image uploads
-    let imageUrls: string[] = [];
-    if (images.length > 0) {
-      try {
-        // Create uploads directory if it doesn't exist
-        const fs = require('fs');
-        const path = require('path');
-        const uploadsDir = path.join(process.cwd(), 'public', 'uploads', 'vehicles');
-        
-        if (!fs.existsSync(uploadsDir)) {
-          fs.mkdirSync(uploadsDir, { recursive: true });
-        }
-
-        // Save each image
-        for (const image of images) {
-          const buffer = await image.arrayBuffer();
-          const filename = `${Date.now()}-${image.name}`;
-          const filepath = path.join(uploadsDir, filename);
-          
-          fs.writeFileSync(filepath, Buffer.from(buffer));
-          imageUrls.push(`/uploads/vehicles/${filename}`);
-        }
-      } catch (imageError) {
-        console.warn('Failed to save images:', imageError);
-        // Continue without images rather than failing the entire request
-      }
-    }
-
     // Create the vehicle first (without images)
     const newVehicle = await VehicleService.createVehicle({
       ...validatedData,
@@ -143,9 +117,21 @@ export async function POST(request: NextRequest) {
     });
 
     // Create vehicle images if any
-    if (imageUrls.length > 0) {
+    if (Array.isArray(images) && images.length > 0) {
       try {
-        await VehicleService.createVehicleImages(newVehicle.id, imageUrls);
+        const preparedImages = images
+          .filter((image: any) => image && typeof image.data === 'string' && image.data.length > 0)
+          .map((image: any, index: number) => ({
+            data: image.data,
+            alt: image.alt,
+            caption: image.caption,
+            isPrimary: image.isPrimary ?? index === 0,
+            url: image.url,
+          }));
+
+        if (preparedImages.length > 0) {
+          await VehicleService.createVehicleImages(newVehicle.id, preparedImages);
+        }
       } catch (imageError) {
         console.warn('Failed to create vehicle images:', imageError);
         // Don't fail the entire request if images fail

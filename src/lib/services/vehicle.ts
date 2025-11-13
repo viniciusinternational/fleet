@@ -3,6 +3,14 @@ import type { Vehicle } from '@/types';
 
 const prisma = new PrismaClient();
 
+type VehicleImageInput = {
+  data: string;
+  alt?: string;
+  caption?: string;
+  isPrimary?: boolean;
+  url?: string;
+};
+
 /**
  * Vehicle Service
  * Provides CRUD operations for vehicles with database integration
@@ -87,7 +95,15 @@ export class VehicleService {
                 country: true,
               },
             },
-            vehicleImages: true, // Include vehicle images
+            vehicleImages: {
+              select: {
+                id: true,
+                alt: true,
+                caption: true,
+                isPrimary: true,
+                url: true,
+              },
+            }, // Exclude base64 payloads for list queries
           },
         }),
         prisma.vehicle.count({ where }),
@@ -126,7 +142,15 @@ export class VehicleService {
           owner: true,
           currentLocation: true,
           shippingDetails: true,
-          vehicleImages: true, // Include vehicle images
+          vehicleImages: {
+            select: {
+              id: true,
+              alt: true,
+              caption: true,
+              isPrimary: true,
+              url: true,
+            },
+          }, // Default to metadata only; base64 fetched on demand
         },
       });
       
@@ -141,6 +165,20 @@ export class VehicleService {
       return transformedVehicle as any; // Type assertion to avoid complex type issues
     } catch (error) {
       console.error('Error fetching vehicle by ID:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Get vehicle by VIN
+   */
+  static async getVehicleByVin(vin: string) {
+    try {
+      return prisma.vehicle.findUnique({
+        where: { vin },
+      });
+    } catch (error) {
+      console.error('Error fetching vehicle by VIN:', error);
       return null;
     }
   }
@@ -304,26 +342,91 @@ export class VehicleService {
   /**
    * Create vehicle images
    */
-  static async createVehicleImages(vehicleId: string, imageUrls: string[]) {
+  static async getVehicleImages(
+    vehicleId: string,
+    options: { includeData?: boolean } = {}
+  ) {
+    const { includeData = false } = options;
+
     try {
-      const vehicleImages = await Promise.all(
-        imageUrls.map((url, index) => 
+      const images = await prisma.vehicleImage.findMany({
+        where: { vehicleId },
+        orderBy: [
+          { isPrimary: 'desc' },
+          { id: 'asc' },
+        ],
+        select: includeData
+          ? {
+              id: true,
+              alt: true,
+              caption: true,
+              isPrimary: true,
+              url: true,
+              data: true,
+            }
+          : {
+              id: true,
+              alt: true,
+              caption: true,
+              isPrimary: true,
+              url: true,
+            },
+      });
+
+      return images;
+    } catch (error) {
+      console.error('Error fetching vehicle images:', error);
+      throw error;
+    }
+  }
+
+  static async createVehicleImages(vehicleId: string, images: VehicleImageInput[]) {
+    try {
+      const normalizedImages = images.map((image, index) => ({
+        data: image.data,
+        alt: image.alt ?? `Vehicle image ${index + 1}`,
+        caption: image.caption ?? null,
+        isPrimary: image.isPrimary ?? index === 0,
+        url: image.url ?? '',
+      }));
+
+      const createdImages = await Promise.all(
+        normalizedImages.map((image) =>
           prisma.vehicleImage.create({
             data: {
-              url: url,
-              alt: `Vehicle image ${index + 1}`,
-              isPrimary: index === 0, // First image is primary
+              url: image.url,
+              alt: image.alt,
+              caption: image.caption,
+              isPrimary: image.isPrimary,
+              data: image.data,
               vehicle: {
-                connect: { id: vehicleId }
+                connect: { id: vehicleId },
               },
             },
           })
         )
       );
 
-      return vehicleImages;
+      return createdImages;
     } catch (error) {
       console.error('Error creating vehicle images:', error);
+      throw error;
+    }
+  }
+
+  static async replaceVehicleImages(vehicleId: string, images: VehicleImageInput[]) {
+    try {
+      await prisma.vehicleImage.deleteMany({
+        where: { vehicleId },
+      });
+
+      if (images.length === 0) {
+        return [];
+      }
+
+      return this.createVehicleImages(vehicleId, images);
+    } catch (error) {
+      console.error('Error replacing vehicle images:', error);
       throw error;
     }
   }

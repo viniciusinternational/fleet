@@ -89,10 +89,11 @@ export interface  shippingDetails {
 
 export interface VehicleImage {
   id: string;
-  url: string;
+  url?: string;
   alt: string;
   caption?: string;
   isPrimary?: boolean;
+  data?: string;
 }
 
 export interface Owner {

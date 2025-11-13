@@ -57,6 +57,7 @@ const VehicleDetails: React.FC<VehicleDetailsProps> = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('overview');
+  const [imagesLoading, setImagesLoading] = useState(false);
   
   // Track Events state
   const [showAddEventModal, setShowAddEventModal] = useState(false);
@@ -128,13 +129,16 @@ const VehicleDetails: React.FC<VehicleDetailsProps> = ({
         }
         
         const vehicleData = await response.json();
-        
         if (vehicleData) {
           // For admin users, show all vehicles
           // For normal users, check location-based access
           // If no user is logged in, show the vehicle anyway (for public access)
           if (isAdmin) {
-            setVehicle(vehicleData);
+            setVehicle({
+              ...vehicleData,
+              images: [],
+            });
+            await fetchVehicleImages(vehicleData.id);
           } else if (user) {
             const userLocation = user.location;
             const hasAccess = userLocation && (
@@ -145,13 +149,21 @@ const VehicleDetails: React.FC<VehicleDetailsProps> = ({
             );
             
             if (hasAccess) {
-              setVehicle(vehicleData);
+              setVehicle({
+                ...vehicleData,
+                images: [],
+              });
+              await fetchVehicleImages(vehicleData.id);
             } else {
               setVehicle(null);
             }
           } else {
             // No user logged in - show vehicle for public access
-            setVehicle(vehicleData);
+            setVehicle({
+              ...vehicleData,
+              images: [],
+            });
+            await fetchVehicleImages(vehicleData.id);
           }
         } else {
           setVehicle(null);
@@ -168,6 +180,33 @@ const VehicleDetails: React.FC<VehicleDetailsProps> = ({
 
     fetchVehicle();
   }, [vehicleId]); // Only depend on vehicleId to prevent infinite loop
+
+  const fetchVehicleImages = async (targetVehicleId: string) => {
+    setImagesLoading(true);
+    try {
+      const response = await fetch(`/api/vehicles/${targetVehicleId}/images`);
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch vehicle images');
+      }
+
+      const payload = await response.json();
+      const images = Array.isArray(payload?.data) ? payload.data : [];
+
+      setVehicle(prev =>
+        prev
+          ? {
+              ...prev,
+              images,
+            }
+          : prev
+      );
+    } catch (imageError) {
+      console.error('Error fetching vehicle images:', imageError);
+    } finally {
+      setImagesLoading(false);
+    }
+  };
 
   const getStatusColor = (status: VehicleStatus) => {
     switch (status) {
@@ -435,15 +474,19 @@ const VehicleDetails: React.FC<VehicleDetailsProps> = ({
                 </CardHeader>
                 <CardContent className="space-y-4 flex-1">
                   {/* Vehicle Images */}
-                  {vehicle.images && vehicle.images.length > 0 && (
-                    <div>
-                      <label className="text-sm font-medium text-muted-foreground mb-2 block">Images</label>
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground mb-2 block">Images</label>
+                    {imagesLoading ? (
+                      <div className="w-full h-32 bg-muted/30 rounded-lg flex items-center justify-center text-sm text-muted-foreground">
+                        Loading images...
+                      </div>
+                    ) : (
                       <VehicleImageMiniGallery 
-                        images={vehicle.images} 
+                        images={vehicle.images || []} 
                         vehicleName={`${vehicle.make} ${vehicle.model}`}
                       />
-                    </div>
-                  )}
+                    )}
+                  </div>
                   
                   <div className="grid grid-cols-2 gap-4">
                     <div>

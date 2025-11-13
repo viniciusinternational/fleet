@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { VehicleService } from '@/lib/services/vehicle';
 import { Role } from '@/types';
+import { createVehicleSchema } from '../route';
 
 // GET /api/vehicles/[id] - Get vehicle by ID
 export async function GET(
@@ -45,106 +46,90 @@ export async function PUT(
     const userRole = Role.ADMIN; // This should come from your auth system
     const userLocationId = undefined; // This should come from your auth system
     
-    // Check if request is FormData (for image uploads) or JSON
-    const contentType = request.headers.get('content-type') || '';
-    
-    if (contentType.includes('multipart/form-data')) {
-      // Handle FormData (with images)
-      const formData = await request.formData();
-      
-      // Extract vehicle data
-      const vehicleData = {
-        vin: formData.get('vin') as string,
-        make: formData.get('make') as string,
-        model: formData.get('model') as string,
-        year: parseInt(formData.get('year') as string),
-        color: formData.get('color') as string,
-        trim: formData.get('trim') as string,
-        engineType: formData.get('engineType') as string,
-        fuelType: formData.get('fuelType') as string,
-        weightKg: parseFloat(formData.get('weightKg') as string),
-        lengthMm: parseInt(formData.get('lengthMm') as string),
-        widthMm: parseInt(formData.get('widthMm') as string),
-        heightMm: parseInt(formData.get('heightMm') as string),
-        orderDate: formData.get('orderDate') as string,
-        estimatedDelivery: formData.get('estimatedDelivery') as string,
-        status: formData.get('status') as string,
-        currentLocation: {
-          connect: { id: formData.get('currentLocationId') as string }
-        },
-        owner: {
-          connect: { id: formData.get('ownerId') as string }
-        },
-      };
-      
-      // Handle image uploads
-      const imageFiles = formData.getAll('images') as File[];
-      const imageUrls: string[] = [];
-      
-      if (imageFiles.length > 0) {
-        // Save uploaded images
-        for (const file of imageFiles) {
-          if (file.size > 0) {
-            const timestamp = Date.now();
-            const fileName = `${timestamp}-${file.name}`;
-            const filePath = `public/uploads/vehicles/${fileName}`;
-            
-            // Save file to filesystem
-            const bytes = await file.arrayBuffer();
-            const buffer = Buffer.from(bytes);
-            
-            // Create directory if it doesn't exist
-            const fs = require('fs');
-            const path = require('path');
-            const uploadDir = path.dirname(filePath);
-            if (!fs.existsSync(uploadDir)) {
-              fs.mkdirSync(uploadDir, { recursive: true });
-            }
-            
-            fs.writeFileSync(filePath, buffer);
-            imageUrls.push(`/uploads/vehicles/${fileName}`);
-          }
-        }
-      }
-      
-      // Update vehicle with basic data first
-      const vehicle = await VehicleService.updateVehicle(
-        id,
-        vehicleData
-      );
-      
-      // Create new vehicle images if any were uploaded
-      if (imageUrls.length > 0) {
-        await VehicleService.createVehicleImages(id, imageUrls);
-      }
-      
-      return NextResponse.json(vehicle);
-    } else {
-      // Handle JSON (without images)
-      const body = await request.json();
-      
-      // Transform the data to use relations instead of foreign keys
-      const vehicleData = {
-        ...body,
-        currentLocation: body.currentLocationId ? {
-          connect: { id: body.currentLocationId }
-        } : undefined,
-        owner: body.ownerId ? {
-          connect: { id: body.ownerId }
-        } : undefined,
-      };
-      
-      // Remove the foreign key fields since we're using relations
-      delete vehicleData.currentLocationId;
-      delete vehicleData.ownerId;
-      
-      const vehicle = await VehicleService.updateVehicle(
-        id,
-        vehicleData
-      );
-      
-      return NextResponse.json(vehicle);
+    const body = await request.json();
+
+    const {
+      images,
+      ...vehiclePayload
+    } = body ?? {};
+
+    const normalizedVehicleData = {
+      vin: String(vehiclePayload.vin ?? '').trim(),
+      make: String(vehiclePayload.make ?? '').trim(),
+      model: String(vehiclePayload.model ?? '').trim(),
+      year: Number(vehiclePayload.year),
+      color: String(vehiclePayload.color ?? '').trim(),
+      trim: String(vehiclePayload.trim ?? '').trim(),
+      engineType: String(vehiclePayload.engineType ?? '').trim(),
+      fuelType: String(vehiclePayload.fuelType ?? '').toUpperCase(),
+      weightKg: Number(vehiclePayload.weightKg ?? 0),
+      lengthMm: vehiclePayload.lengthMm !== undefined && vehiclePayload.lengthMm !== null
+        ? Number(vehiclePayload.lengthMm)
+        : undefined,
+      widthMm: vehiclePayload.widthMm !== undefined && vehiclePayload.widthMm !== null
+        ? Number(vehiclePayload.widthMm)
+        : undefined,
+      heightMm: vehiclePayload.heightMm !== undefined && vehiclePayload.heightMm !== null
+        ? Number(vehiclePayload.heightMm)
+        : undefined,
+      orderDate: String(vehiclePayload.orderDate ?? ''),
+      estimatedDelivery: String(vehiclePayload.estimatedDelivery ?? ''),
+      status: String(vehiclePayload.status ?? '').toUpperCase(),
+      currentLocationId: String(vehiclePayload.currentLocationId ?? '').trim(),
+      ownerId: String(vehiclePayload.ownerId ?? '').trim(),
+      customsStatus: String(vehiclePayload.customsStatus ?? '').toUpperCase(),
+      importDuty: Number(vehiclePayload.importDuty ?? 0),
+      customsNotes: vehiclePayload.customsNotes !== undefined ? String(vehiclePayload.customsNotes) : undefined,
+    };
+
+    const validatedData = createVehicleSchema.parse(normalizedVehicleData);
+
+    const vehicleUpdateData = {
+      vin: validatedData.vin,
+      make: validatedData.make,
+      model: validatedData.model,
+      year: validatedData.year,
+      color: validatedData.color,
+      trim: validatedData.trim,
+      engineType: validatedData.engineType,
+      fuelType: validatedData.fuelType,
+      weightKg: validatedData.weightKg,
+      lengthMm: validatedData.lengthMm,
+      widthMm: validatedData.widthMm,
+      heightMm: validatedData.heightMm,
+      orderDate: new Date(validatedData.orderDate),
+      estimatedDelivery: new Date(validatedData.estimatedDelivery),
+      status: validatedData.status,
+      customsStatus: validatedData.customsStatus,
+      importDuty: validatedData.importDuty,
+      customsNotes: validatedData.customsNotes,
+      currentLocation: {
+        connect: { id: validatedData.currentLocationId },
+      },
+      owner: {
+        connect: { id: validatedData.ownerId },
+      },
+    };
+
+    await VehicleService.updateVehicle(id, vehicleUpdateData);
+
+    if (Array.isArray(images)) {
+      const preparedImages = images
+        .filter((image: any) => image && typeof image.data === 'string' && image.data.length > 0)
+        .map((image: any, index: number) => ({
+          data: image.data,
+          alt: image.alt,
+          caption: image.caption,
+          isPrimary: image.isPrimary ?? index === 0,
+          url: image.url,
+        }));
+
+      await VehicleService.replaceVehicleImages(id, preparedImages);
     }
+
+    const updatedVehicle = await VehicleService.getVehicleById(id);
+
+    return NextResponse.json(updatedVehicle);
   } catch (error) {
     console.error('Error updating vehicle:', error);
     return NextResponse.json(

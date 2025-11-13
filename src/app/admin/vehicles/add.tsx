@@ -20,14 +20,15 @@ import {
   ArrowRight,
   CheckCircle2
 } from 'lucide-react';
-import { VehicleStatus, LocationType } from '@/types';
-import type { Vehicle, Owner, Location, VehicleFormData } from '@/types';
+import { VehicleStatus } from '@/types';
+import type { VehicleFormData } from '@/types';
 import { mockLocations, mockOwners } from '@/mockdata';
 
 const AddVehicle: React.FC = () => {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
 
   // Step navigation functions
@@ -125,11 +126,38 @@ const AddVehicle: React.FC = () => {
     shippingDocuments: []
   });
 
+  const vehicleStatusApiMap: Record<VehicleStatus, string> = {
+    [VehicleStatus.ORDERED]: 'ORDERED',
+    [VehicleStatus.IN_TRANSIT]: 'IN_TRANSIT',
+    [VehicleStatus.AT_PORT]: 'AT_PORT',
+    [VehicleStatus.CLEARING_CUSTOMS]: 'CLEARING_CUSTOMS',
+    [VehicleStatus.IN_LOCAL_DELIVERY]: 'IN_LOCAL_DELIVERY',
+    [VehicleStatus.DELIVERED]: 'DELIVERED'
+  };
+
+  const customsStatusApiMap: Record<VehicleFormData['customsStatus'], string> = {
+    'Pending': 'PENDING',
+    'In Progress': 'IN_PROGRESS',
+    'Cleared': 'CLEARED',
+    'Held': 'HELD'
+  };
+
   const handleInputChange = (field: keyof VehicleFormData, value: string | number) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
     }));
+  };
+
+  const fileToBase64 = (file: File) => {
+    return new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        resolve(typeof reader.result === 'string' ? reader.result : '');
+      };
+      reader.onerror = () => reject(reader.error);
+      reader.readAsDataURL(file);
+    });
   };
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -153,12 +181,10 @@ const AddVehicle: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setSubmitError(null);
+    setShowSuccess(false);
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Create new vehicle object
       const selectedLocation = mockLocations.find(loc => loc.id === formData.currentLocationId);
       const selectedOwner = mockOwners.find(owner => owner.id === formData.ownerId);
 
@@ -166,66 +192,64 @@ const AddVehicle: React.FC = () => {
         throw new Error('Please select a valid location and owner');
       }
 
-      const newVehicle: Partial<Vehicle> = {
-        id: `veh-${Date.now()}`,
-        vin: formData.vin,
-        make: formData.make,
-        model: formData.model,
-        year: formData.year,
-        color: formData.color,
-        trim: formData.trim,
-        engineType: formData.engineType,
-        fuelType: formData.fuelType,
-        weightKg: formData.weightKg,
-        dimensions: {
-          lengthMm: formData.lengthMm,
-          widthMm: formData.widthMm,
-          heightMm: formData.heightMm
-        },
-        orderDate: new Date(formData.orderDate),
-        status: formData.status,
-        currentLocation: selectedLocation,
-        estimatedDelivery: new Date(formData.estimatedDelivery),
-        shippingDetails: {
-          id: `shipping-${Date.now()}`,
-          originPort: formData.originPort,
-          destinationPort: formData.destinationPort,
-          shippingCompany: formData.shippingCompany,
-          vesselName: formData.vesselName,
-          containerNumber: formData.containerNumber,
-          bookingNumber: formData.bookingNumber,
-          departureDate: formData.departureDate ? new Date(formData.departureDate) : undefined,
-          expectedArrivalDate: formData.expectedArrivalDate ? new Date(formData.expectedArrivalDate) : undefined,
-          documents: []
-        },
-        customsDetails: {
-          customsStatus: formData.customsStatus,
-          importDuty: formData.importDuty,
-          customsNotes: formData.customsNotes,
-          documents: []
-        },
-        owner: selectedOwner,
-        trackingHistory: [],
-        notes: formData.notes.trim() !== '' ? [formData.notes] : [],
-        images: formData.images?.map((file, index) => ({
-          id: `img-${Date.now()}-${index}`,
-          url: URL.createObjectURL(file),
-          alt: `Vehicle image ${index + 1}`,
-          caption: file.name,
-          isPrimary: index === 0
-        })) || []
+      const imagesPayload = formData.images && formData.images.length > 0
+        ? await Promise.all(
+            formData.images.map(async (file, index) => ({
+              data: await fileToBase64(file),
+              caption: file.name,
+              alt: `${formData.make} ${formData.model}`.trim() || `Vehicle image ${index + 1}`,
+              isPrimary: index === 0,
+            }))
+          )
+        : [];
+
+      const payload = {
+        vin: formData.vin.trim(),
+        make: formData.make.trim(),
+        model: formData.model.trim(),
+        year: Number(formData.year),
+        color: formData.color.trim(),
+        trim: formData.trim.trim(),
+        engineType: formData.engineType.trim(),
+        fuelType: formData.fuelType.toUpperCase(),
+        weightKg: Number(formData.weightKg) || 0,
+        lengthMm: formData.lengthMm > 0 ? formData.lengthMm : undefined,
+        widthMm: formData.widthMm > 0 ? formData.widthMm : undefined,
+        heightMm: formData.heightMm > 0 ? formData.heightMm : undefined,
+        orderDate: new Date(formData.orderDate).toISOString(),
+        estimatedDelivery: new Date(formData.estimatedDelivery).toISOString(),
+        status: vehicleStatusApiMap[formData.status],
+        currentLocationId: formData.currentLocationId,
+        ownerId: formData.ownerId,
+        customsStatus: customsStatusApiMap[formData.customsStatus],
+        importDuty: Number(formData.importDuty) || 0,
+        customsNotes: formData.customsNotes.trim() !== '' ? formData.customsNotes.trim() : undefined,
       };
 
-      console.log('New vehicle:', newVehicle);
+      const response = await fetch('/api/vehicles', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...payload,
+          images: imagesPayload,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorBody = await response.json().catch(() => null);
+        throw new Error(errorBody?.error || 'Failed to add vehicle');
+      }
+
       setShowSuccess(true);
-      
-      // Redirect to vehicles list after 2 seconds
+
       setTimeout(() => {
         router.push('/admin/vehicles');
       }, 2000);
-
     } catch (error) {
       console.error('Error adding vehicle:', error);
+      setSubmitError(error instanceof Error ? error.message : 'Failed to add vehicle');
     } finally {
       setIsSubmitting(false);
     }
@@ -251,6 +275,13 @@ const AddVehicle: React.FC = () => {
             <CheckCircle2 className="h-4 w-4 text-green-600" />
             <AlertDescription className="text-green-800">
               Vehicle added successfully! Redirecting to vehicles list...
+            </AlertDescription>
+          </Alert>
+        )}
+        {submitError && (
+          <Alert className="mb-6 border-red-200 bg-red-50">
+            <AlertDescription className="text-red-800">
+              {submitError}
             </AlertDescription>
           </Alert>
         )}
