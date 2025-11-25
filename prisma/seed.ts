@@ -106,7 +106,10 @@ async function main() {
   const adminUsers = await Promise.all([
     prisma.user.create({
       data: {
-        fullname: 'Admin User',
+        firstName: 'Admin',
+        
+        username: 'admin',
+        lastName: 'User',
         phone: '+234-7055793353',
         email: 'umar.jere@viniciusint.com',
         role: Role.ADMIN,
@@ -118,7 +121,8 @@ async function main() {
     }),
   //   prisma.user.create({
   //     data: {
-  //       fullname: 'CEO User',
+  //       firstName: 'CEO',
+  //       lastName: 'User',
   //       phone: '+1-555-0002',
   //       email: 'ceo@vinifleet.com',
   //       role: Role.CEO,
@@ -136,7 +140,8 @@ async function main() {
   // const normalUsers = await Promise.all([
   //   prisma.user.create({
   //     data: {
-  //       fullname: 'John Doe',
+  //       firstName: 'John',
+  //       lastName: 'Doe',
   //       phone: '+1-555-1001',
   //       email: 'john.doe@vinifleet.com',
   //       role: Role.NORMAL,
@@ -148,7 +153,8 @@ async function main() {
   //   }),
   //   prisma.user.create({
   //     data: {
-  //       fullname: 'Jane Smith',
+  //       firstName: 'Jane',
+  //       lastName: 'Smith',
   //       phone: '+1-555-1002',
   //       email: 'jane.smith@vinifleet.com',
   //       role: Role.NORMAL,

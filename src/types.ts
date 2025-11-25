@@ -2,7 +2,8 @@
 
 export interface User {
   id: string;
-  fullname: string;
+  firstName: string;
+  lastName: string;
   phone: string;
   email: string;
   role: Role;
@@ -12,6 +13,16 @@ export interface User {
   isActive: boolean;
   avatar?: string;
   password?: string; // For mock authentication
+}
+
+export interface ZitadelUser {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  displayName: string;
+  preferredUsername: string;
+  state: string;
 }
 
 

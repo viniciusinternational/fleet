@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { 
   LayoutDashboard,
   Users,
@@ -155,7 +156,7 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ userRole, us
   };
 
   // Get user initials
-  const getUserInitials = (name: string | undefined | null) => {
+  const getUserInitials = (firstName: string | undefined | null, lastName: string | undefined | null) => {
     if (!name) return 'U';
     return name
       .split(' ')
@@ -399,14 +400,14 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ userRole, us
     <Sidebar className="border-r bg-background">
       <SidebarHeader className="border-b bg-card">
         <div className="flex items-center space-x-3 p-4">
-          <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary">
-            {effectiveRole === 'CEO' ? (
-              <Crown className="h-5 w-5 text-primary-foreground" />
-            ) : effectiveRole === 'Normal' ? (
-              <Car className="h-5 w-5 text-primary-foreground" />
-            ) : (
-              <Building2 className="h-5 w-5 text-primary-foreground" />
-            )}
+          <div className="flex items-center justify-center w-10 h-10 rounded-lg overflow-hidden">
+            <Image
+              src="/logo.png"
+              alt="Logo"
+              width={40}
+              height={40}
+              className="object-contain"
+            />
           </div>
           <div>
             <h1 className="text-lg font-semibold text-foreground">
@@ -441,12 +442,12 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ userRole, us
         <div className="flex items-center space-x-3">
           <Avatar className="h-8 w-8">
             <AvatarFallback className="bg-primary text-primary-foreground text-xs font-medium">
-              {user ? getUserInitials(user.fullname) : 'U'}
+              {user ? getUserInitials(user.firstName, user.lastName) : 'U'}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-foreground truncate">
-              {user?.fullname || 'Current User'}
+              {user ? `${user.firstName} ${user.lastName}` : 'Current User'}
             </p>
             <p className="text-xs text-muted-foreground truncate">
               {user?.email || 'user@vinisuite.com'}

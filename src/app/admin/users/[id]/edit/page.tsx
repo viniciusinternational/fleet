@@ -52,7 +52,8 @@ const EditUser: React.FC = () => {
   // Form state - matching User schema from Prisma
   const [formData, setFormData] = useState({
     // Required fields from User interface
-    fullname: '',
+    firstName: '',
+    lastName: '',
     phone: '',
     email: '',
     role: 'Normal' as Role,
@@ -95,7 +96,8 @@ const EditUser: React.FC = () => {
         // Update form data when user is loaded
         setFormData({
           // Required fields from User interface
-          fullname: userData.fullname || '',
+          firstName: userData.firstName || '',
+          lastName: userData.lastName || '',
           phone: userData.phone || '',
           email: userData.email || '',
           role: userData.role || 'Normal',
@@ -203,8 +205,12 @@ const EditUser: React.FC = () => {
     const newErrors: Record<string, string> = {};
 
     // Required fields from User interface
-    if (!formData.fullname.trim()) {
-      newErrors.fullname = 'Full name is required';
+    if (!formData.firstName.trim()) {
+      newErrors.firstName = 'First name is required';
+    }
+
+    if (!formData.lastName.trim()) {
+      newErrors.lastName = 'Last name is required';
     }
 
     if (!formData.email.trim()) {
@@ -262,7 +268,8 @@ const EditUser: React.FC = () => {
 
       // Prepare update data - only include password if it's being changed
       const updateData: any = {
-        fullname: formData.fullname,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
         phone: formData.phone,
         email: formData.email,
         role: formData.role,
@@ -371,16 +378,30 @@ const EditUser: React.FC = () => {
               {/* Basic Information */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label htmlFor="fullname">Full Name *</Label>
+                  <Label htmlFor="firstName">First Name *</Label>
                   <Input
-                    id="fullname"
-                    placeholder="Enter full name"
-                    value={formData.fullname}
-                    onChange={(e) => handleInputChange('fullname', e.target.value)}
-                    className={errors.fullname ? 'border-red-500' : ''}
+                    id="firstName"
+                    placeholder="Enter first name"
+                    value={formData.firstName}
+                    onChange={(e) => handleInputChange('firstName', e.target.value)}
+                    className={errors.firstName ? 'border-red-500' : ''}
                   />
-                  {errors.fullname && (
-                    <p className="text-sm text-red-500">{errors.fullname}</p>
+                  {errors.firstName && (
+                    <p className="text-sm text-red-500">{errors.firstName}</p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="lastName">Last Name *</Label>
+                  <Input
+                    id="lastName"
+                    placeholder="Enter last name"
+                    value={formData.lastName}
+                    onChange={(e) => handleInputChange('lastName', e.target.value)}
+                    className={errors.lastName ? 'border-red-500' : ''}
+                  />
+                  {errors.lastName && (
+                    <p className="text-sm text-red-500">{errors.lastName}</p>
                   )}
                 </div>
 

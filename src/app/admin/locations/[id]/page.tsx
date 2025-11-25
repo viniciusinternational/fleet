@@ -509,11 +509,11 @@ const LocationDetail: React.FC = () => {
                         <Avatar className="w-12 h-12">
                           <AvatarImage src={user.avatar} />
                           <AvatarFallback className="bg-blue-100 text-blue-600 text-sm font-semibold">
-                            {user.fullname.split(' ').map(n => n[0]).join('').toUpperCase()}
+                            {((user.firstName?.[0] || '') + (user.lastName?.[0] || '')).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1">
-                          <div className="font-medium">{user.fullname}</div>
+                          <div className="font-medium">{user.firstName} {user.lastName}</div>
                           <div className="text-sm text-muted-foreground">{user.email}</div>
                           <div className="text-xs text-muted-foreground">{user.phone}</div>
                         </div>

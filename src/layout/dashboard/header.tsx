@@ -52,14 +52,11 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({ user: propUser
   const notificationCount = 3;
 
   // Get user initials
-  const getUserInitials = (name: string | undefined | null) => {
-    if (!name) return 'U';
-    return name
-      .split(' ')
-      .map(part => part.charAt(0))
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
+  const getUserInitials = (firstName: string | undefined | null, lastName: string | undefined | null) => {
+    const first = firstName?.[0] || '';
+    const last = lastName?.[0] || '';
+    const initials = (first + last).toUpperCase();
+    return initials || 'U';
   };
 
   // Format user role for display
@@ -106,7 +103,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({ user: propUser
   };
 
   // Show header even without user for debugging
-  const displayUser = user || { fullname: 'Guest User', email: 'guest@example.com', role: 'Normal' };
+  const displayUser = user || { firstName: 'Guest', lastName: 'User', email: 'guest@example.com', role: 'Normal' };
 
   return (
     <header className="sticky top-0 z-50 w-full">
@@ -243,7 +240,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({ user: propUser
                 <Button variant="ghost" className="relative h-8 w-8 sm:h-10 sm:w-10 rounded-full">
                   <Avatar className="h-8 w-8 sm:h-10 sm:w-10 ring-2 ring-muted">
                     <AvatarFallback className="bg-primary text-primary-foreground font-semibold text-xs sm:text-sm">
-                      {getUserInitials(displayUser.fullname)}
+                      {getUserInitials(displayUser.firstName, displayUser.lastName)}
                     </AvatarFallback>
                   </Avatar>
                 </Button>
@@ -254,11 +251,11 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({ user: propUser
                     <div className="flex items-center space-x-3">
                       <Avatar className="h-10 w-10">
                         <AvatarFallback className="bg-primary text-primary-foreground">
-                          {getUserInitials(displayUser.fullname)}
+                          {getUserInitials(displayUser.firstName, displayUser.lastName)}
                         </AvatarFallback>
                       </Avatar>
                       <div className="space-y-1">
-                        <p className="text-sm font-semibold leading-none">{displayUser.fullname}</p>
+                        <p className="text-sm font-semibold leading-none">{displayUser.firstName} {displayUser.lastName}</p>
                         <p className="text-xs text-muted-foreground">{formatRole(displayUser.role)}</p>
                       </div>
                     </div>

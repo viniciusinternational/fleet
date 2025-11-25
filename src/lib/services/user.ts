@@ -44,7 +44,8 @@ export class UserService {
    */
   static async createUser(
     input: Partial<User> & { 
-      fullname: string; 
+      firstName: string; 
+      lastName: string;
       email: string; 
       phone: string; 
       role: Role; 
@@ -59,7 +60,8 @@ export class UserService {
     try {
       const user = await db.user.create({
         data: {
-          fullname: input.fullname,
+          firstName: input.firstName,
+          lastName: input.lastName,
           email: input.email,
           phone: input.phone,
           role: this.mapUIRoleToPrisma(input.role) as any,
@@ -139,7 +141,7 @@ export class UserService {
       locationId?: string;
     } = {},
     sortOptions: {
-      sortBy?: 'fullname' | 'email' | 'role' | 'createdAt' | 'lastLogin';
+      sortBy?: 'firstName' | 'lastName' | 'email' | 'role' | 'createdAt' | 'lastLogin';
       sortOrder?: 'asc' | 'desc';
     } = {},
     paginationOptions: {
@@ -153,7 +155,7 @@ export class UserService {
     }
 
     const { page = 1, limit = 10 } = paginationOptions;
-    const { sortBy = 'fullname', sortOrder = 'asc' } = sortOptions;
+    const { sortBy = 'firstName', sortOrder = 'asc' } = sortOptions;
     const skip = (page - 1) * limit;
 
     // Build where clause
@@ -161,7 +163,8 @@ export class UserService {
 
     if (filters.search) {
       where.OR = [
-        { fullname: { contains: filters.search, mode: 'insensitive' } },
+        { firstName: { contains: filters.search, mode: 'insensitive' } },
+        { lastName: { contains: filters.search, mode: 'insensitive' } },
         { email: { contains: filters.search, mode: 'insensitive' } },
         { phone: { contains: filters.search, mode: 'insensitive' } },
       ];
@@ -182,8 +185,11 @@ export class UserService {
     // Build orderBy clause
     const orderBy: Prisma.UserOrderByWithRelationInput = {};
     switch (sortBy) {
-      case 'fullname':
-        orderBy.fullname = sortOrder;
+      case 'firstName':
+        orderBy.firstName = sortOrder;
+        break;
+      case 'lastName':
+        orderBy.lastName = sortOrder;
         break;
       case 'email':
         orderBy.email = sortOrder;
@@ -198,7 +204,7 @@ export class UserService {
         orderBy.lastLogin = sortOrder;
         break;
       default:
-        orderBy.fullname = sortOrder;
+        orderBy.firstName = sortOrder;
     }
 
     try {
@@ -246,7 +252,8 @@ export class UserService {
       const user = await db.user.update({
         where: { id },
         data: {
-          fullname: updateData.fullname,
+          firstName: updateData.firstName,
+          lastName: updateData.lastName,
           email: updateData.email,
           phone: updateData.phone,
           role: updateData.role ? this.mapUIRoleToPrisma(updateData.role) as any : undefined,
@@ -343,7 +350,8 @@ export class UserService {
   private static mapPrismaUserToType(prismaUser: any): User {
     return {
       id: prismaUser.id,
-      fullname: prismaUser.fullname,
+      firstName: prismaUser.firstName,
+      lastName: prismaUser.lastName,
       phone: prismaUser.phone,
       email: prismaUser.email,
       role: this.mapPrismaRoleToUI(prismaUser.role),

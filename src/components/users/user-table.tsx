@@ -90,8 +90,10 @@ export function UserTable({
       : <XCircle className="h-3 w-3" />;
   };
 
-  const getInitials = (name: string) => {
-    return name.split(' ').map(n => n[0]).join('').toUpperCase();
+  const getInitials = (firstName: string, lastName: string) => {
+    const first = firstName?.[0] || '';
+    const last = lastName?.[0] || '';
+    return (first + last).toUpperCase();
   };
 
   const handleUserClick = (userId: string) => {
@@ -110,7 +112,7 @@ export function UserTable({
           <TableHeader>
             <TableRow className="bg-muted/50">
               <SortableHeader 
-                field="fullname" 
+                field="firstName" 
                 currentSortBy={sortBy} 
                 currentSortOrder={sortOrder}
                 className="min-w-[200px]"
@@ -149,11 +151,11 @@ export function UserTable({
                     <Avatar className="w-10 h-10">
                       <AvatarImage src={user.avatar} />
                       <AvatarFallback className="bg-blue-100 text-blue-600 text-sm font-semibold">
-                        {getInitials(user.fullname)}
+                        {getInitials(user.firstName, user.lastName)}
                       </AvatarFallback>
                     </Avatar>
                     <div className="min-w-0 flex-1">
-                      <div className="font-medium text-sm">{user.fullname}</div>
+                      <div className="font-medium text-sm">{user.firstName} {user.lastName}</div>
                       <div className="text-xs text-muted-foreground">ID: {user.id}</div>
                       <div className="text-xs text-muted-foreground hidden sm:block">
                         {user.lastLogin ? `Last login: ${formatDateTime(user.lastLogin)}` : 'Never logged in'}

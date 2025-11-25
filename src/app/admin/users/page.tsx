@@ -93,7 +93,7 @@ export default async function UserManagement({ searchParams }: UserPageProps) {
   const searchTerm = params.search || '';
   const roleFilter = params.role || 'all';
   const statusFilter = params.status || 'all';
-  const sortBy = params.sortBy || 'fullname';
+  const sortBy = params.sortBy || 'firstName';
   const sortOrder = params.sortOrder || 'asc';
   const currentPage = parseInt(params.page || '1');
 

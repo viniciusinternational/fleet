@@ -494,7 +494,8 @@ export const mockUsers: User[] = [
   // Admin Users
   {
     id: "user-001",
-    fullname: "Ahmed Bello",
+    firstName: "Ahmed",
+    lastName: "Bello",
     phone: "+234-1-234-5678",
     email: "admin@company.com",
     password: "admin123",
@@ -507,7 +508,8 @@ export const mockUsers: User[] = [
   },
   {
     id: "user-002",
-    fullname: "Usman Abdullahi",
+    firstName: "Usman",
+    lastName: "Abdullahi",
     phone: "+234-64-555-0125",
     email: "admin2@company.com",
     password: "admin456",
@@ -520,7 +522,8 @@ export const mockUsers: User[] = [
   },
   {
     id: "user-003",
-    fullname: "Ibrahim Sani",
+    firstName: "Ibrahim",
+    lastName: "Sani",
     phone: "+234-9-234-5678",
     email: "admin3@company.com",
     password: "admin789",
@@ -533,7 +536,8 @@ export const mockUsers: User[] = [
   },
   {
     id: "user-004",
-    fullname: "Musa Garba",
+    firstName: "Musa",
+    lastName: "Garba",
     phone: "+234-62-123-4567",
     email: "admin4@company.com",
     password: "admin012",
@@ -547,7 +551,8 @@ export const mockUsers: User[] = [
   // CEO Users
   {
     id: "user-005",
-    fullname: "Mohammed Ibrahim",
+    firstName: "Mohammed",
+    lastName: "Ibrahim",
     phone: "+234-64-987-6543",
     email: "ceo@company.com",
     password: "ceo123",
@@ -560,7 +565,8 @@ export const mockUsers: User[] = [
   },
   {
     id: "user-006",
-    fullname: "Aminu Dantata",
+    firstName: "Aminu",
+    lastName: "Dantata",
     phone: "+234-64-111-2222",
     email: "ceo2@company.com",
     password: "ceo456",
@@ -574,7 +580,8 @@ export const mockUsers: User[] = [
   // Normal Users - Lagos
   {
     id: "user-007",
-    fullname: "Fatima Yusuf",
+    firstName: "Fatima",
+    lastName: "Yusuf",
     phone: "+234-1-234-5679",
     email: "user@company.com",
     password: "user123",
@@ -587,7 +594,8 @@ export const mockUsers: User[] = [
   },
   {
     id: "user-008",
-    fullname: "Aisha Hassan",
+    firstName: "Aisha",
+    lastName: "Hassan",
     phone: "+234-1-234-5680",
     email: "normal@company.com",
     password: "normal123",
@@ -600,7 +608,8 @@ export const mockUsers: User[] = [
   },
   {
     id: "user-009",
-    fullname: "Hassan Bello",
+    firstName: "Hassan",
+    lastName: "Bello",
     phone: "+234-1-234-5681",
     email: "hassan@company.com",
     password: "hassan123",
@@ -613,7 +622,8 @@ export const mockUsers: User[] = [
   },
   {
     id: "user-010",
-    fullname: "Zainab Mohammed",
+    firstName: "Zainab",
+    lastName: "Mohammed",
     phone: "+234-1-234-5682",
     email: "zainab@company.com",
     password: "zainab123",
@@ -627,7 +637,8 @@ export const mockUsers: User[] = [
   // Normal Users - Kano
   {
     id: "user-011",
-    fullname: "Aminu Sani",
+    firstName: "Aminu",
+    lastName: "Sani",
     phone: "+234-64-123-4568",
     email: "aminu@company.com",
     password: "aminu123",
@@ -640,7 +651,8 @@ export const mockUsers: User[] = [
   },
   {
     id: "user-012",
-    fullname: "Hauwa Ibrahim",
+    firstName: "Hauwa",
+    lastName: "Ibrahim",
     phone: "+234-64-123-4569",
     email: "hauwa@company.com",
     password: "hauwa123",
@@ -653,7 +665,8 @@ export const mockUsers: User[] = [
   },
   {
     id: "user-013",
-    fullname: "Yusuf Garba",
+    firstName: "Yusuf",
+    lastName: "Garba",
     phone: "+234-64-123-4570",
     email: "yusuf@company.com",
     password: "yusuf123",
@@ -666,7 +679,8 @@ export const mockUsers: User[] = [
   },
   {
     id: "user-014",
-    fullname: "Khadija Abdullahi",
+    firstName: "Khadija",
+    lastName: "Abdullahi",
     phone: "+234-64-123-4571",
     email: "khadija@company.com",
     password: "khadija123",
@@ -679,7 +693,8 @@ export const mockUsers: User[] = [
   },
   {
     id: "user-015",
-    fullname: "Sani Bello",
+    firstName: "Sani",
+    lastName: "Bello",
     phone: "+234-64-123-4572",
     email: "sani@company.com",
     password: "sani123",
@@ -693,7 +708,8 @@ export const mockUsers: User[] = [
   // Normal Users - Abuja
   {
     id: "user-016",
-    fullname: "Musa Ibrahim",
+    firstName: "Musa",
+    lastName: "Ibrahim",
     phone: "+234-9-234-5679",
     email: "musa@company.com",
     password: "musa123",
@@ -706,7 +722,8 @@ export const mockUsers: User[] = [
   },
   {
     id: "user-017",
-    fullname: "Aisha Musa",
+    firstName: "Aisha",
+    lastName: "Musa",
     phone: "+234-9-234-5680",
     email: "aisha.musa@company.com",
     password: "aisha123",
@@ -719,7 +736,8 @@ export const mockUsers: User[] = [
   },
   {
     id: "user-018",
-    fullname: "Ibrahim Garba",
+    firstName: "Ibrahim",
+    lastName: "Garba",
     phone: "+234-9-234-5681",
     email: "ibrahim.garba@company.com",
     password: "ibrahim123",
@@ -732,7 +750,8 @@ export const mockUsers: User[] = [
   },
   {
     id: "user-019",
-    fullname: "Fatima Sani",
+    firstName: "Fatima",
+    lastName: "Sani",
     phone: "+234-9-234-5682",
     email: "fatima.sani@company.com",
     password: "fatima123",
@@ -745,7 +764,8 @@ export const mockUsers: User[] = [
   },
   {
     id: "user-020",
-    fullname: "Usman Bello",
+    firstName: "Usman",
+    lastName: "Bello",
     phone: "+234-9-234-5683",
     email: "usman.bello@company.com",
     password: "usman123",
@@ -759,7 +779,8 @@ export const mockUsers: User[] = [
   // Normal Users - Kaduna
   {
     id: "user-021",
-    fullname: "Sani Mohammed",
+    firstName: "Sani",
+    lastName: "Mohammed",
     phone: "+234-62-123-4568",
     email: "sani.mohammed@company.com",
     password: "sani.mohammed123",
@@ -772,7 +793,8 @@ export const mockUsers: User[] = [
   },
   {
     id: "user-022",
-    fullname: "Hauwa Garba",
+    firstName: "Hauwa",
+    lastName: "Garba",
     phone: "+234-62-123-4569",
     email: "hauwa.garba@company.com",
     password: "hauwa.garba123",
@@ -785,7 +807,8 @@ export const mockUsers: User[] = [
   },
   {
     id: "user-023",
-    fullname: "Yusuf Ibrahim",
+    firstName: "Yusuf",
+    lastName: "Ibrahim",
     phone: "+234-62-123-4570",
     email: "yusuf.ibrahim@company.com",
     password: "yusuf.ibrahim123",
@@ -798,7 +821,8 @@ export const mockUsers: User[] = [
   },
   {
     id: "user-024",
-    fullname: "Khadija Sani",
+    firstName: "Khadija",
+    lastName: "Sani",
     phone: "+234-62-123-4571",
     email: "khadija.sani@company.com",
     password: "khadija.sani123",
@@ -811,7 +835,8 @@ export const mockUsers: User[] = [
   },
   {
     id: "user-025",
-    fullname: "Aminu Abdullahi",
+    firstName: "Aminu",
+    lastName: "Abdullahi",
     phone: "+234-62-123-4572",
     email: "aminu.abdullahi@company.com",
     password: "aminu.abdullahi123",

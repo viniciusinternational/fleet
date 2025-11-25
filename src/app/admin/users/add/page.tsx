@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -17,43 +17,70 @@ import {
   UserCheck,
   ArrowLeft,
   CheckCircle2,
-  Eye,
-  EyeOff,
   Save,
-  X
+  X,
+  Search
 } from 'lucide-react';
 import { Role } from '@/types';
-import type { User as UserType, Location } from '@/types';
+import type { Location, ZitadelUser } from '@/types';
 
 const AddUser: React.FC = () => {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [locations, setLocations] = useState<Location[]>([]);
   const [isLoadingLocations, setIsLoadingLocations] = useState(true);
+  const [zitadelUsers, setZitadelUsers] = useState<ZitadelUser[]>([]);
+  const [isLoadingZitadelUsers, setIsLoadingZitadelUsers] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedZitadelUser, setSelectedZitadelUser] = useState<ZitadelUser | null>(null);
 
-  // Form state matching User interface from types.ts
+  // Form state
   const [formData, setFormData] = useState({
-    // Required fields from User interface
-    fullname: '',
+    zitadelUserId: '',
+    firstName: '',
+    lastName: '',
     phone: '',
     email: '',
     role: 'Normal' as Role,
-    locationId: '', // Will be converted to Location object
+    locationId: '',
     isActive: true,
-    
-    // Optional fields from User interface
-    avatar: '',
-    password: '', // For authentication
-    confirmPassword: '', // For validation
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // Fetch Zitadel users
+  useEffect(() => {
+    const fetchZitadelUsers = async () => {
+      try {
+        setIsLoadingZitadelUsers(true);
+        const response = await fetch(`/api/users/zitadel?limit=100${searchQuery ? `&search=${encodeURIComponent(searchQuery)}` : ''}`);
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch Zitadel users');
+        }
+        
+        const data = await response.json();
+        if (data.ok && data.data) {
+          setZitadelUsers(data.data);
+        }
+      } catch (error) {
+        console.error('Error fetching Zitadel users:', error);
+        setZitadelUsers([]);
+      } finally {
+        setIsLoadingZitadelUsers(false);
+      }
+    };
+
+    const debounceTimer = setTimeout(() => {
+      fetchZitadelUsers();
+    }, 300);
+
+    return () => clearTimeout(debounceTimer);
+  }, [searchQuery]);
+
   // Fetch locations from API
-  React.useEffect(() => {
+  useEffect(() => {
     const fetchLocations = async () => {
       try {
         const response = await fetch(`/api/locations?limit=100`, {
@@ -77,6 +104,29 @@ const AddUser: React.FC = () => {
     fetchLocations();
   }, []);
 
+  // Handle Zitadel user selection
+  const handleZitadelUserSelect = (userId: string) => {
+    const user = zitadelUsers.find(u => u.id === userId);
+    if (user) {
+      setSelectedZitadelUser(user);
+      setFormData(prev => ({
+        ...prev,
+        zitadelUserId: user.id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+      }));
+      // Clear errors for these fields
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors.firstName;
+        delete newErrors.lastName;
+        delete newErrors.email;
+        return newErrors;
+      });
+    }
+  };
+
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({
       ...prev,
@@ -92,19 +142,20 @@ const AddUser: React.FC = () => {
     }
   };
 
-
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
-    // Required fields from User interface
-    if (!formData.fullname.trim()) {
-      newErrors.fullname = 'Full name is required';
+    if (!formData.zitadelUserId) {
+      newErrors.zitadelUserId = 'Please select a Zitadel user by email';
+      newErrors.email = 'Please select a Zitadel user by email';
     }
 
-    if (!formData.email.trim()) {
-      newErrors.email = 'Email is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email address';
+    if (!formData.firstName.trim()) {
+      newErrors.firstName = 'First name is required';
+    }
+
+    if (!formData.lastName.trim()) {
+      newErrors.lastName = 'Last name is required';
     }
 
     if (!formData.phone.trim()) {
@@ -113,17 +164,6 @@ const AddUser: React.FC = () => {
 
     if (!formData.locationId || formData.locationId === 'loading' || formData.locationId === 'no-locations') {
       newErrors.locationId = 'Location is required';
-    }
-
-    // Password validation for authentication
-    if (!formData.password) {
-      newErrors.password = 'Password is required';
-    } else if (formData.password.length < 8) {
-      newErrors.password = 'Password must be at least 8 characters long';
-    }
-
-    if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
     }
 
     setErrors(newErrors);
@@ -157,20 +197,16 @@ const AddUser: React.FC = () => {
       }
 
       // Create user via API
-      const response = await fetch(`/api/users`, {
+      const response = await fetch(`/api/users/zitadel`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          fullname: formData.fullname,
+          zitadelUserId: formData.zitadelUserId,
           phone: formData.phone,
-          email: formData.email,
-          role: formData.role,
           locationId: formData.locationId,
-          isActive: formData.isActive,
-          avatar: formData.avatar || undefined,
-          password: formData.password,
+          role: formData.role,
         }),
       });
 
@@ -179,37 +215,39 @@ const AddUser: React.FC = () => {
         throw new Error(errorData.error || 'Failed to create user');
       }
 
-      const newUser = await response.json();
-      console.log('Created user:', newUser);
+      const result = await response.json();
+      console.log('Created user:', result);
       setShowSuccess(true);
       setTimeout(() => {
         router.push('/admin/users');
       }, 2000);
     } catch (error) {
       console.error('Failed to create user:', error);
+      setErrors({
+        submit: error instanceof Error ? error.message : 'Failed to create user'
+      });
     } finally {
       setIsSubmitting(false);
     }
   };
 
-
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-6 py-8">
-      {/* Header */}
+        {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-4 mb-4">
-              <Button 
+            <Button 
               variant="ghost"
               size="sm"
               onClick={() => router.push('/admin/users')}
               className="p-2"
             >
               <ArrowLeft className="h-4 w-4" />
-              </Button>
-              <div>
+            </Button>
+            <div>
               <h1 className="text-3xl font-bold tracking-tight">Add New User</h1>
-              <p className="text-muted-foreground mt-2">Create a new user account in the system</p>
+              <p className="text-muted-foreground mt-2">Create a new user account from Zitadel authentication system</p>
             </div>
           </div>
         </div>
@@ -224,91 +262,150 @@ const AddUser: React.FC = () => {
           </Alert>
         )}
 
+        {/* Error Message */}
+        {errors.submit && (
+          <Alert className="mb-6 border-red-200 bg-red-50">
+            <AlertDescription className="text-red-800">
+              {errors.submit}
+            </AlertDescription>
+          </Alert>
+        )}
+
         {/* Main Form */}
         <form onSubmit={handleSubmit}>
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
                 <User className="h-5 w-5" />
                 User Information
               </CardTitle>
             </CardHeader>
-                <CardContent className="space-y-6">
-              {/* Basic Information */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <CardContent className="space-y-6">
+              {/* Email Dropdown (Zitadel User Selection) */}
+              <div className="space-y-2">
+                <Label htmlFor="email">Email Address (Select from Zitadel) *</Label>
                 <div className="space-y-2">
-                      <Label htmlFor="fullname">Full Name *</Label>
-                  <Input
-                    id="fullname"
-                        placeholder="Enter full name"
-                    value={formData.fullname}
-                    onChange={(e) => handleInputChange('fullname', e.target.value)}
-                        className={errors.fullname ? 'border-red-500' : ''}
-                  />
-                  {errors.fullname && (
-                        <p className="text-sm text-red-500">{errors.fullname}</p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                      <Label htmlFor="email">Email Address *</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                        placeholder="Enter email address"
-                    value={formData.email}
-                    onChange={(e) => handleInputChange('email', e.target.value)}
-                        className={errors.email ? 'border-red-500' : ''}
-                  />
-                  {errors.email && (
-                        <p className="text-sm text-red-500">{errors.email}</p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                      <Label htmlFor="phone">Phone Number *</Label>
-                  <Input
-                    id="phone"
-                        placeholder="Enter phone number"
-                    value={formData.phone}
-                    onChange={(e) => handleInputChange('phone', e.target.value)}
-                        className={errors.phone ? 'border-red-500' : ''}
-                  />
-                  {errors.phone && (
-                        <p className="text-sm text-red-500">{errors.phone}</p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                      <Label htmlFor="role">Role *</Label>
-                      <Select value={formData.role} onValueChange={(value: Role) => handleInputChange('role', value)}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select role" />
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search by email, name, or username..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                  <Select 
+                    value={formData.zitadelUserId} 
+                    onValueChange={handleZitadelUserSelect}
+                  >
+                    <SelectTrigger className={errors.zitadelUserId || errors.email ? 'border-red-500' : ''}>
+                      <SelectValue placeholder="Select a Zitadel user by email">
+                        {selectedZitadelUser ? selectedZitadelUser.email : 'Select a user'}
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
-                          <SelectItem value="Normal">
-                            <div className="flex items-center gap-2">
-                          <UserCheck className="h-4 w-4" />
-                              Normal User
-                          </div>
+                      {isLoadingZitadelUsers ? (
+                        <SelectItem value="loading" disabled>
+                          Loading Zitadel users...
                         </SelectItem>
-                          <SelectItem value="Admin">
-                            <div className="flex items-center gap-2">
-                              <Shield className="h-4 w-4" />
-                              Administrator
+                      ) : zitadelUsers.length > 0 ? (
+                        zitadelUsers.map((user) => (
+                          <SelectItem key={user.id} value={user.id}>
+                            <div className="flex flex-col">
+                              <span className="font-medium">{user.email}</span>
+                              <span className="text-xs text-muted-foreground">
+                                {user.firstName} {user.lastName} ({user.preferredUsername})
+                              </span>
+                            </div>
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem value="no-users" disabled>
+                          No Zitadel users found
+                        </SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+                {(errors.zitadelUserId || errors.email) && (
+                  <p className="text-sm text-red-500">{errors.zitadelUserId || errors.email}</p>
+                )}
+              </div>
+
+              {/* Auto-filled fields (read-only) */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="firstName">First Name *</Label>
+                  <Input
+                    id="firstName"
+                    value={formData.firstName}
+                    readOnly
+                    disabled
+                    className="bg-muted"
+                  />
+                  {errors.firstName && (
+                    <p className="text-sm text-red-500">{errors.firstName}</p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="lastName">Last Name *</Label>
+                  <Input
+                    id="lastName"
+                    value={formData.lastName}
+                    readOnly
+                    disabled
+                    className="bg-muted"
+                  />
+                  {errors.lastName && (
+                    <p className="text-sm text-red-500">{errors.lastName}</p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Phone Number *</Label>
+                  <Input
+                    id="phone"
+                    placeholder="Enter phone number"
+                    value={formData.phone}
+                    onChange={(e) => handleInputChange('phone', e.target.value)}
+                    className={errors.phone ? 'border-red-500' : ''}
+                  />
+                  {errors.phone && (
+                    <p className="text-sm text-red-500">{errors.phone}</p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="role">Role *</Label>
+                  <Select value={formData.role} onValueChange={(value: Role) => handleInputChange('role', value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Normal">
+                        <div className="flex items-center gap-2">
+                          <UserCheck className="h-4 w-4" />
+                          Normal User
                         </div>
                       </SelectItem>
-                          <SelectItem value="CEO">
-                            <div className="flex items-center gap-2">
+                      <SelectItem value="Admin">
+                        <div className="flex items-center gap-2">
+                          <Shield className="h-4 w-4" />
+                          Administrator
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="CEO">
+                        <div className="flex items-center gap-2">
                           <Crown className="h-4 w-4" />
-                              CEO
+                          CEO
                         </div>
                       </SelectItem>
                     </SelectContent>
                   </Select>
-              </div>
+                </div>
 
-                    <div className="space-y-2">
+                <div className="space-y-2">
                   <Label htmlFor="locationId">Assigned Location *</Label>
                   <Select value={formData.locationId} onValueChange={(value) => handleInputChange('locationId', value)}>
                     <SelectTrigger className={errors.locationId ? 'border-red-500' : ''}>
@@ -337,82 +434,13 @@ const AddUser: React.FC = () => {
                   </Select>
                   {errors.locationId && (
                     <p className="text-sm text-red-500">{errors.locationId}</p>
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                  <Label htmlFor="avatar">Avatar URL (Optional)</Label>
-                      <Input
-                    id="avatar"
-                    placeholder="Enter avatar URL"
-                    value={formData.avatar}
-                    onChange={(e) => handleInputChange('avatar', e.target.value)}
-                      />
-                    </div>
-                  </div>
-
-              {/* Authentication */}
-              <div className="space-y-4">
-                <h4 className="font-medium">Authentication</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <Label htmlFor="password">Password *</Label>
-                      <div className="relative">
-                        <Input
-                          id="password"
-                          type={showPassword ? 'text' : 'password'}
-                          placeholder="Enter password"
-                          value={formData.password}
-                          onChange={(e) => handleInputChange('password', e.target.value)}
-                          className={errors.password ? 'border-red-500 pr-10' : 'pr-10'}
-                        />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                          onClick={() => setShowPassword(!showPassword)}
-                        >
-                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                        </Button>
-                      </div>
-                      {errors.password && (
-                        <p className="text-sm text-red-500">{errors.password}</p>
-                    )}
-                      <p className="text-xs text-muted-foreground">Password must be at least 8 characters long</p>
-                  </div>
-
-                  <div className="space-y-2">
-                      <Label htmlFor="confirmPassword">Confirm Password *</Label>
-                      <div className="relative">
-                    <Input
-                          id="confirmPassword"
-                          type={showConfirmPassword ? 'text' : 'password'}
-                          placeholder="Confirm password"
-                          value={formData.confirmPassword}
-                          onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
-                          className={errors.confirmPassword ? 'border-red-500 pr-10' : 'pr-10'}
-                        />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        >
-                          {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                        </Button>
-                      </div>
-                      {errors.confirmPassword && (
-                        <p className="text-sm text-red-500">{errors.confirmPassword}</p>
-                    )}
-                  </div>
+                  )}
                 </div>
               </div>
 
               {/* Status */}
-                      <div className="flex items-center space-x-2">
-                        <Switch
+              <div className="flex items-center space-x-2">
+                <Switch
                   id="isActive"
                   checked={formData.isActive}
                   onCheckedChange={(checked) => handleInputChange('isActive', checked)}
@@ -423,7 +451,7 @@ const AddUser: React.FC = () => {
               <Alert>
                 <CheckCircle2 className="h-4 w-4" />
                 <AlertDescription>
-                  Users will receive an email with their login credentials. They can change their password after first login.
+                  User information will be automatically filled from Zitadel. Please provide phone number and select location.
                 </AlertDescription>
               </Alert>
             </CardContent>
@@ -439,21 +467,21 @@ const AddUser: React.FC = () => {
             >
               <X className="h-4 w-4 mr-2" />
               Cancel
-              </Button>
-              
+            </Button>
+            
             <Button 
               type="submit"
-                disabled={isSubmitting}
-                className="min-w-[120px]"
+              disabled={isSubmitting}
+              className="min-w-[120px]"
             >
-                {isSubmitting ? (
+              {isSubmitting ? (
                 <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                    Creating...
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                  Creating...
                 </>
               ) : (
                 <>
-                    <Save className="h-4 w-4 mr-2" />
+                  <Save className="h-4 w-4 mr-2" />
                   Create User
                 </>
               )}

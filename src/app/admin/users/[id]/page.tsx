@@ -156,8 +156,10 @@ const UserDetail: React.FC = () => {
       : <XCircle className="h-4 w-4" />;
   };
 
-  const getInitials = (name: string) => {
-    return name.split(' ').map(n => n[0]).join('').toUpperCase();
+  const getInitials = (firstName: string, lastName: string) => {
+    const first = firstName?.[0] || '';
+    const last = lastName?.[0] || '';
+    return (first + last).toUpperCase();
   };
 
   const formatDate = (date: Date) => {
@@ -246,14 +248,14 @@ const UserDetail: React.FC = () => {
               <Avatar className="w-24 h-24">
                 <AvatarImage src={user.avatar} />
                 <AvatarFallback className="bg-blue-100 text-blue-600 text-2xl font-bold">
-                  {getInitials(user.fullname)}
+                  {getInitials(user.firstName, user.lastName)}
                 </AvatarFallback>
               </Avatar>
               
               <div className="flex-1 space-y-4">
                 <div className="flex flex-col md:flex-row md:items-center gap-4">
                   <div>
-                    <h2 className="text-3xl font-bold">{user.fullname}</h2>
+                    <h2 className="text-3xl font-bold">{user.firstName} {user.lastName}</h2>
                     <p className="text-xl text-muted-foreground">{user.email}</p>
                   </div>
                   
@@ -324,8 +326,12 @@ const UserDetail: React.FC = () => {
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="text-sm font-medium text-muted-foreground">Full Name</label>
-                      <p className="text-sm">{user.fullname}</p>
+                      <label className="text-sm font-medium text-muted-foreground">First Name</label>
+                      <p className="text-sm">{user.firstName}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Last Name</label>
+                      <p className="text-sm">{user.lastName}</p>
                     </div>
                     <div>
                       <label className="text-sm font-medium text-muted-foreground">Email</label>

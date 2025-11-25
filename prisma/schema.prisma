@@ -9,7 +9,8 @@ datasource db {
 
 model User {
   id         String    @id @default(cuid())
-  fullname   String
+  firstName  String
+  lastName   String
   phone      String
   email      String    @unique
   role       Role      @default(NORMAL)

@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     };
 
     const sortOptions = {
-      sortBy: searchParams.get('sortBy') as any || 'fullname',
+      sortBy: searchParams.get('sortBy') as any || 'firstName',
       sortOrder: searchParams.get('sortOrder') as 'asc' | 'desc' || 'asc',
     };
 
