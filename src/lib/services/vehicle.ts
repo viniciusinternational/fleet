@@ -4,11 +4,11 @@ import type { Vehicle } from '@/types';
 const prisma = new PrismaClient();
 
 type VehicleImageInput = {
-  data: string;
+  data?: string; // Optional - can be empty for S3 URLs
   alt?: string;
   caption?: string;
   isPrimary?: boolean;
-  url?: string;
+  url: string; // Required - S3 URL
 };
 
 /**
@@ -383,11 +383,11 @@ export class VehicleService {
   static async createVehicleImages(vehicleId: string, images: VehicleImageInput[]) {
     try {
       const normalizedImages = images.map((image, index) => ({
-        data: image.data,
+        data: image.data ?? '', // Empty string for S3 URLs (no base64 storage)
         alt: image.alt ?? `Vehicle image ${index + 1}`,
         caption: image.caption ?? null,
         isPrimary: image.isPrimary ?? index === 0,
-        url: image.url ?? '',
+        url: image.url, // S3 URL is required
       }));
 
       const createdImages = await Promise.all(
@@ -398,7 +398,7 @@ export class VehicleService {
               alt: image.alt,
               caption: image.caption,
               isPrimary: image.isPrimary,
-              data: image.data,
+              data: image.data, // Empty string for S3 URLs
               vehicle: {
                 connect: { id: vehicleId },
               },

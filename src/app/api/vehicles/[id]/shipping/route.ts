@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
+import { uploadShippingDocument } from '@/lib/s3';
 import { z } from 'zod';
 
 const prisma = new PrismaClient();
@@ -43,49 +44,57 @@ export async function POST(
       expectedArrivalDate: formData.get('expectedArrivalDate') as string || undefined,
     };
     
-    // Handle shipping documents
+    // Handle shipping documents - upload to S3
     const shippingDocuments: { id: string; name: string; url: string }[] = [];
     const documentFiles = formData.getAll('documents') as File[];
+    const uploadedDocumentKeys: string[] = [];
     
     console.log(`Processing ${documentFiles.length} document files`);
     
     if (documentFiles.length > 0) {
-      // Save documents to public/uploads/shipping/
       for (let i = 0; i < documentFiles.length; i++) {
         const file = documentFiles[i];
         console.log(`Processing file ${i + 1}: ${file.name}, size: ${file.size} bytes`);
         
         if (file.size > 0) {
           try {
-            const timestamp = Date.now();
-            const fileName = `${timestamp}-${file.name}`;
-            const filePath = `public/uploads/shipping/${fileName}`;
-            
-            // Save file to filesystem
+            // Convert file to buffer
             const bytes = await file.arrayBuffer();
             const buffer = Buffer.from(bytes);
-            
-            // Create directory if it doesn't exist
-            const fs = require('fs');
-            const path = require('path');
-            const uploadDir = path.join(process.cwd(), 'public/uploads/shipping');
-            if (!fs.existsSync(uploadDir)) {
-              fs.mkdirSync(uploadDir, { recursive: true });
-            }
-            
-            fs.writeFileSync(path.join(process.cwd(), filePath), buffer);
-            console.log(`File saved successfully: ${filePath}`);
-            
+
+            // Determine content type
+            const contentType = file.type || 'application/octet-stream';
+
+            // Upload to S3
+            const uploadResult = await uploadShippingDocument(
+              vehicleId,
+              buffer,
+              file.name,
+              contentType
+            );
+
+            uploadedDocumentKeys.push(uploadResult.path);
+
             // Add to documents array
+            const timestamp = Date.now();
             shippingDocuments.push({
               id: `doc-${timestamp}-${i}`,
               name: file.name,
-              url: `/uploads/shipping/${fileName}`
+              url: uploadResult.url
             });
-            console.log(`Document added to array: ${file.name}`);
+            console.log(`Document uploaded to S3: ${file.name} -> ${uploadResult.url}`);
           } catch (error) {
-            console.error(`Error saving file ${file.name}:`, error);
-            throw error;
+            // Rollback: Delete uploaded documents from S3
+            const { deleteFromS3 } = await import('@/lib/s3');
+            for (const key of uploadedDocumentKeys) {
+              try {
+                await deleteFromS3(key);
+              } catch (deleteError) {
+                console.error(`Failed to delete document ${key} from S3:`, deleteError);
+              }
+            }
+            console.error(`Error uploading file ${file.name} to S3:`, error);
+            throw new Error(`Failed to upload shipping document to S3: ${error instanceof Error ? error.message : 'Unknown error'}`);
           }
         } else {
           console.log(`Skipping empty file: ${file.name}`);
@@ -210,45 +219,60 @@ export async function PUT(
       expectedArrivalDate: formData.get('expectedArrivalDate') as string || undefined,
     };
     
-    // Handle shipping documents
+    // Handle shipping documents - upload to S3
     const shippingDocuments: { id: string; name: string; url: string }[] = [];
     const documentFiles = formData.getAll('documents') as File[];
+    const uploadedDocumentKeys: string[] = [];
     
     console.log(`Processing ${documentFiles.length} document files`);
     
-    // Save uploaded documents
+    // Upload documents to S3
     for (const file of documentFiles) {
       if (file.size > 0) {
-        const timestamp = Date.now();
-        const fileName = `${timestamp}-${file.name}`;
-        const filePath = `public/uploads/shipping/${fileName}`;
-        
-        // Save file to filesystem
-        const bytes = await file.arrayBuffer();
-        const buffer = Buffer.from(bytes);
-        
-        // Create directory if it doesn't exist
-        const fs = require('fs');
-        const path = require('path');
-        const uploadDir = path.dirname(filePath);
-        if (!fs.existsSync(uploadDir)) {
-          fs.mkdirSync(uploadDir, { recursive: true });
+        try {
+          // Convert file to buffer
+          const bytes = await file.arrayBuffer();
+          const buffer = Buffer.from(bytes);
+
+          // Determine content type
+          const contentType = file.type || 'application/octet-stream';
+
+          // Upload to S3
+          const uploadResult = await uploadShippingDocument(
+            vehicleId,
+            buffer,
+            file.name,
+            contentType
+          );
+
+          uploadedDocumentKeys.push(uploadResult.path);
+
+          // Add to documents array
+          const timestamp = Date.now();
+          shippingDocuments.push({
+            id: `doc-${timestamp}-${shippingDocuments.length}`,
+            name: file.name,
+            url: uploadResult.url
+          });
+          
+          console.log(`Document uploaded to S3: ${file.name} -> ${uploadResult.url}`);
+        } catch (error) {
+          // Rollback: Delete uploaded documents from S3
+          const { deleteFromS3 } = await import('@/lib/s3');
+          for (const key of uploadedDocumentKeys) {
+            try {
+              await deleteFromS3(key);
+            } catch (deleteError) {
+              console.error(`Failed to delete document ${key} from S3:`, deleteError);
+            }
+          }
+          console.error(`Error uploading file ${file.name} to S3:`, error);
+          throw new Error(`Failed to upload shipping document to S3: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
-        
-        fs.writeFileSync(filePath, buffer);
-        
-        // Add to documents array
-        shippingDocuments.push({
-          id: `doc-${timestamp}-${shippingDocuments.length}`,
-          name: file.name,
-          url: `/uploads/shipping/${fileName}`
-        });
-        
-        console.log(`Saved document: ${fileName}`);
       }
     }
     
-    console.log(`Total documents to save: ${shippingDocuments.length}`);
+    console.log(`Total documents processed: ${shippingDocuments.length}`);
     
     // Validate the shipping data
     const validatedData = shippingDetailsSchema.parse({
