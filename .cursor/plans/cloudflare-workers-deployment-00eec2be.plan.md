@@ -1,4 +1,27 @@
-<!-- 00eec2be-c92b-4870-960e-e5e344d89069 f7387b67-ccd7-4617-909f-bf85709a1df9 -->
+---
+name: Cloudflare Workers Deployment Setup
+overview: ""
+todos:
+  - id: d0d9d1b0-bfdf-4756-b527-1162b39d0d96
+    content: Update next.config.ts to include OpenNext.js Cloudflare adapter wrapper and configuration
+    status: pending
+  - id: 8311b189-4a76-46b0-bf35-6bc64aa84b37
+    content: Update prisma/schema.prisma generator configuration for edge runtime compatibility
+    status: pending
+  - id: 139d2974-b7f4-4503-9888-3513ca66dea6
+    content: Modify src/lib/db.ts to work with Cloudflare Workers edge runtime (remove query logging, ensure singleton)
+    status: pending
+  - id: 463edb43-86b0-45f3-8d9c-c9e3f52216e7
+    content: Create wrangler.toml with Cloudflare Workers configuration, account settings, and environment variable placeholders
+    status: pending
+  - id: a3f89456-5198-4b51-9977-4e50b0a6bacb
+    content: Add build:cloudflare, deploy:cloudflare, and preview:cloudflare scripts to package.json
+    status: pending
+  - id: b21d77c2-9fcd-41f6-9609-d1ff81eb3405
+    content: Create .dev.vars.example template file for local environment variable reference (gitignored)
+    status: pending
+---
+
 # Cloudflare Workers Deployment Setup
 
 ## Overview
@@ -75,12 +98,3 @@ Local environment variables template (gitignored):
 - Consider using connection pooling service if direct connections cause issues
 - Static assets will be served from Cloudflare's CDN
 - File uploads in `/public/uploads` may need separate storage solution
-
-### To-dos
-
-- [ ] Update next.config.ts to include OpenNext.js Cloudflare adapter wrapper and configuration
-- [ ] Update prisma/schema.prisma generator configuration for edge runtime compatibility
-- [ ] Modify src/lib/db.ts to work with Cloudflare Workers edge runtime (remove query logging, ensure singleton)
-- [ ] Create wrangler.toml with Cloudflare Workers configuration, account settings, and environment variable placeholders
-- [ ] Add build:cloudflare, deploy:cloudflare, and preview:cloudflare scripts to package.json
-- [ ] Create .dev.vars.example template file for local environment variable reference (gitignored)
