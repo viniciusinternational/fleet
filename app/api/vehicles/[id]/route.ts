@@ -77,6 +77,7 @@ export async function PUT(
       status: String(vehiclePayload.status ?? '').toUpperCase(),
       currentLocationId: String(vehiclePayload.currentLocationId ?? '').trim(),
       ownerId: String(vehiclePayload.ownerId ?? '').trim(),
+      sourceId: vehiclePayload.sourceId ? String(vehiclePayload.sourceId).trim() : undefined,
       customsStatus: String(vehiclePayload.customsStatus ?? '').toUpperCase(),
       importDuty: Number(vehiclePayload.importDuty ?? 0),
       customsNotes: vehiclePayload.customsNotes !== undefined ? String(vehiclePayload.customsNotes) : undefined,
@@ -109,6 +110,11 @@ export async function PUT(
       owner: {
         connect: { id: validatedData.ownerId },
       },
+      ...(validatedData.sourceId && {
+        source: {
+          connect: { id: validatedData.sourceId },
+        },
+      }),
     };
 
     await VehicleService.updateVehicle(id, vehicleUpdateData);

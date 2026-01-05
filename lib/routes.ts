@@ -116,6 +116,32 @@ export const ROUTE_CONFIGS: RouteConfig[] = [
     description: 'Edit owner page (handles /owners/edit/[id])'
   },
 
+  // Source routes
+  {
+    path: '/sources',
+    requiredPermissions: ['view_sources'],
+    exact: true,
+    description: 'Source list page'
+  },
+  {
+    path: '/sources/add',
+    requiredPermissions: ['add_sources'],
+    exact: true,
+    description: 'Add source page'
+  },
+  {
+    path: '/sources/[id]',
+    requiredPermissions: ['view_sources'],
+    exact: false,
+    description: 'Source detail page'
+  },
+  {
+    path: '/sources/edit',
+    requiredPermissions: ['edit_sources'],
+    exact: false,
+    description: 'Edit source page (handles /sources/edit/[id])'
+  },
+
   // Location routes
   {
     path: '/locations',

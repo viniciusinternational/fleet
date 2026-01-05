@@ -33,7 +33,7 @@ import {
   Wrench
 } from 'lucide-react';
 import { VehicleStatus, LocationType, LocationStatus } from '@/types';
-import type { Vehicle, Owner, Location, VehicleFormData } from '@/types';
+import type { Vehicle, Owner, Location, Source, VehicleFormData } from '@/types';
 
 const AddVehicle: React.FC = () => {
   const router = useRouter();
@@ -43,6 +43,7 @@ const AddVehicle: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [locations, setLocations] = useState<Location[]>([]);
   const [owners, setOwners] = useState<Owner[]>([]);
+  const [sources, setSources] = useState<Source[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submissionStep, setSubmissionStep] = useState<'idle' | 'vehicle' | 'shipping' | 'complete'>('idle');
   const [savedVehicleId, setSavedVehicleId] = useState<string | null>(null);
@@ -53,31 +54,35 @@ const AddVehicle: React.FC = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [locationsResponse, ownersResponse] = await Promise.all([
+        const [locationsResponse, ownersResponse, sourcesResponse] = await Promise.all([
           fetch('/api/locations?limit=1000'),
           fetch('/api/owners?limit=1000'),
+          fetch('/api/sources?limit=1000'),
         ]);
         
-        if (!locationsResponse.ok || !ownersResponse.ok) {
+        if (!locationsResponse.ok || !ownersResponse.ok || !sourcesResponse.ok) {
           throw new Error('Failed to fetch data');
         }
         
-        const [locationsResult, ownersResult] = await Promise.all([
+        const [locationsResult, ownersResult, sourcesResult] = await Promise.all([
           locationsResponse.json(),
           ownersResponse.json(),
+          sourcesResponse.json(),
         ]);
         
         // Locations API returns { locations: [...], total: ... }
         // Owners API returns { success: true, data: { owners: [...], pagination: {...} } }
-        if (locationsResult.locations && ownersResult.success) {
+        // Sources API returns { success: true, data: { sources: [...], pagination: {...} } }
+        if (locationsResult.locations && ownersResult.success && sourcesResult.success) {
           setLocations(locationsResult.locations);
           setOwners(ownersResult.data.owners);
+          setSources(sourcesResult.data.sources);
         } else {
           throw new Error('Failed to load data');
         }
       } catch (error) {
         console.error('Error fetching data:', error);
-        setErrors({ fetch: 'Failed to load locations and owners' });
+        setErrors({ fetch: 'Failed to load locations, owners, and sources' });
       } finally {
         setLoading(false);
       }
@@ -160,6 +165,9 @@ const AddVehicle: React.FC = () => {
       vehicleFormData.append('status', statusMap[formData.status] || formData.status.toUpperCase());
       vehicleFormData.append('currentLocationId', formData.currentLocationId);
       vehicleFormData.append('ownerId', formData.ownerId);
+      if (formData.sourceId) {
+        vehicleFormData.append('sourceId', formData.sourceId);
+      }
       
       // Convert customs status to proper enum format
       const customsStatusMap: Record<string, string> = {
@@ -259,6 +267,9 @@ const AddVehicle: React.FC = () => {
     
     // Owner
     ownerId: '',
+    
+    // Source
+    sourceId: '',
     
     // Shipping Details
     originPort: '',
@@ -819,6 +830,54 @@ const AddVehicle: React.FC = () => {
                                     <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                                       <Globe className="h-3 w-3" />
                                       <span>{selectedOwner.nationality}</span>
+                                    </div>
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            );
+                          })()}
+                        </div>
+
+                        {/* Source Row */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div className="space-y-2">
+                            <Label htmlFor="sourceId">Source</Label>
+                            <Select value={formData.sourceId || ''} onValueChange={(value) => handleInputChange('sourceId', value)}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select source" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {sources.map((source) => (
+                                  <SelectItem key={source.id} value={source.id}>
+                                    {source.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          {/* Source Preview Card */}
+                          {formData.sourceId && (() => {
+                            const selectedSource = sources.find(source => source.id === formData.sourceId);
+                            if (!selectedSource) return null;
+
+                            return (
+                              <Card className="border">
+                                <CardContent className="p-2">
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    <Package className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                                    <span className="font-medium text-xs">{selectedSource.name}</span>
+                                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                      <Mail className="h-3 w-3" />
+                                      <span>{selectedSource.email}</span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                      <Phone className="h-3 w-3" />
+                                      <span>{selectedSource.phone}</span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                      <Globe className="h-3 w-3" />
+                                      <span>{selectedSource.nationality}</span>
                                     </div>
                                   </div>
                                 </CardContent>

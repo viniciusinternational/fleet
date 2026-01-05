@@ -76,6 +76,11 @@ async function main() {
     add_owners: true,
     edit_owners: true,
     delete_owners: true,
+    // Sources
+    view_sources: true,
+    add_sources: true,
+    edit_sources: true,
+    delete_sources: true,
     // Locations
     view_locations: true,
     add_locations: true,

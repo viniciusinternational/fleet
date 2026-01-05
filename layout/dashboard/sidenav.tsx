@@ -40,7 +40,8 @@ import {
   PieChart,
   LineChart,
   AreaChart,
-  Bot
+  Bot,
+  Package
 } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -97,7 +98,8 @@ const iconMap = {
   PieChart,
   LineChart,
   AreaChart,
-  Bot
+  Bot,
+  Package
 };
 
 interface DashboardSidebarProps {
@@ -156,7 +158,7 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ user }) => {
     const groups = {
       overview: items.filter(item => ['dashboard'].includes(item.id)),
       analytics: items.filter(item => ['analytics', 'reports'].includes(item.id)),
-      operations: items.filter(item => ['vehicles', 'locations', 'owners', 'delivery', 'tracking'].includes(item.id)),
+      operations: items.filter(item => ['vehicles', 'locations', 'owners', 'sources', 'delivery', 'tracking'].includes(item.id)),
       management: items.filter(item => ['users'].includes(item.id)),
       tools: items.filter(item => ['chatbot'].includes(item.id))
     };

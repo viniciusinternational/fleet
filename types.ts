@@ -19,6 +19,11 @@ export type PermissionKey =
   | 'add_owners'
   | 'edit_owners'
   | 'delete_owners'
+  // Sources
+  | 'view_sources'
+  | 'add_sources'
+  | 'edit_sources'
+  | 'delete_sources'
   // Locations
   | 'view_locations'
   | 'add_locations'
@@ -158,6 +163,16 @@ export interface Owner {
   idNumber: string;
 }
 
+export interface Source {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
+  nationality: string;
+  idNumber: string;
+}
+
 export interface TrackingEvent {
   id: string;
   timestamp: Date;
@@ -255,6 +270,9 @@ export interface VehicleFormData {
   
   // Owner
   ownerId: string;
+  
+  
+  sourceId?: string;
   
   // Shipping Details
   originPort: string;

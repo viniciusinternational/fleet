@@ -30,6 +30,10 @@ const permissionGroups = [
     permissions: ['view_owners', 'add_owners', 'edit_owners', 'delete_owners'] as PermissionKey[],
   },
   {
+    label: 'Sources',
+    permissions: ['view_sources', 'add_sources', 'edit_sources', 'delete_sources'] as PermissionKey[],
+  },
+  {
     label: 'Locations',
     permissions: ['view_locations', 'add_locations', 'edit_locations', 'delete_locations'] as PermissionKey[],
   },

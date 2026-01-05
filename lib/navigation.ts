@@ -42,6 +42,16 @@ export const navigationConfig: NavigationItem[] = [
     description: 'Manage vehicle owners and their information'
   },
 
+  // Sources
+  {
+    id: 'sources',
+    label: 'Source Management',
+    icon: 'Package',
+    href: '/sources',
+    requiredPermission: 'view_sources',
+    description: 'Manage vehicle sources (original owners)'
+  },
+
   // Locations
   {
     id: 'locations',

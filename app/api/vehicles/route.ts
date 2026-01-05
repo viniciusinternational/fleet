@@ -22,6 +22,7 @@ export const createVehicleSchema = z.object({
   status: z.enum(['ORDERED', 'IN_TRANSIT', 'CLEARING_CUSTOMS', 'AT_PORT', 'IN_LOCAL_DELIVERY', 'DELIVERED']),
   currentLocationId: z.string().min(1, 'Current location is required'),
   ownerId: z.string().min(1, 'Owner is required'),
+  sourceId: z.string().optional(),
   customsStatus: z.enum(['PENDING', 'IN_PROGRESS', 'CLEARED', 'HELD']),
   importDuty: z.number().min(0),
   customsNotes: z.string().optional(),
@@ -82,6 +83,7 @@ export async function POST(request: NextRequest) {
       status: String(formData.get('status') ?? '').toUpperCase(),
       currentLocationId: String(formData.get('currentLocationId') ?? '').trim(),
       ownerId: String(formData.get('ownerId') ?? '').trim(),
+      sourceId: formData.get('sourceId') ? String(formData.get('sourceId')).trim() : undefined,
       customsStatus: String(formData.get('customsStatus') ?? '').toUpperCase(),
       importDuty: Number(formData.get('importDuty') ?? 0),
       customsNotes: formData.get('customsNotes') ? String(formData.get('customsNotes')) : undefined,
@@ -102,11 +104,27 @@ export async function POST(request: NextRequest) {
     }
 
     // Create the vehicle first (without images)
-    const newVehicle = await VehicleService.createVehicle({
-      ...validatedData,
+    const { currentLocationId, ownerId, sourceId, ...restValidatedData } = validatedData;
+    const vehicleCreateData: any = {
+      ...restValidatedData,
       orderDate: new Date(validatedData.orderDate),
       estimatedDelivery: new Date(validatedData.estimatedDelivery),
-    });
+      currentLocation: {
+        connect: { id: currentLocationId },
+      },
+      owner: {
+        connect: { id: ownerId },
+      },
+    };
+    
+    // Only add source connection if sourceId is provided
+    if (sourceId) {
+      vehicleCreateData.source = {
+        connect: { id: sourceId },
+      };
+    }
+    
+    const newVehicle = await VehicleService.createVehicle(vehicleCreateData);
 
     // Process and upload vehicle images to S3
     const imageFiles = formData.getAll('images') as File[];
