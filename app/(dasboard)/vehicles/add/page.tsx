@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Stepper } from '@/components/ui/stepper';
+import { Badge } from '@/components/ui/badge';
 import { 
   Car, 
   MapPin, 
@@ -20,9 +21,18 @@ import {
   ArrowRight,
   CheckCircle2,
   CheckCircle,
-  Upload
+  Upload,
+  User,
+  Mail,
+  Phone,
+  Globe,
+  Warehouse,
+  Truck,
+  Package,
+  AlertTriangle,
+  Wrench
 } from 'lucide-react';
-import { VehicleStatus, LocationType } from '@/types';
+import { VehicleStatus, LocationType, LocationStatus } from '@/types';
 import type { Vehicle, Owner, Location, VehicleFormData } from '@/types';
 
 const AddVehicle: React.FC = () => {
@@ -371,7 +381,7 @@ const AddVehicle: React.FC = () => {
       
       // Redirect to vehicles list after 2 seconds
       setTimeout(() => {
-        router.push('/admin/vehicles');
+        router.push('/vehicles');
       }, 2000);
 
     } catch (error) {
@@ -644,36 +654,177 @@ const AddVehicle: React.FC = () => {
 
                     <div>
                       <h3 className="text-lg font-semibold mb-4">Location and Owner</h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-2">
-                          <Label htmlFor="currentLocationId">Current Location *</Label>
-                          <Select value={formData.currentLocationId} onValueChange={(value) => handleInputChange('currentLocationId', value)}>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select location" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {locations.map((location) => (
-                                <SelectItem key={location.id} value={location.id}>
-                                  {location.name} - {(location as any).city || 'Unknown'}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                      <div className="space-y-6">
+                        {/* Location Row */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div className="space-y-2">
+                            <Label htmlFor="currentLocationId">Current Location *</Label>
+                            <Select value={formData.currentLocationId} onValueChange={(value) => handleInputChange('currentLocationId', value)}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select location" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {locations.map((location) => (
+                                  <SelectItem key={location.id} value={location.id}>
+                                    {location.name} - {(location as any).city || 'Unknown'}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          {/* Location Preview Card */}
+                          {formData.currentLocationId && (() => {
+                            const selectedLocation = locations.find(loc => loc.id === formData.currentLocationId);
+                            if (!selectedLocation) return null;
+
+                            const getLocationAddress = (location: Location) => {
+                              if (location.address) {
+                                return {
+                                  city: location.address.city || '',
+                                  country: location.address.country || ''
+                                };
+                              }
+                              return {
+                                city: (location as any).city || '',
+                                country: (location as any).country || ''
+                              };
+                            };
+
+                            const getTypeIcon = (type: LocationType) => {
+                              switch (type) {
+                                case 'Port':
+                                  return <Ship className="h-3 w-3" />;
+                                case 'Warehouse':
+                                  return <Warehouse className="h-3 w-3" />;
+                                case 'Customs Office':
+                                  return <Building className="h-3 w-3" />;
+                                case 'Dealership':
+                                  return <Truck className="h-3 w-3" />;
+                                case 'Delivery Point':
+                                  return <Package className="h-3 w-3" />;
+                                default:
+                                  return <MapPin className="h-3 w-3" />;
+                              }
+                            };
+
+                            const getTypeColor = (type: LocationType) => {
+                              switch (type) {
+                                case 'Port':
+                                  return 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-700';
+                                case 'Warehouse':
+                                  return 'bg-green-50 text-green-700 border-green-200 dark:bg-green-950 dark:text-green-300 dark:border-green-700';
+                                case 'Customs Office':
+                                  return 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950 dark:text-purple-300 dark:border-purple-700';
+                                case 'Dealership':
+                                  return 'bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-950 dark:text-orange-300 dark:border-orange-700';
+                                case 'Delivery Point':
+                                  return 'bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-950 dark:text-gray-300 dark:border-gray-700';
+                                default:
+                                  return 'bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-950 dark:text-gray-300 dark:border-gray-700';
+                              }
+                            };
+
+                            const getStatusColor = (status: LocationStatus) => {
+                              switch (status) {
+                                case 'Operational':
+                                  return 'bg-green-100 text-green-700 border-green-200 dark:bg-green-950 dark:text-green-300 dark:border-green-700';
+                                case 'Temporarily Closed':
+                                  return 'bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-950 dark:text-yellow-300 dark:border-yellow-700';
+                                case 'Under Maintenance':
+                                  return 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-700';
+                                default:
+                                  return 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-950 dark:text-gray-300 dark:border-gray-700';
+                              }
+                            };
+
+                            const getStatusIcon = (status: LocationStatus) => {
+                              switch (status) {
+                                case 'Operational':
+                                  return <CheckCircle className="h-3 w-3" />;
+                                case 'Temporarily Closed':
+                                  return <AlertTriangle className="h-3 w-3" />;
+                                case 'Under Maintenance':
+                                  return <Wrench className="h-3 w-3" />;
+                                default:
+                                  return <MapPin className="h-3 w-3" />;
+                              }
+                            };
+
+                            const address = getLocationAddress(selectedLocation);
+                            
+                            return (
+                              <Card className="border">
+                                <CardContent className="p-2">
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    <MapPin className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                                    <span className="font-medium text-xs">{selectedLocation.name}</span>
+                                    <Badge variant="outline" className={`${getTypeColor(selectedLocation.type)} text-xs px-1.5 py-0.5`}>
+                                      {getTypeIcon(selectedLocation.type)}
+                                      <span className="ml-1">{selectedLocation.type}</span>
+                                    </Badge>
+                                    <Badge variant="outline" className={`${getStatusColor(selectedLocation.status)} text-xs px-1.5 py-0.5`}>
+                                      {getStatusIcon(selectedLocation.status)}
+                                      <span className="ml-1">{selectedLocation.status}</span>
+                                    </Badge>
+                                    {address.city && (
+                                      <span className="text-xs text-muted-foreground">
+                                        {address.city}{address.country && `, ${address.country}`}
+                                      </span>
+                                    )}
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            );
+                          })()}
                         </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="ownerId">Owner *</Label>
-                          <Select value={formData.ownerId} onValueChange={(value) => handleInputChange('ownerId', value)}>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select owner" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {owners.map((owner) => (
-                                <SelectItem key={owner.id} value={owner.id}>
-                                  {owner.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+
+                        {/* Owner Row */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div className="space-y-2">
+                            <Label htmlFor="ownerId">Owner/Client *</Label>
+                            <Select value={formData.ownerId} onValueChange={(value) => handleInputChange('ownerId', value)}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select owner" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {owners.map((owner) => (
+                                  <SelectItem key={owner.id} value={owner.id}>
+                                    {owner.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          {/* Owner Preview Card */}
+                          {formData.ownerId && (() => {
+                            const selectedOwner = owners.find(owner => owner.id === formData.ownerId);
+                            if (!selectedOwner) return null;
+
+                            return (
+                              <Card className="border">
+                                <CardContent className="p-2">
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    <User className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                                    <span className="font-medium text-xs">{selectedOwner.name}</span>
+                                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                      <Mail className="h-3 w-3" />
+                                      <span>{selectedOwner.email}</span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                      <Phone className="h-3 w-3" />
+                                      <span>{selectedOwner.phone}</span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                      <Globe className="h-3 w-3" />
+                                      <span>{selectedOwner.nationality}</span>
+                                    </div>
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            );
+                          })()}
                         </div>
                       </div>
                     </div>
@@ -1010,7 +1161,7 @@ const AddVehicle: React.FC = () => {
             <Button
               type="button"
               variant="outline"
-              onClick={() => router.push('/admin/vehicles')}
+              onClick={() => router.push('/vehicles')}
             >
               Cancel
             </Button>

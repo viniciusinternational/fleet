@@ -12,7 +12,7 @@ import { OwnerService } from '@/lib/services/owner';
 
 async function redirectToAddOwner() {
   'use server';
-  redirect('/admin/owners/add');
+  redirect('/owners/add');
 }
 
 interface OwnerPageProps {

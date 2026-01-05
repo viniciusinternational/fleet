@@ -7,12 +7,12 @@ const prisma = new PrismaClient();
 
 // Validation schema for shipping details
 const shippingDetailsSchema = z.object({
-  originPort: z.string().min(1, 'Origin port is required'),
-  destinationPort: z.string().min(1, 'Destination port is required'),
-  shippingCompany: z.string().min(1, 'Shipping company is required'),
+  originPort: z.string().optional(),
+  destinationPort: z.string().optional(),
+  shippingCompany: z.string().optional(),
   vesselName: z.string().optional(),
   containerNumber: z.string().optional(),
-  bookingNumber: z.string().min(1, 'Booking number is required'),
+  bookingNumber: z.string().optional(),
   departureDate: z.string().optional(),
   expectedArrivalDate: z.string().optional(),
   documents: z.array(z.object({
@@ -144,16 +144,17 @@ export async function POST(
     }
 
     // Create shipping details
+    // Use empty strings for required fields if undefined (Prisma schema requires non-null)
     const shippingDetails = await prisma.shippingDetails.create({
       data: {
         vehicleId: vehicleId,
         vehicle: { connect: { id: vehicleId } },
-        originPort: validatedData.originPort,
-        destinationPort: validatedData.destinationPort,
-        shippingCompany: validatedData.shippingCompany,
-        vesselName: validatedData.vesselName,
-        containerNumber: validatedData.containerNumber,
-        bookingNumber: validatedData.bookingNumber,
+        originPort: validatedData.originPort || '',
+        destinationPort: validatedData.destinationPort || '',
+        shippingCompany: validatedData.shippingCompany || '',
+        vesselName: validatedData.vesselName || null,
+        containerNumber: validatedData.containerNumber || null,
+        bookingNumber: validatedData.bookingNumber || '',
         departureDate: validatedData.departureDate ? new Date(validatedData.departureDate + 'T00:00:00.000Z') : null,
         expectedArrivalDate: validatedData.expectedArrivalDate ? new Date(validatedData.expectedArrivalDate + 'T00:00:00.000Z') : null,
         documents: validatedData.documents || [],
@@ -208,15 +209,21 @@ export async function PUT(
     const formData = await request.formData();
     
     // Extract shipping details from FormData
+    // Convert empty strings to undefined for optional fields
+    const getValueOrUndefined = (value: FormDataEntryValue | null): string | undefined => {
+      const str = value as string;
+      return str && str.trim() ? str : undefined;
+    };
+
     const shippingData = {
-      originPort: formData.get('originPort') as string,
-      destinationPort: formData.get('destinationPort') as string,
-      shippingCompany: formData.get('shippingCompany') as string,
-      vesselName: formData.get('vesselName') as string || undefined,
-      containerNumber: formData.get('containerNumber') as string || undefined,
-      bookingNumber: formData.get('bookingNumber') as string,
-      departureDate: formData.get('departureDate') as string || undefined,
-      expectedArrivalDate: formData.get('expectedArrivalDate') as string || undefined,
+      originPort: getValueOrUndefined(formData.get('originPort')),
+      destinationPort: getValueOrUndefined(formData.get('destinationPort')),
+      shippingCompany: getValueOrUndefined(formData.get('shippingCompany')),
+      vesselName: getValueOrUndefined(formData.get('vesselName')),
+      containerNumber: getValueOrUndefined(formData.get('containerNumber')),
+      bookingNumber: getValueOrUndefined(formData.get('bookingNumber')),
+      departureDate: getValueOrUndefined(formData.get('departureDate')),
+      expectedArrivalDate: getValueOrUndefined(formData.get('expectedArrivalDate')),
     };
     
     // Handle shipping documents - upload to S3
@@ -296,15 +303,16 @@ export async function PUT(
     }
 
     // Update shipping details
+    // Use empty strings for required fields if undefined (Prisma schema requires non-null)
     const updatedShippingDetails = await prisma.shippingDetails.update({
       where: { vehicleId },
       data: {
-        originPort: validatedData.originPort,
-        destinationPort: validatedData.destinationPort,
-        shippingCompany: validatedData.shippingCompany,
-        vesselName: validatedData.vesselName,
-        containerNumber: validatedData.containerNumber,
-        bookingNumber: validatedData.bookingNumber,
+        originPort: validatedData.originPort || '',
+        destinationPort: validatedData.destinationPort || '',
+        shippingCompany: validatedData.shippingCompany || '',
+        vesselName: validatedData.vesselName || null,
+        containerNumber: validatedData.containerNumber || null,
+        bookingNumber: validatedData.bookingNumber || '',
         departureDate: validatedData.departureDate ? new Date(validatedData.departureDate + 'T00:00:00.000Z') : null,
         expectedArrivalDate: validatedData.expectedArrivalDate ? new Date(validatedData.expectedArrivalDate + 'T00:00:00.000Z') : null,
         documents: validatedData.documents || [],
