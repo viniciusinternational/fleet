@@ -121,6 +121,7 @@ export interface Vehicle {
   };
 
   owner: Owner;
+  source?: Source;
   trackingHistory: TrackingEvent[];
   notes: string[];
   shippingDetails : shippingDetails;

@@ -464,7 +464,7 @@ const VehicleDetails: React.FC<VehicleDetailsProps> = ({
                       <Button 
                         variant="outline" 
                         size="sm" 
-                        onClick={() => router.push(`/admin/vehicles/${vehicleId}/edit/basic`)}
+                        onClick={() => router.push(`/vehicles/${vehicleId}/edit/basic`)}
                       >
                           <Edit className="h-4 w-4 mr-2" />
                         Edit Basic Info
@@ -549,6 +549,44 @@ const VehicleDetails: React.FC<VehicleDetailsProps> = ({
                         <p className="text-sm">{vehicle.owner.nationality}</p>
                       </div>
                     </div>
+
+                    {/* Source Information Section */}
+                    {vehicle.source && (
+                      <>
+                        <div className="border-t pt-4 mt-4">
+                          <div className="flex items-center gap-2 mb-3">
+                            <Package className="h-4 w-4 text-muted-foreground" />
+                            <label className="text-sm font-medium text-muted-foreground">Source Information</label>
+                          </div>
+                          <div className="space-y-3">
+                            <div>
+                              <label className="text-sm font-medium text-muted-foreground">Name</label>
+                              <p className="text-sm">{vehicle.source.name}</p>
+                            </div>
+                            <div>
+                              <label className="text-sm font-medium text-muted-foreground">Email</label>
+                              <p className="text-sm">{vehicle.source.email}</p>
+                            </div>
+                            <div>
+                              <label className="text-sm font-medium text-muted-foreground">Phone</label>
+                              <p className="text-sm">{vehicle.source.phone}</p>
+                            </div>
+                            <div>
+                              <label className="text-sm font-medium text-muted-foreground">Nationality</label>
+                              <p className="text-sm">{vehicle.source.nationality}</p>
+                            </div>
+                            <div>
+                              <label className="text-sm font-medium text-muted-foreground">Address</label>
+                              <p className="text-sm">{vehicle.source.address}</p>
+                            </div>
+                            <div>
+                              <label className="text-sm font-medium text-muted-foreground">ID Number</label>
+                              <p className="text-sm font-mono">{vehicle.source.idNumber}</p>
+                            </div>
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </CardContent>
                 </Card>
 

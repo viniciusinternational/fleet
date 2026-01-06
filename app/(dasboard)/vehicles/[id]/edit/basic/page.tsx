@@ -17,10 +17,16 @@ import {
   ArrowLeft,
   Save,
   Loader2,
-  Upload
+  Upload,
+  Package,
+  Mail,
+  Phone,
+  Globe,
+  User
 } from 'lucide-react';
 import { VehicleStatus, LocationType } from '@/types';
-import type { Vehicle, Owner, Location } from '@/types';
+import type { Vehicle, Owner, Location, Source } from '@/types';
+import { Badge } from '@/components/ui/badge';
 
 const EditBasicInfo: React.FC = () => {
   const router = useRouter();
@@ -32,6 +38,7 @@ const EditBasicInfo: React.FC = () => {
   const [vehicle, setVehicle] = useState<Vehicle | null>(null);
   const [locations, setLocations] = useState<Location[]>([]);
   const [owners, setOwners] = useState<Owner[]>([]);
+  const [sources, setSources] = useState<Source[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [success, setSuccess] = useState<string | null>(null);
 
@@ -53,7 +60,8 @@ const EditBasicInfo: React.FC = () => {
     estimatedDelivery: '',
     status: 'ORDERED' as VehicleStatus,
     currentLocationId: '',
-    ownerId: ''
+    ownerId: '',
+    sourceId: ''
   });
 
   // Image state
@@ -65,20 +73,22 @@ const EditBasicInfo: React.FC = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [vehicleResponse, locationsResponse, ownersResponse] = await Promise.all([
+        const [vehicleResponse, locationsResponse, ownersResponse, sourcesResponse] = await Promise.all([
           fetch(`/api/vehicles/${vehicleId}`),
           fetch('/api/locations?limit=1000'),
           fetch('/api/owners?limit=1000'),
+          fetch('/api/sources?limit=1000'),
         ]);
         
-        if (!vehicleResponse.ok || !locationsResponse.ok || !ownersResponse.ok) {
+        if (!vehicleResponse.ok || !locationsResponse.ok || !ownersResponse.ok || !sourcesResponse.ok) {
           throw new Error('Failed to fetch data');
         }
         
-        const [vehicleResult, locationsResult, ownersResult] = await Promise.all([
+        const [vehicleResult, locationsResult, ownersResult, sourcesResult] = await Promise.all([
           vehicleResponse.json(),
           locationsResponse.json(),
           ownersResponse.json(),
+          sourcesResponse.json(),
         ]);
         
         // Set vehicle data
@@ -101,7 +111,8 @@ const EditBasicInfo: React.FC = () => {
             estimatedDelivery: vehicleResult.estimatedDelivery ? new Date(vehicleResult.estimatedDelivery).toISOString().split('T')[0] : '',
             status: vehicleResult.status || 'ORDERED',
             currentLocationId: vehicleResult.currentLocationId || '',
-            ownerId: vehicleResult.ownerId || ''
+            ownerId: vehicleResult.ownerId || '',
+            sourceId: vehicleResult.sourceId || ''
           });
           
           // Set existing images
@@ -110,12 +121,13 @@ const EditBasicInfo: React.FC = () => {
           }
         }
         
-        // Set locations and owners
-        if (locationsResult.locations && ownersResult.success) {
+        // Set locations, owners, and sources
+        if (locationsResult.locations && ownersResult.success && sourcesResult.success) {
           setLocations(locationsResult.locations);
           setOwners(ownersResult.data.owners);
+          setSources(sourcesResult.data.sources);
         } else {
-          throw new Error('Failed to load locations and owners');
+          throw new Error('Failed to load locations, owners, and sources');
         }
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -183,6 +195,7 @@ const EditBasicInfo: React.FC = () => {
       formDataToSubmit.append('status', formData.status);
       formDataToSubmit.append('currentLocationId', formData.currentLocationId);
       formDataToSubmit.append('ownerId', formData.ownerId);
+      formDataToSubmit.append('sourceId', formData.sourceId || '');
       
       // Add new images
       images.forEach(file => {
@@ -203,7 +216,7 @@ const EditBasicInfo: React.FC = () => {
       
       // Redirect back to vehicle view after a short delay
       setTimeout(() => {
-        router.push(`/admin/vehicles/${vehicleId}`);
+        router.push(`/vehicles/${vehicleId}`);
       }, 1500);
 
     } catch (error) {
@@ -245,7 +258,7 @@ const EditBasicInfo: React.FC = () => {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => router.push(`/admin/vehicles/${vehicleId}`)}
+            onClick={() => router.push(`/vehicles/${vehicleId}`)}
             className="flex items-center space-x-2"
           >
             <ArrowLeft className="h-4 w-4" />
@@ -520,7 +533,7 @@ const EditBasicInfo: React.FC = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Current Location */}
               <div className="space-y-2">
                 <Label htmlFor="currentLocationId">Current Location *</Label>
@@ -555,6 +568,23 @@ const EditBasicInfo: React.FC = () => {
                   </SelectContent>
                 </Select>
                 {errors.ownerId && <p className="text-sm text-red-500">{errors.ownerId}</p>}
+              </div>
+
+              {/* Source */}
+              <div className="space-y-2">
+                <Label htmlFor="sourceId">Source</Label>
+                <Select value={formData.sourceId || ''} onValueChange={(value) => handleInputChange('sourceId', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select source" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {sources.map((source) => (
+                      <SelectItem key={source.id} value={source.id}>
+                        {source.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </CardContent>
@@ -662,7 +692,7 @@ const EditBasicInfo: React.FC = () => {
           <Button
             type="button"
             variant="outline"
-            onClick={() => router.push(`/admin/vehicles/${vehicleId}`)}
+            onClick={() => router.push(`/vehicles/${vehicleId}`)}
             disabled={saving}
           >
             Cancel

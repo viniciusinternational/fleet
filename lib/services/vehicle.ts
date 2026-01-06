@@ -140,6 +140,7 @@ export class VehicleService {
         where: { id },
         include: {
           owner: true,
+          source: true,
           currentLocation: true,
           shippingDetails: true,
           vehicleImages: {
