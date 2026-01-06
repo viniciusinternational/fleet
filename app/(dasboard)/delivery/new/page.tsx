@@ -41,7 +41,11 @@ export default function NewDeliveryNotePage() {
           if (vehiclesResult.success && vehiclesResult.data) {
             // Handle both response formats
             const vehiclesList = vehiclesResult.data.vehicles || vehiclesResult.data;
-            setVehicles(vehiclesList);
+            // Filter to only include vehicles with valid owners
+            const vehiclesWithOwners = vehiclesList.filter((vehicle: Vehicle) => 
+              vehicle.owner && vehicle.owner.id
+            );
+            setVehicles(vehiclesWithOwners);
           }
         }
 

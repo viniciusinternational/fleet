@@ -262,6 +262,7 @@ export class UserService {
           avatar: updateData.avatar,
           password: updateData.password,
           lastLogin: updateData.lastLogin ? new Date(updateData.lastLogin) : undefined,
+          permissions: updateData.permissions ? updateData.permissions : undefined,
         },
         include: {
           location: true,

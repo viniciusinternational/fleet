@@ -111,7 +111,7 @@ export default function DeliveryNotesListPage() {
             View and manage all delivery notes
           </p>
         </div>
-        <Button onClick={() => router.push('/admin/delivery/new')}>
+        <Button onClick={() => router.push('/delivery/new')}>
           <Plus className="h-4 w-4 mr-2" />
           New Delivery Note
         </Button>
@@ -128,7 +128,7 @@ export default function DeliveryNotesListPage() {
             <p className="text-muted-foreground text-center mb-4">
               Get started by creating your first delivery note.
             </p>
-            <Button onClick={() => router.push('/admin/delivery/new')}>
+            <Button onClick={() => router.push('/delivery/new')}>
               <Plus className="h-4 w-4 mr-2" />
               Create Delivery Note
             </Button>
@@ -159,7 +159,7 @@ export default function DeliveryNotesListPage() {
                     <TableRow 
                       key={note.id}
                       className="cursor-pointer hover:bg-muted/50"
-                      onClick={() => router.push(`/admin/delivery/${note.id}`)}
+                      onClick={() => router.push(`/delivery/${note.id}`)}
                     >
                       <TableCell>
                         <div className="flex items-center gap-2">

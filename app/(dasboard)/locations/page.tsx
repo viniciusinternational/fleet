@@ -13,7 +13,7 @@ import { Location } from '@/types';
 
 async function redirectToAddLocation() {
   'use server';
-  redirect('/admin/locations/add');
+  redirect('/locations/add');
 }
 
 interface LocationPageProps {

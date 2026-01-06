@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { VehicleService } from '@/lib/services/vehicle';
+import { uploadVehicleImage } from '@/lib/s3';
 import { Role } from '@/types';
 import { createVehicleSchema } from '../route';
 
@@ -46,41 +47,49 @@ export async function PUT(
     const userRole = Role.ADMIN; // This should come from your auth system
     const userLocationId = undefined; // This should come from your auth system
     
-    const body = await request.json();
+    // Handle FormData (since images are included)
+    const formData = await request.formData();
 
-    const {
-      images,
-      ...vehiclePayload
-    } = body ?? {};
+    // Get existing vehicle to preserve customs data if not provided
+    const existingVehicle = await VehicleService.getVehicleById(id);
+    if (!existingVehicle) {
+      return NextResponse.json(
+        { error: 'Vehicle not found' },
+        { status: 404 }
+      );
+    }
 
-    const normalizedVehicleData = {
-      vin: String(vehiclePayload.vin ?? '').trim(),
-      make: String(vehiclePayload.make ?? '').trim(),
-      model: String(vehiclePayload.model ?? '').trim(),
-      year: Number(vehiclePayload.year),
-      color: String(vehiclePayload.color ?? '').trim(),
-      trim: String(vehiclePayload.trim ?? '').trim(),
-      engineType: String(vehiclePayload.engineType ?? '').trim(),
-      fuelType: String(vehiclePayload.fuelType ?? '').toUpperCase(),
-      weightKg: Number(vehiclePayload.weightKg ?? 0),
-      lengthMm: vehiclePayload.lengthMm !== undefined && vehiclePayload.lengthMm !== null
-        ? Number(vehiclePayload.lengthMm)
-        : undefined,
-      widthMm: vehiclePayload.widthMm !== undefined && vehiclePayload.widthMm !== null
-        ? Number(vehiclePayload.widthMm)
-        : undefined,
-      heightMm: vehiclePayload.heightMm !== undefined && vehiclePayload.heightMm !== null
-        ? Number(vehiclePayload.heightMm)
-        : undefined,
-      orderDate: String(vehiclePayload.orderDate ?? ''),
-      estimatedDelivery: String(vehiclePayload.estimatedDelivery ?? ''),
-      status: String(vehiclePayload.status ?? '').toUpperCase(),
-      currentLocationId: String(vehiclePayload.currentLocationId ?? '').trim(),
-      ownerId: String(vehiclePayload.ownerId ?? '').trim(),
-      sourceId: vehiclePayload.sourceId ? String(vehiclePayload.sourceId).trim() : undefined,
-      customsStatus: String(vehiclePayload.customsStatus ?? '').toUpperCase(),
-      importDuty: Number(vehiclePayload.importDuty ?? 0),
-      customsNotes: vehiclePayload.customsNotes !== undefined ? String(vehiclePayload.customsNotes) : undefined,
+    // Extract vehicle data from FormData
+    const customsStatusValue = formData.get('customsStatus');
+    const importDutyValue = formData.get('importDuty');
+    
+    const normalizedVehicleData: any = {
+      vin: String(formData.get('vin') ?? '').trim(),
+      make: String(formData.get('make') ?? '').trim(),
+      model: String(formData.get('model') ?? '').trim(),
+      year: Number(formData.get('year')),
+      color: String(formData.get('color') ?? '').trim(),
+      trim: String(formData.get('trim') ?? '').trim(),
+      engineType: String(formData.get('engineType') ?? '').trim(),
+      fuelType: String(formData.get('fuelType') ?? '').toUpperCase(),
+      weightKg: Number(formData.get('weightKg') ?? 0),
+      lengthMm: formData.get('lengthMm') ? Number(formData.get('lengthMm')) : undefined,
+      widthMm: formData.get('widthMm') ? Number(formData.get('widthMm')) : undefined,
+      heightMm: formData.get('heightMm') ? Number(formData.get('heightMm')) : undefined,
+      orderDate: String(formData.get('orderDate') ?? ''),
+      estimatedDelivery: String(formData.get('estimatedDelivery') ?? ''),
+      status: String(formData.get('status') ?? '').toUpperCase(),
+      currentLocationId: String(formData.get('currentLocationId') ?? '').trim(),
+      ownerId: String(formData.get('ownerId') ?? '').trim(),
+      sourceId: formData.get('sourceId') ? String(formData.get('sourceId')).trim() : undefined,
+      // Use provided customs data or fallback to existing vehicle data
+      customsStatus: customsStatusValue && String(customsStatusValue).trim() 
+        ? String(customsStatusValue).toUpperCase() 
+        : (existingVehicle as any).customsStatus || 'PENDING',
+      importDuty: importDutyValue !== null && importDutyValue !== undefined && String(importDutyValue).trim()
+        ? Number(importDutyValue)
+        : (existingVehicle as any).importDuty || 0,
+      customsNotes: formData.get('customsNotes') ? String(formData.get('customsNotes')) : (existingVehicle as any).customsNotes || undefined,
     };
 
     const validatedData = createVehicleSchema.parse(normalizedVehicleData);
@@ -119,18 +128,59 @@ export async function PUT(
 
     await VehicleService.updateVehicle(id, vehicleUpdateData);
 
-    if (Array.isArray(images)) {
-      const preparedImages = images
-        .filter((image: any) => image && typeof image.data === 'string' && image.data.length > 0)
-        .map((image: any, index: number) => ({
-          data: image.data,
-          alt: image.alt,
-          caption: image.caption,
-          isPrimary: image.isPrimary ?? index === 0,
-          url: image.url,
-        }));
+    // Process and upload vehicle images to S3
+    const imageFiles = formData.getAll('images') as File[];
+    const uploadedImageKeys: string[] = [];
 
-      await VehicleService.replaceVehicleImages(id, preparedImages);
+    if (imageFiles.length > 0) {
+      try {
+        const preparedImages = [];
+
+        for (let i = 0; i < imageFiles.length; i++) {
+          const file = imageFiles[i];
+          
+          if (file.size > 0) {
+            // Convert file to buffer
+            const bytes = await file.arrayBuffer();
+            const buffer = Buffer.from(bytes);
+
+            // Upload to S3
+            const uploadResult = await uploadVehicleImage(
+              id,
+              buffer,
+              file.name,
+              file.type || 'image/jpeg'
+            );
+
+            uploadedImageKeys.push(uploadResult.path);
+
+            // Prepare image data for database
+            preparedImages.push({
+              url: uploadResult.url,
+              alt: `${validatedData.make} ${validatedData.model}`.trim() || `Vehicle image ${i + 1}`,
+              caption: file.name,
+              isPrimary: i === 0,
+              data: '', // No base64 storage, only S3 URL
+            });
+          }
+        }
+
+        if (preparedImages.length > 0) {
+          await VehicleService.createVehicleImages(id, preparedImages);
+        }
+      } catch (imageError) {
+        // Rollback: Delete uploaded images from S3
+        const { deleteFromS3 } = await import('@/lib/s3');
+        for (const key of uploadedImageKeys) {
+          try {
+            await deleteFromS3(key);
+          } catch (deleteError) {
+            console.error(`Failed to delete image ${key} from S3:`, deleteError);
+          }
+        }
+        console.error('Error uploading vehicle images:', imageError);
+        // Don't throw - allow vehicle update to succeed even if image upload fails
+      }
     }
 
     const updatedVehicle = await VehicleService.getVehicleById(id);

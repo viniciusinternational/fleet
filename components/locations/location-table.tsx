@@ -135,7 +135,7 @@ export function LocationTable({
   };
 
   const handleLocationClick = (locationId: string) => {
-    router.push(`/admin/locations/${locationId}`);
+    router.push(`/locations/${locationId}`);
   };
 
   const openDeleteDialog = (locationId: string) => {

@@ -198,7 +198,7 @@ const LocationDetail: React.FC = () => {
         <div className="text-center">
           <h2 className="text-2xl font-bold text-destructive mb-4">Location Not Found</h2>
           <p className="text-muted-foreground mb-6">The location you're looking for doesn't exist.</p>
-          <Button onClick={() => router.push('/admin/locations')}>
+          <Button onClick={() => router.push('/locations')}>
             Back to Locations
           </Button>
         </div>
@@ -299,7 +299,7 @@ const LocationDetail: React.FC = () => {
         throw new Error(errorData.error || 'Failed to delete location');
       }
 
-      router.push('/admin/locations');
+      router.push('/locations');
     } catch (error) {
       console.error('Failed to delete location:', error);
     }
@@ -367,7 +367,7 @@ const LocationDetail: React.FC = () => {
               <div className="flex items-center gap-3">
                 <Button
                   variant="outline"
-                  onClick={() => router.push(`/admin/locations/edit?id=${location.id}`)}
+                  onClick={() => router.push(`/locations/edit?id=${location.id}`)}
                   className="flex items-center gap-2"
                 >
                   <Edit className="h-4 w-4" />
