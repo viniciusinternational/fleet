@@ -675,7 +675,7 @@ const VehicleDetails: React.FC<VehicleDetailsProps> = ({
                     <Button 
                       variant="outline" 
                       size="sm" 
-                      onClick={() => router.push(`/admin/vehicles/${vehicleId}/edit/shipping`)}
+                      onClick={() => router.push(`/vehicles/${vehicleId}/edit/shipping`)}
                     >
                       <Edit className="h-4 w-4 mr-2" />
                       Edit Shipping

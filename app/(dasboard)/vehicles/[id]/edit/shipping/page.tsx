@@ -182,7 +182,7 @@ const EditShipping: React.FC = () => {
       
       // Redirect back to vehicle view after a short delay
       setTimeout(() => {
-        router.push(`/admin/vehicles/${vehicleId}`);
+        router.push(`/vehicles/${vehicleId}`);
       }, 1500);
 
     } catch (error) {
@@ -224,7 +224,7 @@ const EditShipping: React.FC = () => {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => router.push(`/admin/vehicles/${vehicleId}`)}
+            onClick={() => router.push(`/vehicles/${vehicleId}`)}
             className="flex items-center space-x-2"
           >
             <ArrowLeft className="h-4 w-4" />
@@ -541,7 +541,7 @@ const EditShipping: React.FC = () => {
           <Button
             type="button"
             variant="outline"
-            onClick={() => router.push(`/admin/vehicles/${vehicleId}`)}
+            onClick={() => router.push(`/vehicles/${vehicleId}`)}
             disabled={saving}
           >
             Cancel

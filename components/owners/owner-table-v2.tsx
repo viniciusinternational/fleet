@@ -26,7 +26,7 @@ export function OwnerTableV2({
   const router = useRouter();
 
   const handleRowClick = (owner: Owner) => {
-    router.push(`/admin/owners/${owner.id}`);
+    router.push(`/owners/${owner.id}`);
   };
 
   const columns: TableColumn<Owner>[] = [

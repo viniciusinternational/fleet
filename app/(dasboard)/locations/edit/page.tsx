@@ -226,7 +226,7 @@ const EditLocation: React.FC = () => {
       }
 
       // Navigate back to location detail
-      router.push(`/admin/locations/${id}`);
+      router.push(`/locations/${id}`);
     } catch (error) {
       console.error('Failed to update location:', error);
     } finally {
@@ -235,7 +235,7 @@ const EditLocation: React.FC = () => {
   };
 
   const handleCancel = () => {
-    router.push(`/admin/locations/${id}`);
+    router.push(`/locations/${id}`);
   };
 
   const handleInputChange = (field: keyof FormData, value: string) => {
