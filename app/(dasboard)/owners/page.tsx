@@ -55,13 +55,13 @@ export default async function OwnerManagement({ searchParams }: OwnerPageProps) 
         <div className="mb-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight">Owner Management</h1>
-              <p className="text-muted-foreground mt-2 text-sm sm:text-base lg:text-lg">Manage and monitor all vehicle owners in the system</p>
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight">Clients Management</h1>
+              <p className="text-muted-foreground mt-2 text-sm sm:text-base lg:text-lg">Manage and monitor all vehicle Clients in the system</p>
             </div>
             <form action={redirectToAddOwner}>
               <Button type="submit" className="flex items-center gap-2 w-full sm:w-auto">
                 <Plus className="h-4 w-4" />
-                Add Owner
+                Add Clients
               </Button>
             </form>
           </div>
@@ -71,14 +71,14 @@ export default async function OwnerManagement({ searchParams }: OwnerPageProps) 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-6">
           <div className="text-center p-3 sm:p-4 bg-blue-50 dark:bg-blue-950/50 rounded-lg border border-blue-200 dark:border-blue-700">
             <div className="text-xl sm:text-2xl font-bold text-blue-700 dark:text-blue-300">{stats.overview.totalOwners}</div>
-            <div className="text-xs sm:text-sm text-blue-600 dark:text-blue-400 font-medium">Total Owners</div>
+            <div className="text-xs sm:text-sm text-blue-600 dark:text-blue-400 font-medium">Total Clients</div>
             <div className="text-xs text-blue-500 dark:text-blue-400 mt-1">In the system</div>
           </div>
 
           <div className="text-center p-3 sm:p-4 bg-green-50 dark:bg-green-950/50 rounded-lg border border-green-200 dark:border-green-700">
             <div className="text-xl sm:text-2xl font-bold text-green-700 dark:text-green-300">{stats.overview.ownersWithVehicles}</div>
             <div className="text-xs sm:text-sm text-green-600 dark:text-green-400 font-medium">With Vehicles</div>
-            <div className="text-xs text-green-500 dark:text-green-400 mt-1">Active owners</div>
+            <div className="text-xs text-green-500 dark:text-green-400 mt-1">Active Clients</div>
           </div>
 
           <div className="text-center p-3 sm:p-4 bg-purple-50 dark:bg-purple-950/50 rounded-lg border border-purple-200 dark:border-purple-700">
@@ -108,10 +108,10 @@ export default async function OwnerManagement({ searchParams }: OwnerPageProps) 
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                 <h3 className="text-base sm:text-lg font-semibold flex items-center gap-2">
                   <Users className="h-4 w-4 sm:h-5 sm:w-5" />
-                  All Owners
+                  All Clients
                 </h3>
                 <div className="text-xs sm:text-sm text-muted-foreground">
-                  Showing {owners.length} of {total} owners
+                  Showing {owners.length} of {total} Clients
                 </div>
               </div>
 

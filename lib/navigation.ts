@@ -35,7 +35,7 @@ export const navigationConfig: NavigationItem[] = [
   // Owners
   {
     id: 'owners',
-    label: 'Owner Management',
+    label: 'Clients Management',
     icon: 'UserCheck',
     href: '/owners',
     requiredPermission: 'view_owners',

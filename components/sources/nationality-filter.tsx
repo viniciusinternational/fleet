@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   Select,
@@ -23,9 +23,23 @@ export function NationalityFilter({
   const router = useRouter();
   const searchParams = useSearchParams();
   const [nationality, setNationality] = useState(initialValue);
+  const isInitialMount = useRef(true);
 
   useEffect(() => {
+    // Skip on initial mount to avoid loop
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+
     const params = new URLSearchParams(searchParams.toString());
+    
+    // Only update if nationality value differs from URL param
+    const currentNationality = params.get('nationality') || 'all';
+    if (nationality === currentNationality || 
+        (nationality === 'all' && !params.has('nationality'))) {
+      return; // No change needed
+    }
     
     if (nationality && nationality !== 'all') {
       params.set('nationality', nationality);
@@ -37,7 +51,7 @@ export function NationalityFilter({
     params.set('page', '1');
     
     router.push(`/sources?${params.toString()}`);
-  }, [nationality, router, searchParams]);
+  }, [nationality, router]);
 
   return (
     <div className="space-y-2">

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
@@ -13,10 +13,23 @@ export function SourceSearchInput({ initialValue = '' }: SourceSearchInputProps)
   const router = useRouter();
   const searchParams = useSearchParams();
   const [search, setSearch] = useState(initialValue);
+  const isInitialMount = useRef(true);
 
   useEffect(() => {
+    // Skip on initial mount to avoid loop
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+
     const timer = setTimeout(() => {
       const params = new URLSearchParams(searchParams.toString());
+      
+      // Only update if search value differs from URL param
+      const currentSearch = params.get('search') || '';
+      if (search === currentSearch) {
+        return; // No change needed
+      }
       
       if (search) {
         params.set('search', search);
@@ -31,7 +44,7 @@ export function SourceSearchInput({ initialValue = '' }: SourceSearchInputProps)
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [search, router, searchParams]);
+  }, [search, router]);
 
   return (
     <div className="relative flex-1">
