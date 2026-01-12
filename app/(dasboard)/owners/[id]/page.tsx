@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -20,95 +20,94 @@ import {
 import type { Owner } from '@/types';
 import { DeleteOwnerDialog } from '@/components/owners/delete-owner-dialog';
 
-interface OwnerDetailsPageProps {
-  params: {
-    id: string;
-  };
-}
-
-const OwnerDetailsPage: React.FC<OwnerDetailsPageProps> = ({ params }) => {
+const OwnerDetailsPage: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const [owner, setOwner] = useState<Owner | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
+  // Fetch owner data from API
   useEffect(() => {
     const fetchOwner = async () => {
+      if (!id) return;
+      
       try {
-        const response = await fetch(`/api/owners/${params.id}`);
+        setIsLoading(true);
+        setError(null);
+        
+        const response = await fetch(`/api/owners/${id}`, {
+          cache: 'no-store'
+        });
+        
         if (!response.ok) {
+          if (response.status === 404) {
+            throw new Error('Owner not found');
+          }
           throw new Error('Failed to fetch owner');
         }
-        const result = await response.json();
-        if (result.success) {
-          setOwner(result.data);
-        } else {
-          throw new Error(result.error || 'Failed to fetch owner');
-        }
+        
+        const ownerData = await response.json();
+        setOwner(ownerData);
       } catch (error) {
         console.error('Error fetching owner:', error);
+        setError(error instanceof Error ? error.message : 'Failed to fetch owner');
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
 
     fetchOwner();
-  }, [params.id]);
+  }, [id]);
 
   const handleDelete = async (ownerId: string) => {
+    if (!owner) return;
+    
     try {
       const response = await fetch(`/api/owners/${ownerId}`, {
         method: 'DELETE',
       });
-      
+
       if (!response.ok) {
         throw new Error('Failed to delete owner');
       }
-      
-      const result = await response.json();
-      if (result.success) {
-        router.push('/admin/owners');
-      } else {
-        throw new Error(result.error || 'Failed to delete owner');
-      }
+
+      console.log('Owner deleted:', ownerId);
+      router.push('/admin/owners');
     } catch (error) {
-      console.error('Error deleting owner:', error);
+      console.error('Failed to delete owner:', error);
+      // TODO: Show error toast/notification
     }
   };
 
   const handleEdit = () => {
-    router.push(`/admin/owners/edit/${params.id}`);
+    router.push(`/admin/owners/edit/${id}`);
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
-      <div className="min-h-screen bg-background">
-        <div className="container mx-auto px-6 py-8">
-          <div className="text-center space-y-4">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-            <p className="text-lg text-muted-foreground">Loading owner details...</p>
-          </div>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <h2 className="text-2xl font-bold mb-4">Loading Owner...</h2>
+          <p className="text-muted-foreground">Please wait while we fetch owner details.</p>
         </div>
       </div>
     );
   }
 
-  if (!owner) {
+  if (error || !owner) {
     return (
-      <div className="min-h-screen bg-background">
-        <div className="container mx-auto px-6 py-8">
-          <Card>
-            <CardHeader>
-              <div className="text-center space-y-4">
-                <h1 className="text-2xl font-bold text-destructive">Owner Not Found</h1>
-                <p className="text-muted-foreground">This owner does not exist or has been deleted.</p>
-                <Button onClick={() => router.push('/admin/owners')}>
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Back to Owners
-                </Button>
-              </div>
-            </CardHeader>
-          </Card>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-destructive mb-4">Owner Not Found</h2>
+          <p className="text-muted-foreground mb-6">
+            {error || "The owner you're looking for doesn't exist."}
+          </p>
+          <Button onClick={() => router.push('/admin/owners')}>
+            Back to Owners
+          </Button>
         </div>
       </div>
     );
@@ -153,8 +152,12 @@ const OwnerDetailsPage: React.FC<OwnerDetailsPageProps> = ({ params }) => {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <Button onClick={handleEdit} className="flex items-center gap-2">
-                <Edit className="h-4 w-4" />
+              <Button 
+                variant="outline"
+                onClick={handleEdit}
+                className="flex items-center gap-2"
+              >
+                <Edit className="h-4 w-4 mr-2" />
                 Edit Owner
               </Button>
               <Button 
@@ -162,8 +165,8 @@ const OwnerDetailsPage: React.FC<OwnerDetailsPageProps> = ({ params }) => {
                 onClick={() => setDeleteDialogOpen(true)}
                 className="flex items-center gap-2"
               >
-                <Trash2 className="h-4 w-4" />
-                Delete
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete Owner
               </Button>
             </div>
           </div>

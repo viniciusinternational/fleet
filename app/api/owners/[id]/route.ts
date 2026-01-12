@@ -24,19 +24,16 @@ export async function GET(
     
     if (!owner) {
       return NextResponse.json(
-        { success: false, error: 'Owner not found' },
+        { error: 'Owner not found' },
         { status: 404 }
       );
     }
     
-    return NextResponse.json({
-      success: true,
-      data: owner,
-    });
+    return NextResponse.json(owner);
   } catch (error) {
     console.error('Error fetching owner:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch owner' },
+      { error: error instanceof Error ? error.message : 'Failed to fetch owner' },
       { status: 500 }
     );
   }
@@ -59,7 +56,7 @@ export async function PUT(
     
     if (!existingOwner) {
       return NextResponse.json(
-        { success: false, error: 'Owner not found' },
+        { error: 'Owner not found' },
         { status: 404 }
       );
     }
@@ -70,10 +67,7 @@ export async function PUT(
       
       if (duplicateOwner) {
         return NextResponse.json(
-          { 
-            success: false, 
-            error: 'Owner with this email already exists'
-          },
+          { error: 'Owner with this email already exists' },
           { status: 400 }
         );
       }
@@ -84,21 +78,16 @@ export async function PUT(
     
     if (!updatedOwner) {
       return NextResponse.json(
-        { success: false, error: 'Failed to update owner' },
+        { error: 'Failed to update owner' },
         { status: 500 }
       );
     }
     
-    return NextResponse.json({
-      success: true,
-      data: updatedOwner,
-      message: 'Owner updated successfully',
-    });
+    return NextResponse.json(updatedOwner);
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { 
-          success: false, 
           error: 'Validation failed', 
           details: error.issues 
         },
@@ -108,7 +97,7 @@ export async function PUT(
     
     console.error('Error updating owner:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to update owner' },
+      { error: error instanceof Error ? error.message : 'Failed to update owner' },
       { status: 500 }
     );
   }
@@ -127,7 +116,7 @@ export async function DELETE(
     
     if (!existingOwner) {
       return NextResponse.json(
-        { success: false, error: 'Owner not found' },
+        { error: 'Owner not found' },
         { status: 404 }
       );
     }
@@ -135,10 +124,7 @@ export async function DELETE(
     // Check if owner has vehicles
     if ((existingOwner as any).vehicles && Array.isArray((existingOwner as any).vehicles) && (existingOwner as any).vehicles.length > 0) {
       return NextResponse.json(
-        { 
-          success: false, 
-          error: 'Cannot delete owner with associated vehicles. Please reassign or delete vehicles first.' 
-        },
+        { error: 'Cannot delete owner with associated vehicles. Please reassign or delete vehicles first.' },
         { status: 400 }
       );
     }
@@ -148,19 +134,16 @@ export async function DELETE(
     
     if (!success) {
       return NextResponse.json(
-        { success: false, error: 'Failed to delete owner' },
+        { error: 'Failed to delete owner' },
         { status: 500 }
       );
     }
     
-    return NextResponse.json({
-      success: true,
-      message: 'Owner deleted successfully',
-    });
+    return NextResponse.json({ message: 'Owner deleted successfully' });
   } catch (error) {
     console.error('Error deleting owner:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to delete owner' },
+      { error: error instanceof Error ? error.message : 'Failed to delete owner' },
       { status: 500 }
     );
   }
