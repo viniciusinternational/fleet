@@ -69,10 +69,10 @@ function AuthCallbackPage() {
         setSuccess(true);
         
         // Redirect based on user permissions after a short delay
-        setTimeout(() => {
-          const redirectPath = getRedirectPathForUser(user);
-          router.push(redirectPath);
-        }, 1500);
+        // setTimeout(() => {
+        //   const redirectPath = getRedirectPathForUser(user);
+        //   router.push(redirectPath);
+        // }, 1500);
 
       } catch (err) {
         console.error('Auth callback error:', err);
