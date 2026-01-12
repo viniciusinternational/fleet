@@ -91,8 +91,13 @@ export class VehicleService {
                 id: true,
                 name: true,
                 type: true,
+                street: true,
                 city: true,
+                state: true,
                 country: true,
+                postalCode: true,
+                latitude: true,
+                longitude: true,
               },
             },
             vehicleImages: {
@@ -111,10 +116,24 @@ export class VehicleService {
 
       const totalPages = Math.ceil(total / limit);
       
-      // Transform vehicles to include images array
+      // Transform vehicles to include images array and transform location structure
       const transformedVehicles = vehicles.map(vehicle => ({
         ...vehicle,
         images: vehicle.vehicleImages || [], // Keep as VehicleImage[] objects
+        currentLocation: vehicle.currentLocation ? {
+          ...vehicle.currentLocation,
+          coordinates: {
+            latitude: vehicle.currentLocation.latitude,
+            longitude: vehicle.currentLocation.longitude,
+          },
+          address: {
+            street: vehicle.currentLocation.street,
+            city: vehicle.currentLocation.city,
+            state: vehicle.currentLocation.state || undefined,
+            country: vehicle.currentLocation.country,
+            postalCode: vehicle.currentLocation.postalCode || undefined,
+          },
+        } : null,
       }));
 
       return {
@@ -140,7 +159,6 @@ export class VehicleService {
         where: { id },
         include: {
           owner: true,
-          source: true,
           currentLocation: true,
           shippingDetails: true,
           vehicleImages: {
@@ -208,8 +226,13 @@ export class VehicleService {
               id: true,
               name: true,
               type: true,
+              street: true,
               city: true,
+              state: true,
               country: true,
+              postalCode: true,
+              latitude: true,
+              longitude: true,
             },
           },
           vehicleImages: true, // Include vehicle images

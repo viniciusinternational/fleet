@@ -15,7 +15,6 @@ export async function GET(
     // TODO: Get user role and location from authentication/session
     const userRole = Role.ADMIN; // This should come from your auth system
     const userLocationId = undefined; // This should come from your auth system
-    
     const vehicle = await VehicleService.getVehicleById(id);
 
     if (!vehicle) {

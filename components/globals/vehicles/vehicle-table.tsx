@@ -111,19 +111,22 @@ const VehicleTable: React.FC<VehicleTableProps> = ({
         
         const response = await fetch(`/api/vehicles?${params}`);
         
-        if (!response.ok) {
-          throw new Error('Failed to fetch vehicles');
-        }
-        
         const result = await response.json();
         
-        if (result.success) {
-          setVehicles(result.data.vehicles);
-          setTotalPages(result.data.totalPages);
-          setTotalVehicles(result.data.total);
-        } else {
-          throw new Error(result.error || 'Failed to fetch vehicles');
+        if (!response.ok || !result.success) {
+          const errorMessage = result.error || `Failed to fetch vehicles (${response.status})`;
+          console.error('API Error:', {
+            status: response.status,
+            statusText: response.statusText,
+            error: result.error,
+            details: result.details,
+          });
+          throw new Error(errorMessage);
         }
+        
+        setVehicles(result.data.vehicles);
+        setTotalPages(result.data.totalPages);
+        setTotalVehicles(result.data.total);
       } catch (error) {
         console.error('Error fetching vehicles:', error);
         setError(error instanceof Error ? error.message : 'Failed to load vehicles');

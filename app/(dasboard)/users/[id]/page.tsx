@@ -49,6 +49,7 @@ import { Role, LocationType } from '@/types';
 import type { User as UserType, PermissionKey } from '@/types';
 import { useAuthStore } from '@/store/auth';
 import { hasPermission } from '@/lib/permissions';
+import { getRoleBadgeClass, getStatusBadgeClass } from '@/lib/utils/user-colors';
 
 const UserDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -121,19 +122,6 @@ const UserDetail: React.FC = () => {
     );
   }
 
-  const getRoleColor = (role: Role) => {
-    switch (role) {
-      case 'Admin':
-        return 'bg-gradient-to-r from-red-50 to-red-100 text-red-700 border-red-200';
-      case 'CEO':
-        return 'bg-gradient-to-r from-purple-50 to-purple-100 text-purple-700 border-purple-200';
-      case 'Normal':
-        return 'bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 border-blue-200';
-      default:
-        return 'bg-gradient-to-r from-gray-50 to-gray-100 text-gray-700 border-gray-200';
-    }
-  };
-
   const getRoleIcon = (role: Role) => {
     switch (role) {
       case 'Admin':
@@ -145,12 +133,6 @@ const UserDetail: React.FC = () => {
       default:
         return <User className="h-4 w-4" />;
     }
-  };
-
-  const getStatusColor = (isActive: boolean) => {
-    return isActive 
-      ? 'bg-green-100 text-green-700 border-green-200' 
-      : 'bg-red-100 text-red-700 border-red-200';
   };
 
   const getStatusIcon = (isActive: boolean) => {
@@ -254,25 +236,25 @@ const UserDetail: React.FC = () => {
             <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
               <Avatar className="w-24 h-24">
                 <AvatarImage src={user.avatar} />
-                <AvatarFallback className="bg-blue-100 text-blue-600 text-2xl font-bold">
+                <AvatarFallback className="bg-primary/10 text-primary text-2xl font-bold">
                   {getInitials(user.firstName, user.lastName)}
                 </AvatarFallback>
               </Avatar>
               
-              <div className="flex-1 space-y-4">
+              <div className="flex-1 space-y-6">
                 <div className="flex flex-col md:flex-row md:items-center gap-4">
                   <div>
                     <h2 className="text-3xl font-bold">{user.firstName} {user.lastName}</h2>
-                    <p className="text-xl text-muted-foreground">{user.email}</p>
+                    <p className="text-xl text-muted-foreground mt-1">{user.email}</p>
                   </div>
                   
                   <div className="flex items-center gap-3">
-                    <Badge variant="outline" className={`${getRoleColor(user.role)} text-lg px-3 py-2`}>
+                    <Badge variant="outline" className={`${getRoleBadgeClass(user.role)} text-lg px-3 py-2`}>
                       {getRoleIcon(user.role)}
                       <span className="ml-2">{user.role}</span>
                     </Badge>
                     
-                    <Badge variant="outline" className={`${getStatusColor(user.isActive)} text-lg px-3 py-2`}>
+                    <Badge variant="outline" className={`${getStatusBadgeClass(user.isActive)} text-lg px-3 py-2`}>
                       {getStatusIcon(user.isActive)}
                       <span className="ml-2">{user.isActive ? 'Active' : 'Inactive'}</span>
                     </Badge>
@@ -354,14 +336,14 @@ const UserDetail: React.FC = () => {
                     </div>
                     <div>
                       <label className="text-sm font-medium text-muted-foreground">Role</label>
-                      <Badge variant="outline" className={`${getRoleColor(user.role)} text-xs px-2 py-1`}>
+                      <Badge variant="outline" className={`${getRoleBadgeClass(user.role)} text-xs px-2 py-1`}>
                         {getRoleIcon(user.role)}
                         <span className="ml-1">{user.role}</span>
                       </Badge>
                     </div>
                     <div>
                       <label className="text-sm font-medium text-muted-foreground">Status</label>
-                      <Badge variant="outline" className={`${getStatusColor(user.isActive)} text-xs px-2 py-1`}>
+                      <Badge variant="outline" className={`${getStatusBadgeClass(user.isActive)} text-xs px-2 py-1`}>
                         {getStatusIcon(user.isActive)}
                         <span className="ml-1">{user.isActive ? 'Active' : 'Inactive'}</span>
                       </Badge>
@@ -382,31 +364,31 @@ const UserDetail: React.FC = () => {
                     Account Statistics
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <Card className="border-2 border-blue-200 bg-blue-50/50 dark:border-blue-700 dark:bg-blue-950/50">
-                      <CardContent className="p-4 text-center">
-                        <div className="text-2xl font-bold text-blue-700 dark:text-blue-300">
+                <CardContent className="space-y-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <Card className="border bg-card">
+                      <CardContent className="p-6 text-center">
+                        <div className="text-2xl font-bold text-foreground mb-2">
                           {user.lastLogin ? 'Yes' : 'No'}
                         </div>
-                        <div className="text-sm text-blue-600 dark:text-blue-400 font-medium">Has Logged In</div>
+                        <div className="text-sm text-muted-foreground font-medium">Has Logged In</div>
                       </CardContent>
                     </Card>
-                    <Card className="border-2 border-green-200 bg-green-50/50 dark:border-green-700 dark:bg-green-950/50">
-                      <CardContent className="p-4 text-center">
-                        <div className="text-2xl font-bold text-green-700 dark:text-green-300">
+                    <Card className="border bg-card">
+                      <CardContent className="p-6 text-center">
+                        <div className="text-2xl font-bold text-primary mb-2">
                           {user.isActive ? 'Active' : 'Inactive'}
                         </div>
-                        <div className="text-sm text-green-600 dark:text-green-400 font-medium">Account Status</div>
+                        <div className="text-sm text-muted-foreground font-medium">Account Status</div>
                       </CardContent>
                     </Card>
                   </div>
                   
                   {user.lastLogin && (
-                    <Card className="border-2 border-gray-200 bg-gray-50/50 dark:border-gray-700 dark:bg-gray-950/50">
-                      <CardContent className="p-4 text-center">
-                        <div className="text-sm text-muted-foreground mb-1">Last Login</div>
-                        <div className="text-lg font-semibold text-gray-700 dark:text-gray-300">
+                    <Card className="border bg-muted/50">
+                      <CardContent className="p-6 text-center">
+                        <div className="text-sm text-muted-foreground mb-2">Last Login</div>
+                        <div className="text-lg font-semibold text-foreground">
                           {formatDateTime(user.lastLogin)}
                         </div>
                       </CardContent>
@@ -459,11 +441,11 @@ const UserDetail: React.FC = () => {
                     </div>
                     <div>
                       <label className="text-sm font-medium text-muted-foreground">Status</label>
-                      <Badge variant="outline" className="text-sm px-2 py-1">
+                      <Badge variant="outline" className={`text-sm px-2 py-1 ${user.location.status === 'Operational' ? 'bg-primary/10 text-primary border-primary/20' : 'bg-destructive/10 text-destructive border-destructive/20'}`}>
                         {user.location.status === 'Operational' ? (
-                          <CheckCircle className="h-3 w-3 mr-1 text-green-600" />
+                          <CheckCircle className="h-3 w-3 mr-1" />
                         ) : (
-                          <AlertTriangle className="h-3 w-3 mr-1 text-yellow-600" />
+                          <AlertTriangle className="h-3 w-3 mr-1" />
                         )}
                         {user.location.status}
                       </Badge>
@@ -582,11 +564,11 @@ const UserDetail: React.FC = () => {
                     return (
                       <div className="space-y-6">
                         {moduleNames.map((module) => (
-                          <div key={module} className="mb-4">
-                            <h4 className="font-semibold mb-2 capitalize">{module}</h4>
+                          <div key={module} className="space-y-3">
+                            <h4 className="font-semibold text-foreground capitalize">{module}</h4>
                             <div className="flex flex-wrap gap-2">
                               {grouped[module].map(({ key, action }) => (
-                                <Badge key={key} variant="outline" className="capitalize">
+                                <Badge key={key} variant="outline" className="bg-primary/10 text-primary border-primary/20 capitalize">
                                   {action}
                                 </Badge>
                               ))}
@@ -638,13 +620,13 @@ const UserDetail: React.FC = () => {
               <DialogTitle>Delete User</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
-              <p>Are you sure you want to delete this user? This action cannot be undone.</p>
-              <div className="bg-red-50 p-4 rounded-lg">
-                <div className="flex items-center gap-2 text-red-700">
+              <p className="text-foreground">Are you sure you want to delete this user? This action cannot be undone.</p>
+              <div className="bg-destructive/10 border border-destructive/20 p-4 rounded-lg">
+                <div className="flex items-center gap-2 text-destructive">
                   <AlertTriangle className="h-4 w-4" />
                   <span className="font-medium">Warning:</span>
                 </div>
-                <p className="text-sm text-red-600 mt-1">
+                <p className="text-sm text-destructive/90 mt-1">
                   Deleting this user will remove all associated data and access permissions.
                 </p>
               </div>

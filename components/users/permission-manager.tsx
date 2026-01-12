@@ -90,20 +90,22 @@ export const PermissionManager: React.FC<PermissionManagerProps> = ({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Permissions</CardTitle>
+        <CardTitle className="flex items-center gap-2">
+          <span>Permissions</span>
+        </CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      <CardContent className="pt-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {permissionGroups.map((group) => {
             const allEnabled = group.permissions.every((perm) => permissions[perm] === true);
 
             return (
               <div
                 key={group.label}
-                className="p-4 border rounded-lg bg-card hover:bg-accent/50 transition-colors"
+                className="p-6 border rounded-lg bg-card hover:bg-accent/50 transition-colors"
               >
-                <div className="flex items-center justify-between mb-3">
-                  <Label className="text-sm font-semibold">{group.label}</Label>
+                <div className="flex items-center justify-between mb-4">
+                  <Label className="text-sm font-semibold text-foreground">{group.label}</Label>
                   <div className="flex items-center gap-2">
                     <Label className="text-xs text-muted-foreground">All</Label>
                     <Switch
@@ -117,11 +119,11 @@ export const PermissionManager: React.FC<PermissionManagerProps> = ({
                   {group.permissions.map((permission) => (
                     <div
                       key={permission}
-                      className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-muted/50 hover:bg-muted transition-colors"
+                      className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-muted/50 hover:bg-muted transition-colors border border-border"
                     >
                       <Label
                         htmlFor={permission}
-                        className="text-xs font-normal cursor-pointer"
+                        className="text-xs font-normal cursor-pointer text-foreground"
                       >
                         {getActionLabel(permission)}
                       </Label>

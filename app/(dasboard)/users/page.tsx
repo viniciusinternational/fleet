@@ -111,7 +111,7 @@ export default async function UserManagement({ searchParams }: UserPageProps) {
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-6 py-8">
         {/* Header */}
-        <div className="mb-6">
+        <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl lg:text-4xl font-bold tracking-tight">User Management</h1>
@@ -122,30 +122,38 @@ export default async function UserManagement({ searchParams }: UserPageProps) {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-          <div className="text-center p-4 bg-blue-50 dark:bg-blue-950/50 rounded-lg border border-blue-200 dark:border-blue-700">
-            <div className="text-2xl font-bold text-blue-700 dark:text-blue-300">{stats.total}</div>
-            <div className="text-sm text-blue-600 dark:text-blue-400 font-medium">Total Users</div>
-            <div className="text-xs text-blue-500 dark:text-blue-400 mt-1">In the system</div>
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <Card className="hover:bg-accent/50 transition-colors">
+            <CardContent className="p-6 text-center">
+              <div className="text-3xl font-bold text-foreground mb-2">{stats.total}</div>
+              <div className="text-sm font-medium text-foreground">Total Users</div>
+              <div className="text-xs text-muted-foreground mt-1">In the system</div>
+            </CardContent>
+          </Card>
 
-          <div className="text-center p-4 bg-green-50 dark:bg-green-950/50 rounded-lg border border-green-200 dark:border-green-700">
-            <div className="text-2xl font-bold text-green-700 dark:text-green-300">{stats.active}</div>
-            <div className="text-sm text-green-600 dark:text-green-400 font-medium">Active Users</div>
-            <div className="text-xs text-green-500 dark:text-green-400 mt-1">Currently active</div>
-          </div>
+          <Card className="hover:bg-accent/50 transition-colors">
+            <CardContent className="p-6 text-center">
+              <div className="text-3xl font-bold text-primary mb-2">{stats.active}</div>
+              <div className="text-sm font-medium text-foreground">Active Users</div>
+              <div className="text-xs text-muted-foreground mt-1">Currently active</div>
+            </CardContent>
+          </Card>
 
-          <div className="text-center p-4 bg-purple-50 dark:bg-purple-950/50 rounded-lg border border-purple-200 dark:border-purple-700">
-            <div className="text-2xl font-bold text-purple-700 dark:text-purple-300">{stats.byRole?.Admin || 0}</div>
-            <div className="text-sm text-purple-600 dark:text-purple-400 font-medium">Admins</div>
-            <div className="text-xs text-purple-500 dark:text-purple-400 mt-1">Administrators</div>
-          </div>
+          <Card className="hover:bg-accent/50 transition-colors">
+            <CardContent className="p-6 text-center">
+              <div className="text-3xl font-bold text-destructive mb-2">{stats.byRole?.Admin || 0}</div>
+              <div className="text-sm font-medium text-foreground">Admins</div>
+              <div className="text-xs text-muted-foreground mt-1">Administrators</div>
+            </CardContent>
+          </Card>
 
-          <div className="text-center p-4 bg-yellow-50 dark:bg-yellow-950/50 rounded-lg border border-yellow-200 dark:border-yellow-700">
-            <div className="text-2xl font-bold text-yellow-700 dark:text-yellow-300">{stats.byRole?.Normal || 0}</div>
-            <div className="text-sm text-yellow-600 dark:text-yellow-400 font-medium">Normal Users</div>
-            <div className="text-xs text-yellow-500 dark:text-yellow-400 mt-1">Standard users</div>
-          </div>
+          <Card className="hover:bg-accent/50 transition-colors">
+            <CardContent className="p-6 text-center">
+              <div className="text-3xl font-bold text-secondary-foreground mb-2">{stats.byRole?.Normal || 0}</div>
+              <div className="text-sm font-medium text-foreground">Normal Users</div>
+              <div className="text-xs text-muted-foreground mt-1">Standard users</div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Main Content */}
@@ -159,7 +167,7 @@ export default async function UserManagement({ searchParams }: UserPageProps) {
             </div>
 
             {/* Users Table */}
-            <div className="space-y-4">
+            <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold flex items-center gap-2">
                   <Users className="h-5 w-5" />

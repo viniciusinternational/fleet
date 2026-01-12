@@ -58,6 +58,8 @@ const VehicleDetails: React.FC<VehicleDetailsProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('overview');
   const [imagesLoading, setImagesLoading] = useState(false);
+  const [deliveryNote, setDeliveryNote] = useState<any>(null);
+  const [deliveryNoteLoading, setDeliveryNoteLoading] = useState(false);
   
   // Track Events state
   const [showAddEventModal, setShowAddEventModal] = useState(false);
@@ -207,6 +209,48 @@ const VehicleDetails: React.FC<VehicleDetailsProps> = ({
       setImagesLoading(false);
     }
   };
+
+  // Fetch delivery note for this vehicle
+  useEffect(() => {
+    const fetchDeliveryNote = async () => {
+      if (!vehicleId) return;
+      
+      try {
+        setDeliveryNoteLoading(true);
+        const response = await fetch('/api/delivery-notes');
+        
+        if (response.ok) {
+          const result = await response.json();
+          if (result.success && Array.isArray(result.data)) {
+            // Find delivery note that includes this vehicle
+            const note = result.data.find((dn: any) => {
+              const vehicleIds = Array.isArray(dn.vehicleIds) ? dn.vehicleIds : [];
+              return vehicleIds.includes(vehicleId);
+            });
+            
+            if (note) {
+              // Fetch full delivery note details
+              const detailResponse = await fetch(`/api/delivery-notes/${note.id}`);
+              if (detailResponse.ok) {
+                const detailResult = await detailResponse.json();
+                if (detailResult.success) {
+                  setDeliveryNote(detailResult.data);
+                }
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching delivery note:', error);
+      } finally {
+        setDeliveryNoteLoading(false);
+      }
+    };
+
+    if (vehicle) {
+      fetchDeliveryNote();
+    }
+  }, [vehicle, vehicleId]);
 
   const getStatusColor = (status: VehicleStatus) => {
     switch (status) {
@@ -628,18 +672,53 @@ const VehicleDetails: React.FC<VehicleDetailsProps> = ({
             {/* Delivery Status */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Timer className="h-5 w-5" />
-                  Delivery Status
-                </CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2">
+                    <Timer className="h-5 w-5" />
+                    Delivery Status
+                  </CardTitle>
+                  {deliveryNote && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => router.push(`/delivery/${deliveryNote.id}`)}
+                      className="flex items-center gap-2"
+                    >
+                      <FileText className="h-4 w-4" />
+                      View Delivery Note
+                    </Button>
+                  )}
+                </div>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="text-center p-4 bg-blue-50 dark:bg-blue-950/50 rounded-lg border border-blue-200 dark:border-blue-700">
-                    <div className="text-2xl font-bold text-blue-700 dark:text-blue-300">
-                      {getDaysUntilDelivery(vehicle)}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                  <div className={`text-center p-4 rounded-lg border ${
+                    vehicle.status === 'Delivered' 
+                      ? 'bg-green-50 dark:bg-green-950/50 border-green-200 dark:border-green-700'
+                      : 'bg-blue-50 dark:bg-blue-950/50 border-blue-200 dark:border-blue-700'
+                  }`}>
+                    <div className={`text-2xl font-bold ${
+                      vehicle.status === 'Delivered'
+                        ? 'text-green-700 dark:text-green-300'
+                        : 'text-blue-700 dark:text-blue-300'
+                    }`}>
+                      {vehicle.status === 'Delivered' 
+                        ? 'Delivered'
+                        : getDaysUntilDelivery(vehicle)
+                      }
                     </div>
-                    <div className="text-sm text-blue-600 dark:text-blue-400 font-medium">Until Delivery</div>
+                    <div className={`text-sm font-medium ${
+                      vehicle.status === 'Delivered'
+                        ? 'text-green-600 dark:text-green-400'
+                        : 'text-blue-600 dark:text-blue-400'
+                    }`}>
+                      {vehicle.status === 'Delivered' 
+                        ? deliveryNote 
+                          ? formatDate(new Date(deliveryNote.deliveryDate))
+                          : 'Delivery Complete'
+                        : 'Until Delivery'
+                      }
+                    </div>
                   </div>
                   <div className="text-center p-4 bg-green-50 dark:bg-green-950/50 rounded-lg border border-green-200 dark:border-green-700">
                     <div className="text-2xl font-bold text-green-700 dark:text-green-300">
@@ -654,6 +733,47 @@ const VehicleDetails: React.FC<VehicleDetailsProps> = ({
                     <div className="text-sm text-purple-600 dark:text-purple-400 font-medium">Order Date</div>
                   </div>
                 </div>
+                
+                {/* Delivery Note Information */}
+                {deliveryNoteLoading ? (
+                  <div className="text-center py-4">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto"></div>
+                    <p className="text-sm text-muted-foreground mt-2">Loading delivery information...</p>
+                  </div>
+                ) : deliveryNote ? (
+                  <div className="mt-4 p-4 bg-muted/30 rounded-lg border">
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                        <FileText className="h-5 w-5 text-primary" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h4 className="font-semibold text-sm">Delivery Note #{deliveryNote.id.slice(-8)}</h4>
+                          <Badge variant="outline" className="text-xs">
+                            {formatDate(new Date(deliveryNote.deliveryDate))}
+                          </Badge>
+                        </div>
+                        {deliveryNote.notes && (
+                          <p className="text-sm text-muted-foreground mt-1">{deliveryNote.notes}</p>
+                        )}
+                        {deliveryNote.vehicles && deliveryNote.vehicles.length > 1 && (
+                          <p className="text-xs text-muted-foreground mt-2">
+                            This vehicle is part of a delivery with {deliveryNote.vehicles.length} vehicle(s)
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ) : vehicle.status === 'Delivered' && (
+                  <div className="mt-4 p-4 bg-yellow-50 dark:bg-yellow-950/50 rounded-lg border border-yellow-200 dark:border-yellow-700">
+                    <div className="flex items-center gap-2">
+                      <Package className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+                      <p className="text-sm text-yellow-700 dark:text-yellow-300">
+                        Vehicle marked as delivered. No delivery note found.
+                      </p>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

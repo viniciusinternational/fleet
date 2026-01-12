@@ -40,6 +40,7 @@ import type { User as UserType, Location, UserPermissions } from '@/types';
 import { PermissionManager } from '@/components/users/permission-manager';
 import { useAuthStore } from '@/store/auth';
 import { hasPermission } from '@/lib/permissions';
+import { getRoleBadgeClass } from '@/lib/utils/user-colors';
 
 const EditUser: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -365,18 +366,6 @@ const EditUser: React.FC = () => {
     }
   };
 
-  const getRoleColor = (role: Role) => {
-    switch (role) {
-      case 'Admin':
-        return 'bg-gradient-to-r from-red-50 to-red-100 text-red-700 border-red-200';
-      case 'CEO':
-        return 'bg-gradient-to-r from-purple-50 to-purple-100 text-purple-700 border-purple-200';
-      case 'Normal':
-        return 'bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 border-blue-200';
-      default:
-        return 'bg-gradient-to-r from-gray-50 to-gray-100 text-gray-700 border-gray-200';
-    }
-  };
 
   const getRoleIcon = (role: Role) => {
     switch (role) {
@@ -396,7 +385,7 @@ const EditUser: React.FC = () => {
       <div className="container mx-auto px-6 py-8">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center gap-4 mb-4">
+          <div className="flex items-center gap-4">
             <Button
               variant="ghost"
               size="sm"
@@ -405,7 +394,7 @@ const EditUser: React.FC = () => {
             >
               <ArrowLeft className="h-4 w-4" />
             </Button>
-            <div>
+            <div className="flex-1">
               <h1 className="text-3xl font-bold tracking-tight">Edit User</h1>
               <p className="text-muted-foreground mt-2">Update user information and settings</p>
             </div>
@@ -414,16 +403,16 @@ const EditUser: React.FC = () => {
 
         {/* Success Message */}
         {showSuccess && (
-          <Alert className="mb-6 border-green-200 bg-green-50">
-            <CheckCircle2 className="h-4 w-4 text-green-600" />
-            <AlertDescription className="text-green-800">
+          <Alert className="mb-6 border-primary/20 bg-primary/10">
+            <CheckCircle2 className="h-4 w-4 text-primary" />
+            <AlertDescription className="text-foreground">
               User updated successfully! Redirecting to user list...
             </AlertDescription>
           </Alert>
         )}
 
         {/* Main Form */}
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-8">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -431,7 +420,7 @@ const EditUser: React.FC = () => {
                 User Information
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-6 pt-6">
               {/* Basic Information */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
@@ -441,10 +430,10 @@ const EditUser: React.FC = () => {
                     placeholder="Enter first name"
                     value={formData.firstName}
                     onChange={(e) => handleInputChange('firstName', e.target.value)}
-                    className={errors.firstName ? 'border-red-500' : ''}
+                    className={errors.firstName ? 'border-destructive' : ''}
                   />
                   {errors.firstName && (
-                    <p className="text-sm text-red-500">{errors.firstName}</p>
+                    <p className="text-sm text-destructive">{errors.firstName}</p>
                   )}
                 </div>
 
@@ -455,10 +444,10 @@ const EditUser: React.FC = () => {
                     placeholder="Enter last name"
                     value={formData.lastName}
                     onChange={(e) => handleInputChange('lastName', e.target.value)}
-                    className={errors.lastName ? 'border-red-500' : ''}
+                    className={errors.lastName ? 'border-destructive' : ''}
                   />
                   {errors.lastName && (
-                    <p className="text-sm text-red-500">{errors.lastName}</p>
+                    <p className="text-sm text-destructive">{errors.lastName}</p>
                   )}
                 </div>
 
@@ -470,10 +459,10 @@ const EditUser: React.FC = () => {
                     placeholder="Enter email address"
                     value={formData.email}
                     onChange={(e) => handleInputChange('email', e.target.value)}
-                    className={errors.email ? 'border-red-500' : ''}
+                    className={errors.email ? 'border-destructive' : ''}
                   />
                   {errors.email && (
-                    <p className="text-sm text-red-500">{errors.email}</p>
+                    <p className="text-sm text-destructive">{errors.email}</p>
                   )}
                 </div>
 
@@ -484,10 +473,10 @@ const EditUser: React.FC = () => {
                     placeholder="Enter phone number"
                     value={formData.phone}
                     onChange={(e) => handleInputChange('phone', e.target.value)}
-                    className={errors.phone ? 'border-red-500' : ''}
+                    className={errors.phone ? 'border-destructive' : ''}
                   />
                   {errors.phone && (
-                    <p className="text-sm text-red-500">{errors.phone}</p>
+                    <p className="text-sm text-destructive">{errors.phone}</p>
                   )}
                 </div>
 
@@ -523,7 +512,7 @@ const EditUser: React.FC = () => {
                 <div className="space-y-2">
                   <Label htmlFor="locationId">Assigned Location *</Label>
                   <Select value={formData.locationId} onValueChange={(value) => handleInputChange('locationId', value)}>
-                    <SelectTrigger className={errors.locationId ? 'border-red-500' : ''}>
+                    <SelectTrigger className={errors.locationId ? 'border-destructive' : ''}>
                       <SelectValue placeholder="Select a location" />
                     </SelectTrigger>
                     <SelectContent>
@@ -548,7 +537,7 @@ const EditUser: React.FC = () => {
                     </SelectContent>
                   </Select>
                   {errors.locationId && (
-                    <p className="text-sm text-red-500">{errors.locationId}</p>
+                    <p className="text-sm text-destructive">{errors.locationId}</p>
                   )}
                 </div>
 
@@ -563,10 +552,12 @@ const EditUser: React.FC = () => {
                 </div>
               </div>
 
+              <Separator />
+
               {/* Authentication */}
               <div className="space-y-4">
-                <h4 className="font-medium">Authentication</h4>
-                <Alert>
+                <h4 className="font-medium text-foreground">Authentication</h4>
+                <Alert className="bg-muted/50">
                   <Info className="h-4 w-4" />
                   <AlertDescription>
                     Leave password fields empty if you don't want to change the password.
@@ -583,7 +574,7 @@ const EditUser: React.FC = () => {
                         placeholder="Enter new password (optional)"
                         value={formData.password}
                         onChange={(e) => handleInputChange('password', e.target.value)}
-                        className={errors.password ? 'border-red-500 pr-10' : 'pr-10'}
+                        className={errors.password ? 'border-destructive pr-10' : 'pr-10'}
                       />
                       <Button
                         type="button"
@@ -596,7 +587,7 @@ const EditUser: React.FC = () => {
                       </Button>
                     </div>
                     {errors.password && (
-                      <p className="text-sm text-red-500">{errors.password}</p>
+                      <p className="text-sm text-destructive">{errors.password}</p>
                     )}
                     <p className="text-xs text-muted-foreground">Password must be at least 8 characters long</p>
                   </div>
@@ -610,7 +601,7 @@ const EditUser: React.FC = () => {
                         placeholder="Confirm new password"
                         value={formData.confirmPassword}
                         onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
-                        className={errors.confirmPassword ? 'border-red-500 pr-10' : 'pr-10'}
+                        className={errors.confirmPassword ? 'border-destructive pr-10' : 'pr-10'}
                       />
                       <Button
                         type="button"
@@ -623,7 +614,7 @@ const EditUser: React.FC = () => {
                       </Button>
                     </div>
                     {errors.confirmPassword && (
-                      <p className="text-sm text-red-500">{errors.confirmPassword}</p>
+                      <p className="text-sm text-destructive">{errors.confirmPassword}</p>
                     )}
                   </div>
                 </div>
@@ -648,7 +639,7 @@ const EditUser: React.FC = () => {
           />
 
           {/* Form Actions */}
-          <div className="flex items-center justify-end gap-3 mt-8 pt-6 border-t">
+          <div className="flex items-center justify-end gap-3 pt-6 border-t">
             <Button
               type="button"
               variant="outline"
@@ -666,7 +657,7 @@ const EditUser: React.FC = () => {
             >
               {isSubmitting ? (
                 <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground mr-2" />
                   Updating...
                 </>
               ) : (
