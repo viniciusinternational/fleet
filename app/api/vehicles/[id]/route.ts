@@ -3,6 +3,7 @@ import { VehicleService } from '@/lib/services/vehicle';
 import { uploadVehicleImage } from '@/lib/s3';
 import { Role } from '@/types';
 import { createVehicleSchema } from '../route';
+import { TRANSMISSION_ENUM_MAP } from '@/lib/constants/vehicle';
 
 // GET /api/vehicles/[id] - Get vehicle by ID
 export async function GET(
@@ -71,6 +72,9 @@ export async function PUT(
       trim: String(formData.get('trim') ?? '').trim(),
       engineType: String(formData.get('engineType') ?? '').trim(),
       fuelType: String(formData.get('fuelType') ?? '').toUpperCase(),
+      transmission: formData.get('transmission') 
+        ? TRANSMISSION_ENUM_MAP[formData.get('transmission') as keyof typeof TRANSMISSION_ENUM_MAP] || String(formData.get('transmission')).replace(/-/g, '_').toUpperCase()
+        : undefined,
       weightKg: Number(formData.get('weightKg') ?? 0),
       lengthMm: formData.get('lengthMm') ? Number(formData.get('lengthMm')) : undefined,
       widthMm: formData.get('widthMm') ? Number(formData.get('widthMm')) : undefined,
@@ -79,8 +83,8 @@ export async function PUT(
       estimatedDelivery: String(formData.get('estimatedDelivery') ?? ''),
       status: String(formData.get('status') ?? '').toUpperCase(),
       currentLocationId: String(formData.get('currentLocationId') ?? '').trim(),
-      ownerId: String(formData.get('ownerId') ?? '').trim(),
-      sourceId: formData.get('sourceId') ? String(formData.get('sourceId')).trim() : undefined,
+      ownerId: formData.get('ownerId') ? String(formData.get('ownerId')).trim() : undefined,
+      sourceId: String(formData.get('sourceId') ?? '').trim(),
       // Use provided customs data or fallback to existing vehicle data
       customsStatus: customsStatusValue && String(customsStatusValue).trim() 
         ? String(customsStatusValue).toUpperCase() 
@@ -115,13 +119,17 @@ export async function PUT(
       currentLocation: {
         connect: { id: validatedData.currentLocationId },
       },
-      owner: {
-        connect: { id: validatedData.ownerId },
+      source: {
+        connect: { id: validatedData.sourceId },
       },
-      ...(validatedData.sourceId && {
-        source: {
-          connect: { id: validatedData.sourceId },
+      ...(validatedData.ownerId ? {
+        owner: {
+          connect: { id: validatedData.ownerId },
         },
+      } : {
+        owner: {
+          disconnect: true
+        }
       }),
     };
 

@@ -265,30 +265,29 @@ const EditLocation: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50/50">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-10">
+      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b">
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div className="flex items-center gap-4">
               <Button 
                 variant="outline" 
                 onClick={handleCancel}
-                className="hover:bg-gray-50 border-gray-300"
+                className="hover:bg-accent"
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back to Location
               </Button>
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">Edit Location</h1>
-                <p className="text-gray-600 mt-1">Update location information and details</p>
+                <h1 className="text-3xl lg:text-4xl font-bold tracking-tight">Edit Location</h1>
+                <p className="text-muted-foreground mt-1 text-lg">Update location information and details</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
               <Button 
                 variant="outline"
                 onClick={handleCancel}
-                className="border-gray-300"
               >
                 <X className="h-4 w-4 mr-2" />
                 Cancel
@@ -296,7 +295,6 @@ const EditLocation: React.FC = () => {
               <Button 
                 onClick={handleSubmit}
                 disabled={isLoading}
-                className="bg-blue-600 hover:bg-blue-700"
               >
                 <Save className="h-4 w-4 mr-2" />
                 {isLoading ? 'Saving...' : 'Save Changes'}
@@ -309,9 +307,9 @@ const EditLocation: React.FC = () => {
       <div className="max-w-7xl mx-auto px-6 py-8">
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Location Overview Banner */}
-          <Card className="border-0 shadow-lg bg-gradient-to-r from-blue-50 via-white to-indigo-50">
+          <Card>
             <CardHeader className="pb-4">
-              <CardTitle className="flex items-center gap-2 text-blue-800">
+              <CardTitle className="flex items-center gap-2 text-primary">
                 <Building className="h-6 w-6" />
                 <span>Location Overview</span>
               </CardTitle>
@@ -368,7 +366,7 @@ const EditLocation: React.FC = () => {
                   )}
                 </div>
                 <div className="flex items-end">
-                  <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                  <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
                     Location ID: {id}
                   </Badge>
                 </div>
@@ -378,8 +376,8 @@ const EditLocation: React.FC = () => {
 
           {/* Address Information */}
           <Card className="shadow-md hover:shadow-lg transition-shadow duration-200">
-            <CardHeader className="bg-gradient-to-r from-green-50 to-green-100 rounded-t-lg">
-              <CardTitle className="flex items-center gap-2 text-green-800">
+            <CardHeader className="bg-muted/50 rounded-t-lg">
+              <CardTitle className="flex items-center gap-2 text-foreground">
                 <MapPin className="h-5 w-5" />
                 <span>Address Information</span>
               </CardTitle>
@@ -454,8 +452,8 @@ const EditLocation: React.FC = () => {
 
           {/* Coordinates */}
           <Card className="shadow-md hover:shadow-lg transition-shadow duration-200">
-            <CardHeader className="bg-gradient-to-r from-purple-50 to-purple-100 rounded-t-lg">
-              <CardTitle className="flex items-center gap-2 text-purple-800">
+            <CardHeader className="bg-muted/50 rounded-t-lg">
+              <CardTitle className="flex items-center gap-2 text-foreground">
                 <Navigation className="h-5 w-5" />
                 <span>Coordinates</span>
               </CardTitle>
@@ -471,10 +469,10 @@ const EditLocation: React.FC = () => {
                     value={formData.latitude}
                     onChange={(e) => handleInputChange('latitude', e.target.value)}
                     placeholder="Enter latitude"
-                    className={errors.latitude ? 'border-red-300 focus:border-red-500 focus:ring-red-200' : ''}
+                    className={errors.latitude ? 'border-destructive focus:border-destructive focus:ring-destructive/20' : ''}
                   />
                   {errors.latitude && (
-                    <p className="text-sm text-red-600">{errors.latitude}</p>
+                    <p className="text-sm text-destructive">{errors.latitude}</p>
                   )}
                 </div>
                 <div className="space-y-2">
@@ -486,19 +484,19 @@ const EditLocation: React.FC = () => {
                     value={formData.longitude}
                     onChange={(e) => handleInputChange('longitude', e.target.value)}
                     placeholder="Enter longitude"
-                    className={errors.longitude ? 'border-red-300 focus:border-red-500 focus:ring-red-200' : ''}
+                    className={errors.longitude ? 'border-destructive focus:border-destructive focus:ring-destructive/20' : ''}
                   />
                   {errors.longitude && (
-                    <p className="text-sm text-red-600">{errors.longitude}</p>
+                    <p className="text-sm text-destructive">{errors.longitude}</p>
                   )}
                 </div>
               </div>
-              <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                <div className="flex items-center gap-2 text-blue-800">
+              <div className="mt-4 p-4 bg-muted/50 rounded-lg border border-border">
+                <div className="flex items-center gap-2 text-foreground">
                   <Navigation className="h-4 w-4" />
                   <span className="text-sm font-medium">Coordinate Preview</span>
                 </div>
-                <p className="text-sm text-blue-600 mt-1">
+                <p className="text-sm text-muted-foreground mt-1">
                   {formData.latitude && formData.longitude 
                     ? `${formData.latitude}, ${formData.longitude}`
                     : 'Enter coordinates to see preview'
@@ -510,8 +508,8 @@ const EditLocation: React.FC = () => {
 
           {/* Contact Information */}
           <Card className="shadow-md hover:shadow-lg transition-shadow duration-200">
-            <CardHeader className="bg-gradient-to-r from-orange-50 to-orange-100 rounded-t-lg">
-              <CardTitle className="flex items-center gap-2 text-orange-800">
+            <CardHeader className="bg-muted/50 rounded-t-lg">
+              <CardTitle className="flex items-center gap-2 text-foreground">
                 <User className="h-5 w-5" />
                 <span>Contact Information</span>
               </CardTitle>
@@ -544,10 +542,10 @@ const EditLocation: React.FC = () => {
                     value={formData.email}
                     onChange={(e) => handleInputChange('email', e.target.value)}
                     placeholder="Enter email address"
-                    className={errors.email ? 'border-red-300 focus:border-red-500 focus:ring-red-200' : ''}
+                    className={errors.email ? 'border-destructive focus:border-destructive focus:ring-destructive/20' : ''}
                   />
                   {errors.email && (
-                    <p className="text-sm text-red-600">{errors.email}</p>
+                    <p className="text-sm text-destructive">{errors.email}</p>
                   )}
                 </div>
               </div>
@@ -556,8 +554,8 @@ const EditLocation: React.FC = () => {
 
           {/* Additional Information */}
           <Card className="shadow-md hover:shadow-lg transition-shadow duration-200">
-            <CardHeader className="bg-gradient-to-r from-teal-50 to-teal-100 rounded-t-lg">
-              <CardTitle className="flex items-center gap-2 text-teal-800">
+            <CardHeader className="bg-muted/50 rounded-t-lg">
+              <CardTitle className="flex items-center gap-2 text-foreground">
                 <FileText className="h-5 w-5" />
                 <span>Additional Information</span>
               </CardTitle>
@@ -577,14 +575,13 @@ const EditLocation: React.FC = () => {
           </Card>
 
           {/* Form Actions */}
-          <div className="flex justify-end gap-3 pt-6 border-t border-gray-200">
+          <div className="flex justify-end gap-3 pt-6 border-t border-border">
             <Button variant="outline" onClick={handleCancel} type="button">
               Cancel
             </Button>
             <Button 
               type="submit" 
               disabled={isLoading}
-              className="bg-blue-600 hover:bg-blue-700"
             >
               <Save className="h-4 w-4 mr-2" />
               {isLoading ? 'Saving...' : 'Save Changes'}

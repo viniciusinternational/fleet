@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import type { Vehicle, Location, Owner, VehicleStatus } from '@/types';
 import { VehicleStatus as VehicleStatusEnum } from '@/types';
+import { MetricCard } from '@/components/dashboard/metric-card';
 
 interface DetailedAnalytics {
   totalVehicles: number;
@@ -188,29 +189,37 @@ const CEOAnalytics: React.FC = () => {
             <div>
               <h3 className="text-lg font-semibold mb-4">Financial Overview</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div className="text-center p-4 bg-blue-50 dark:bg-blue-950/50 rounded-lg border border-blue-200 dark:border-blue-700">
-                  <div className="text-2xl font-bold text-blue-700 dark:text-blue-300">${(analytics.financialSummary?.totalRevenue ?? 0).toLocaleString()}</div>
-                  <div className="text-sm text-blue-600 dark:text-blue-400 font-medium">Total Revenue</div>
-                  <div className="text-xs text-blue-500 dark:text-blue-400 mt-1">+12% from last year</div>
-                </div>
+                <MetricCard
+                  title="Total Revenue"
+                  value={`$${(analytics.financialSummary?.totalRevenue ?? 0).toLocaleString()}`}
+                  icon={DollarSign}
+                  variant="blue"
+                  trend={{ value: 12, isPositive: true, label: "from last year" }}
+                />
 
-                <div className="text-center p-4 bg-green-50 dark:bg-green-950/50 rounded-lg border border-green-200 dark:border-green-700">
-                  <div className="text-2xl font-bold text-green-700 dark:text-green-300">${(analytics.financialSummary?.averageOrderValue ?? 0).toLocaleString()}</div>
-                  <div className="text-sm text-green-600 dark:text-green-400 font-medium">Average Order Value</div>
-                  <div className="text-xs text-green-500 dark:text-green-400 mt-1">Per vehicle order</div>
-                </div>
+                <MetricCard
+                  title="Avg Order Value"
+                  value={`$${(analytics.financialSummary?.averageOrderValue ?? 0).toLocaleString()}`}
+                  icon={TrendingUp}
+                  variant="green"
+                  description="Per vehicle order"
+                />
 
-                <div className="text-center p-4 bg-purple-50 dark:bg-purple-950/50 rounded-lg border border-purple-200 dark:border-purple-700">
-                  <div className="text-2xl font-bold text-purple-700 dark:text-purple-300">${(analytics.totalImportDuties ?? 0).toLocaleString()}</div>
-                  <div className="text-sm text-purple-600 dark:text-purple-400 font-medium">Total Import Duties</div>
-                  <div className="text-xs text-purple-500 dark:text-purple-400 mt-1">Paid across all vehicles</div>
-                </div>
+                <MetricCard
+                  title="Total Duties"
+                  value={`$${(analytics.totalImportDuties ?? 0).toLocaleString()}`}
+                  icon={DollarSign}
+                  variant="purple"
+                  description="Paid across all vehicles"
+                />
 
-                <div className="text-center p-4 bg-yellow-50 dark:bg-yellow-950/50 rounded-lg border border-yellow-200 dark:border-yellow-700">
-                  <div className="text-2xl font-bold text-yellow-700 dark:text-yellow-300">{analytics.financialSummary?.profitMargin ?? 0}%</div>
-                  <div className="text-sm text-yellow-600 dark:text-yellow-400 font-medium">Profit Margin</div>
-                  <div className="text-xs text-yellow-500 dark:text-yellow-400 mt-1">Average margin</div>
-                </div>
+                <MetricCard
+                  title="Profit Margin"
+                  value={`${analytics.financialSummary?.profitMargin ?? 0}%`}
+                  icon={BarChart3}
+                  variant="yellow"
+                  description="Average margin"
+                />
               </div>
             </div>
 
@@ -324,26 +333,29 @@ const CEOAnalytics: React.FC = () => {
             <div>
               <h3 className="text-lg font-semibold mb-4">System Summary</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="text-center p-4 bg-blue-50 dark:bg-blue-950/50 rounded-lg border border-blue-200 dark:border-blue-700">
-                  <Users className="h-8 w-8 text-blue-600 dark:text-blue-400 mx-auto mb-2" />
-                  <div className="text-2xl font-bold text-blue-700 dark:text-blue-300">{analytics.totalOwners}</div>
-                  <div className="text-sm text-blue-600 dark:text-blue-400 font-medium">Active Owners</div>
-                  <div className="text-xs text-blue-500 dark:text-blue-400 mt-1">Vehicle owners</div>
-                </div>
+                <MetricCard
+                  title="Active Owners"
+                  value={analytics.totalOwners}
+                  icon={Users}
+                  variant="blue"
+                  description="Vehicle owners"
+                />
 
-                <div className="text-center p-4 bg-green-50 dark:bg-green-950/50 rounded-lg border border-green-200 dark:border-green-700">
-                  <Globe className="h-8 w-8 text-green-600 dark:text-green-400 mx-auto mb-2" />
-                  <div className="text-2xl font-bold text-green-700 dark:text-green-300">{analytics.totalLocations}</div>
-                  <div className="text-sm text-green-600 dark:text-green-400 font-medium">Global Locations</div>
-                  <div className="text-xs text-green-500 dark:text-green-400 mt-1">Active locations worldwide</div>
-                </div>
+                <MetricCard
+                  title="Global Locations"
+                  value={analytics.totalLocations}
+                  icon={Globe}
+                  variant="green"
+                  description="Active locations worldwide"
+                />
 
-                <div className="text-center p-4 bg-purple-50 dark:bg-purple-950/50 rounded-lg border border-purple-200 dark:border-purple-700">
-                  <Clock className="h-8 w-8 text-purple-600 dark:text-purple-400 mx-auto mb-2" />
-                  <div className="text-2xl font-bold text-purple-700 dark:text-purple-300">{analytics.averageDeliveryTime ?? 0}</div>
-                  <div className="text-sm text-purple-600 dark:text-purple-400 font-medium">Average Delivery</div>
-                  <div className="text-xs text-purple-500 dark:text-purple-400 mt-1">Days from order to delivery</div>
-                </div>
+                <MetricCard
+                  title="Average Delivery"
+                  value={analytics.averageDeliveryTime ?? 0}
+                  icon={Clock}
+                  variant="purple"
+                  description="Days from order to delivery"
+                />
               </div>
             </div>
           </CardContent>

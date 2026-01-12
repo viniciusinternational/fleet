@@ -414,8 +414,8 @@ const EditShipping: React.FC = () => {
             {/* Document Upload */}
             <div className="flex items-center gap-4">
               <label htmlFor="shipping-docs-upload" className="cursor-pointer">
-                <div className="w-16 h-16 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center hover:bg-green-200 dark:hover:bg-green-800 transition-colors">
-                  <Upload className="h-8 w-8 text-green-600 dark:text-green-300" />
+                <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center hover:bg-primary/20 transition-colors">
+                  <Upload className="h-8 w-8 text-primary" />
                 </div>
                 <input
                   id="shipping-docs-upload"
@@ -439,16 +439,16 @@ const EditShipping: React.FC = () => {
               <div className="space-y-2">
                 <Label>Existing Documents</Label>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {existingDocuments.map((document, index) => (
-                    <div key={index} className="relative group">
-                      <div className="bg-muted rounded-lg p-4 border">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
-                            <span className="text-xs font-medium text-blue-600 dark:text-blue-300">
-                              {document.name.split('.').pop()?.toUpperCase()}
-                            </span>
-                          </div>
-                          <div className="flex-1 min-w-0">
+                    {existingDocuments.map((document, index) => (
+                      <div key={index} className="relative group">
+                        <div className="bg-muted rounded-lg p-4 border">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                              <span className="text-xs font-medium text-primary">
+                                {document.name.split('.').pop()?.toUpperCase()}
+                              </span>
+                            </div>
+                            <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium truncate">{document.name}</p>
                             <p className="text-xs text-muted-foreground">
                               Existing document
@@ -476,16 +476,16 @@ const EditShipping: React.FC = () => {
               <div className="space-y-2">
                 <Label>New Documents to Upload</Label>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {shippingDocuments.map((document, index) => (
-                    <div key={index} className="relative group">
-                      <div className="bg-muted rounded-lg p-4 border">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center">
-                            <span className="text-xs font-medium text-green-600 dark:text-green-300">
-                              {document.name.split('.').pop()?.toUpperCase()}
-                            </span>
-                          </div>
-                          <div className="flex-1 min-w-0">
+                    {shippingDocuments.map((document, index) => (
+                      <div key={index} className="relative group">
+                        <div className="bg-muted rounded-lg p-4 border">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                              <span className="text-xs font-medium text-primary">
+                                {document.name.split('.').pop()?.toUpperCase()}
+                              </span>
+                            </div>
+                            <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium truncate">{document.name}</p>
                             <p className="text-xs text-muted-foreground">
                               {(document.size / 1024 / 1024).toFixed(2)} MB

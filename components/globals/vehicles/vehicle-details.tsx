@@ -38,6 +38,7 @@ import type { Vehicle, TrackingEvent } from '@/types';
 import { VehicleImageMiniGallery } from '@/components/ui/vehicle-image-mini-gallery';
 import { useAuthStore } from '@/store/auth';
 import AddEventModal from './add-event-modal';
+import { EntityAuditLogs } from '@/components/audit/entity-audit-logs';
 
 interface VehicleDetailsProps {
   vehicleId: string;
@@ -452,7 +453,7 @@ const VehicleDetails: React.FC<VehicleDetailsProps> = ({
               <p className="text-muted-foreground mt-2 text-lg">Vehicle Details & Tracking Information</p>
               <div className="flex items-center gap-4 mt-3">
                 <div className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4 text-blue-500" />
+                  <MapPin className="h-4 w-4 text-primary" />
                   <span className="text-sm text-muted-foreground">
                     VIN: {vehicle.vin}
                   </span>
@@ -477,7 +478,7 @@ const VehicleDetails: React.FC<VehicleDetailsProps> = ({
 
         {/* Main Content Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <Car className="h-4 w-4" />
               Overview
@@ -489,6 +490,10 @@ const VehicleDetails: React.FC<VehicleDetailsProps> = ({
             <TabsTrigger value="track-events" className="flex items-center gap-2">
               <History className="h-4 w-4" />
               Track Events
+            </TabsTrigger>
+            <TabsTrigger value="audit-logs" className="flex items-center gap-2">
+              <Activity className="h-4 w-4" />
+              Audit Logs
             </TabsTrigger>
           </TabsList>
 
@@ -695,12 +700,12 @@ const VehicleDetails: React.FC<VehicleDetailsProps> = ({
                   <div className={`text-center p-4 rounded-lg border ${
                     vehicle.status === 'Delivered' 
                       ? 'bg-green-50 dark:bg-green-950/50 border-green-200 dark:border-green-700'
-                      : 'bg-blue-50 dark:bg-blue-950/50 border-blue-200 dark:border-blue-700'
+                      : 'bg-primary/5 border-primary/20'
                   }`}>
                     <div className={`text-2xl font-bold ${
                       vehicle.status === 'Delivered'
                         ? 'text-green-700 dark:text-green-300'
-                        : 'text-blue-700 dark:text-blue-300'
+                        : 'text-primary'
                     }`}>
                       {vehicle.status === 'Delivered' 
                         ? 'Delivered'
@@ -710,7 +715,7 @@ const VehicleDetails: React.FC<VehicleDetailsProps> = ({
                     <div className={`text-sm font-medium ${
                       vehicle.status === 'Delivered'
                         ? 'text-green-600 dark:text-green-400'
-                        : 'text-blue-600 dark:text-blue-400'
+                        : 'text-primary/80'
                     }`}>
                       {vehicle.status === 'Delivered' 
                         ? deliveryNote 
@@ -939,8 +944,8 @@ const VehicleDetails: React.FC<VehicleDetailsProps> = ({
                     {getShippingDetails(vehicle.shippingDetails).documents?.map((doc: any) => (
                       <div key={doc.id} className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer" 
                            onClick={() => window.open(doc.url, '_blank')}>
-                        <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/50 rounded flex items-center justify-center">
-                          <FileText className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                        <div className="w-8 h-8 bg-primary/10 rounded flex items-center justify-center">
+                          <FileText className="h-4 w-4 text-primary" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="font-medium text-sm truncate">{doc.name}</div>
@@ -1096,6 +1101,11 @@ const VehicleDetails: React.FC<VehicleDetailsProps> = ({
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Audit Logs Tab */}
+          <TabsContent value="audit-logs" className="space-y-6">
+            <EntityAuditLogs entityType="Vehicle" entityId={vehicleId} limit={20} />
           </TabsContent>
 
         </Tabs>

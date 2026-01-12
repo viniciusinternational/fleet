@@ -1,7 +1,6 @@
-import { PrismaClient } from '@prisma/client';
 import type { Owner } from '@/types';
-
-const prisma = new PrismaClient();
+import { AuditService } from './audit';
+import { db } from '@/lib/db';
 
 /**
  * Owner Service
@@ -54,7 +53,7 @@ export class OwnerService {
     try {
       // Get owners with pagination
       const [owners, total] = await Promise.all([
-        prisma.owner.findMany({
+        db.owner.findMany({
           where,
           orderBy,
           skip,
@@ -71,7 +70,7 @@ export class OwnerService {
             },
           },
         }),
-        prisma.owner.count({ where }),
+        db.owner.count({ where }),
       ]);
       
       const totalPages = Math.ceil(total / limit);
@@ -95,7 +94,7 @@ export class OwnerService {
    */
   static async getOwnerById(id: string): Promise<Owner | null> {
     try {
-      const owner = await prisma.owner.findUnique({
+      const owner = await db.owner.findUnique({
         where: { id },
         include: {
           vehicles: {
@@ -133,11 +132,23 @@ export class OwnerService {
   /**
    * Create new owner
    */
-  static async createOwner(ownerData: Omit<Owner, 'id' | 'createdAt' | 'updatedAt'>): Promise<Owner> {
+  static async createOwner(ownerData: Omit<Owner, 'id' | 'createdAt' | 'updatedAt'>, actorId?: string): Promise<Owner> {
     try {
-      const newOwner = await prisma.owner.create({
+      const newOwner = await db.owner.create({
         data: ownerData,
       });
+
+      // Log audit event
+      if (actorId) {
+        await AuditService.logEvent({
+          action: 'CREATE',
+          actorId,
+          entityType: 'Owner',
+          entityId: newOwner.id,
+          after: JSON.parse(JSON.stringify(newOwner)),
+        });
+      }
+
       return newOwner;
     } catch (error) {
       console.error('Error creating owner:', error);
@@ -148,12 +159,28 @@ export class OwnerService {
   /**
    * Update owner
    */
-  static async updateOwner(id: string, ownerData: Partial<Omit<Owner, 'id' | 'createdAt' | 'updatedAt'>>): Promise<Owner | null> {
+  static async updateOwner(id: string, ownerData: Partial<Omit<Owner, 'id' | 'createdAt' | 'updatedAt'>>, actorId?: string): Promise<Owner | null> {
     try {
-      const updatedOwner = await prisma.owner.update({
+      // Get before state for audit log
+      const beforeState = actorId ? await AuditService.getBeforeState('Owner', id) : null;
+
+      const updatedOwner = await db.owner.update({
         where: { id },
         data: ownerData,
       });
+
+      // Log audit event
+      if (actorId) {
+        await AuditService.logEvent({
+          action: 'UPDATE',
+          actorId,
+          entityType: 'Owner',
+          entityId: updatedOwner.id,
+          before: beforeState,
+          after: JSON.parse(JSON.stringify(updatedOwner)),
+        });
+      }
+
       return updatedOwner;
     } catch (error) {
       console.error('Error updating owner:', error);
@@ -164,11 +191,26 @@ export class OwnerService {
   /**
    * Delete owner
    */
-  static async deleteOwner(id: string): Promise<boolean> {
+  static async deleteOwner(id: string, actorId?: string): Promise<boolean> {
     try {
-      await prisma.owner.delete({
+      // Get before state for audit log
+      const beforeState = actorId ? await AuditService.getBeforeState('Owner', id) : null;
+
+      await db.owner.delete({
         where: { id },
       });
+
+      // Log audit event
+      if (actorId) {
+        await AuditService.logEvent({
+          action: 'DELETE',
+          actorId,
+          entityType: 'Owner',
+          entityId: id,
+          before: beforeState,
+        });
+      }
+
       return true;
     } catch (error) {
       console.error('Error deleting owner:', error);
@@ -190,10 +232,10 @@ export class OwnerService {
         recentOwners,
       ] = await Promise.all([
         // Total owners count
-        prisma.owner.count(),
+        db.owner.count(),
         
         // Owners with vehicles
-        prisma.owner.count({
+        db.owner.count({
           where: {
             vehicles: {
               some: {},
@@ -202,7 +244,7 @@ export class OwnerService {
         }),
         
         // Owners without vehicles
-        prisma.owner.count({
+        db.owner.count({
           where: {
             vehicles: {
               none: {},
@@ -211,7 +253,7 @@ export class OwnerService {
         }),
         
         // Nationality distribution
-        prisma.owner.groupBy({
+        db.owner.groupBy({
           by: ['nationality'],
           _count: {
             nationality: true,
@@ -224,7 +266,7 @@ export class OwnerService {
         }),
         
         // Recent owners (last 30 days)
-        prisma.owner.count({
+        db.owner.count({
           where: {
             createdAt: {
               gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // 30 days ago
@@ -292,7 +334,7 @@ export class OwnerService {
    */
   static async getNationalities() {
     try {
-      const nationalityStats = await prisma.owner.groupBy({
+      const nationalityStats = await db.owner.groupBy({
         by: ['nationality'],
         _count: {
           nationality: true,
@@ -314,7 +356,7 @@ export class OwnerService {
    */
   static async getOwnerByEmail(email: string): Promise<Owner | null> {
     try {
-      const owner = await prisma.owner.findFirst({
+      const owner = await db.owner.findFirst({
         where: { email },
       });
       return owner;

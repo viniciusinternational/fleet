@@ -3,7 +3,7 @@ import React from 'react';
 import { redirect } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, Users } from 'lucide-react';
+import { Plus, Users, UserCheck, ShieldCheck, User as UserIcon } from 'lucide-react';
 import { UserSearchInput } from '@/components/users/user-search-input';
 import { RoleFilter } from '@/components/users/role-filter';
 import { UserStatusFilter } from '@/components/users/status-filter';
@@ -11,6 +11,7 @@ import { UserTable } from '@/components/users/user-table';
 import { UserPagination } from '@/components/users/user-pagination';
 import { UserListActions } from '@/components/users/user-list-actions';
 import { User } from '@/types';
+import { MetricCard } from '@/components/dashboard/metric-card';
 
 async function redirectToAddUser() {
   'use server';
@@ -123,37 +124,37 @@ export default async function UserManagement({ searchParams }: UserPageProps) {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card className="hover:bg-accent/50 transition-colors">
-            <CardContent className="p-6 text-center">
-              <div className="text-3xl font-bold text-foreground mb-2">{stats.total}</div>
-              <div className="text-sm font-medium text-foreground">Total Users</div>
-              <div className="text-xs text-muted-foreground mt-1">In the system</div>
-            </CardContent>
-          </Card>
+          <MetricCard
+            title="Total Users"
+            value={stats.total}
+            icon={Users}
+            variant="blue"
+            description="In the system"
+          />
 
-          <Card className="hover:bg-accent/50 transition-colors">
-            <CardContent className="p-6 text-center">
-              <div className="text-3xl font-bold text-primary mb-2">{stats.active}</div>
-              <div className="text-sm font-medium text-foreground">Active Users</div>
-              <div className="text-xs text-muted-foreground mt-1">Currently active</div>
-            </CardContent>
-          </Card>
+          <MetricCard
+            title="Active Users"
+            value={stats.active}
+            icon={UserCheck}
+            variant="green"
+            description="Currently active"
+          />
 
-          <Card className="hover:bg-accent/50 transition-colors">
-            <CardContent className="p-6 text-center">
-              <div className="text-3xl font-bold text-destructive mb-2">{stats.byRole?.Admin || 0}</div>
-              <div className="text-sm font-medium text-foreground">Admins</div>
-              <div className="text-xs text-muted-foreground mt-1">Administrators</div>
-            </CardContent>
-          </Card>
+          <MetricCard
+            title="Admins"
+            value={stats.byRole?.Admin || 0}
+            icon={ShieldCheck}
+            variant="purple"
+            description="Administrators"
+          />
 
-          <Card className="hover:bg-accent/50 transition-colors">
-            <CardContent className="p-6 text-center">
-              <div className="text-3xl font-bold text-secondary-foreground mb-2">{stats.byRole?.Normal || 0}</div>
-              <div className="text-sm font-medium text-foreground">Normal Users</div>
-              <div className="text-xs text-muted-foreground mt-1">Standard users</div>
-            </CardContent>
-          </Card>
+          <MetricCard
+            title="Normal Users"
+            value={stats.byRole?.Normal || 0}
+            icon={UserIcon}
+            variant="default"
+            description="Standard users"
+          />
         </div>
 
         {/* Main Content */}

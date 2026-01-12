@@ -182,7 +182,7 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ user }) => {
             tooltip={item.label}
           >
             {renderIcon(item.icon, "h-4 w-4")}
-            <span>{item.label}</span>
+            <span className="font-medium text-sm">{item.label}</span>
             {item.badge && (
               <Badge variant="secondary" className="ml-auto h-5 px-2 text-xs">
                 {item.badge}
@@ -203,9 +203,9 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ user }) => {
                     onClick={() => child.href && router.push(child.href)}
                     isActive={isActive(child.href)}
                   >
-                    <Dot className="h-4 w-4" />
-                    {renderIcon(child.icon, "h-4 w-4")}
-                    <span>{child.label}</span>
+                    <Dot className="h-3.5 w-3.5" />
+                    {renderIcon(child.icon, "h-3.5 w-3.5")}
+                    <span className="font-normal text-sm">{child.label}</span>
                     {child.badge && (
                       <Badge variant="secondary" className="ml-auto h-5 px-2 text-xs">
                         {child.badge}
@@ -247,7 +247,7 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ user }) => {
       <>
         {groupedItems.overview.length > 0 && (
           <SidebarGroup>
-            <SidebarGroupLabel className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">
+            <SidebarGroupLabel className="text-[10px] font-semibold text-sidebar-foreground/50 uppercase tracking-[0.08em] mb-3 px-2">
               Overview
             </SidebarGroupLabel>
             <SidebarGroupContent>
@@ -260,7 +260,7 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ user }) => {
 
         {groupedItems.operations.length > 0 && (
           <SidebarGroup>
-            <SidebarGroupLabel className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">
+            <SidebarGroupLabel className="text-[10px] font-semibold text-sidebar-foreground/50 uppercase tracking-[0.08em] mb-3 px-2">
               Operations
             </SidebarGroupLabel>
             <SidebarGroupContent>
@@ -273,7 +273,7 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ user }) => {
 
         {groupedItems.management.length > 0 && (
           <SidebarGroup>
-            <SidebarGroupLabel className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">
+            <SidebarGroupLabel className="text-[10px] font-semibold text-sidebar-foreground/50 uppercase tracking-[0.08em] mb-3 px-2">
               Management
             </SidebarGroupLabel>
             <SidebarGroupContent>
@@ -286,7 +286,7 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ user }) => {
 
         {groupedItems.analytics.length > 0 && (
           <SidebarGroup>
-            <SidebarGroupLabel className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">
+            <SidebarGroupLabel className="text-[10px] font-semibold text-sidebar-foreground/50 uppercase tracking-[0.08em] mb-3 px-2">
               Analytics & Reports
             </SidebarGroupLabel>
             <SidebarGroupContent>
@@ -299,7 +299,7 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ user }) => {
 
         {groupedItems.tools.length > 0 && (
           <SidebarGroup>
-            <SidebarGroupLabel className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">
+            <SidebarGroupLabel className="text-[10px] font-semibold text-sidebar-foreground/50 uppercase tracking-[0.08em] mb-3 px-2">
               Tools
             </SidebarGroupLabel>
             <SidebarGroupContent>
@@ -318,7 +318,7 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ user }) => {
          groupedItems.analytics.length === 0 && 
          groupedItems.tools.length === 0 && (
           <SidebarGroup>
-            <SidebarGroupLabel className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">
+            <SidebarGroupLabel className="text-[10px] font-semibold text-sidebar-foreground/50 uppercase tracking-[0.08em] mb-3 px-2">
               Navigation
             </SidebarGroupLabel>
             <SidebarGroupContent>
@@ -333,39 +333,39 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ user }) => {
   };
   
   return (
-    <Sidebar className="border-r bg-background">
-      <SidebarHeader className="border-b bg-card">
-        <div className="flex items-center space-x-3 p-4">
-          <div className="flex items-center justify-center w-10 h-10 rounded-lg overflow-hidden">
+    <Sidebar className="border-r border-sidebar-border/50 bg-sidebar">
+      <SidebarHeader className="border-b border-sidebar-border/50 bg-sidebar px-6 py-5">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center justify-center w-11 h-11 rounded-lg overflow-hidden">
             <Image
               src="/logo.png"
               alt="Logo"
-              width={40}
-              height={40}
+              width={44}
+              height={44}
               className="object-contain"
             />
           </div>
           <div>
-            <h1 className="text-lg font-semibold text-foreground">
+            <h1 className="text-base font-semibold text-sidebar-foreground tracking-tight leading-tight">
               Fleet Management
             </h1>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-[11px] text-sidebar-foreground/60 font-medium tracking-wide mt-0.5">
               Vehicle Tracking System
             </p>
           </div>
         </div>
       </SidebarHeader>
       
-      <SidebarContent className="p-4">
+      <SidebarContent className="px-6 py-5">
         {/* User Info Badge */}
         {user && (
           <div className="mb-6">
-            <div className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-muted text-muted-foreground">
-              <span className="w-2 h-2 rounded-full bg-primary mr-2"></span>
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-medium bg-sidebar-accent/50 text-sidebar-foreground/70 border border-sidebar-border/30">
+              <span className="w-1.5 h-1.5 rounded-full bg-sidebar-primary"></span>
               {user.role} User
             </div>
             {navigationItems.length === 0 && (
-              <p className="text-xs text-muted-foreground mt-2">
+              <p className="text-xs text-sidebar-foreground/50 mt-3 leading-relaxed">
                 No navigation items available. Contact administrator for permissions.
               </p>
             )}
@@ -376,7 +376,7 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ user }) => {
         {navigationItems.length > 0 ? renderGroupedNavigation() : (
           <SidebarGroup>
             <SidebarGroupContent>
-              <div className="p-4 text-center text-sm text-muted-foreground">
+              <div className="px-4 py-6 text-center text-sm text-sidebar-foreground/50">
                 No accessible pages
               </div>
             </SidebarGroupContent>
@@ -384,18 +384,18 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ user }) => {
         )}
       </SidebarContent>
       
-      <SidebarFooter className="border-t bg-card p-4">
-        <div className="flex items-center space-x-3">
-          <Avatar className="h-8 w-8">
-            <AvatarFallback className="bg-primary text-primary-foreground text-xs font-medium">
+      <SidebarFooter className="border-t border-sidebar-border/50 bg-sidebar px-6 py-5">
+        <div className="flex items-center gap-3">
+          <Avatar className="h-9 w-9 ring-2 ring-sidebar-border/30">
+            <AvatarFallback className="bg-sidebar-primary text-sidebar-primary-foreground text-xs font-semibold">
               {user ? getUserInitials(user.firstName, user.lastName) : 'U'}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-foreground truncate">
+            <p className="text-sm font-semibold text-sidebar-foreground truncate leading-tight">
               {user ? `${user.firstName} ${user.lastName}` : 'Current User'}
             </p>
-            <p className="text-xs text-muted-foreground truncate">
+            <p className="text-[11px] text-sidebar-foreground/60 truncate mt-0.5 leading-tight">
               {user?.email || 'user@vinisuite.com'}
             </p>
           </div>

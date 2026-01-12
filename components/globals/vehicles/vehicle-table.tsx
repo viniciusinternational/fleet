@@ -470,11 +470,11 @@ const VehicleTable: React.FC<VehicleTableProps> = ({
 
         {/* Selection Summary */}
         {showSelection && selectedVehicles.size > 0 && (
-          <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-700 rounded-lg">
+          <div className="mb-4 p-3 bg-primary/5 border border-primary/20 rounded-lg">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Checkbox checked={true} disabled />
-                <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
+                <span className="text-sm font-medium text-primary">
                   {selectedVehicles.size} vehicle{selectedVehicles.size !== 1 ? 's' : ''} selected
                 </span>
               </div>
@@ -487,7 +487,7 @@ const VehicleTable: React.FC<VehicleTableProps> = ({
                     onSelectionChange(new Set());
                   }
                 }}
-                className="text-blue-700 dark:text-blue-300 border-blue-300 dark:border-blue-600"
+                className="text-primary border-primary/30 hover:bg-primary/5"
               >
                 Clear Selection
               </Button>
@@ -570,8 +570,8 @@ const VehicleTable: React.FC<VehicleTableProps> = ({
                       onClick={() => handleVehicleClick(vehicle.id)}
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center flex-shrink-0">
-                          <Car className="h-5 w-5 text-blue-600 dark:text-blue-300" />
+                        <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <Car className="h-5 w-5 text-primary" />
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="font-medium text-base">{vehicle.make} {vehicle.model}</div>
@@ -635,8 +635,8 @@ const VehicleTable: React.FC<VehicleTableProps> = ({
               >
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
-                    <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900 dark:to-blue-800 rounded-lg flex items-center justify-center shadow-sm">
-                      <Car className="h-6 w-6 text-blue-600 dark:text-blue-300" />
+                    <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center shadow-sm">
+                      <Car className="h-6 w-6 text-primary" />
                     </div>
                     <Badge variant="outline" className={`${getStatusColor(vehicle.status)} text-xs`}>
                       {getStatusIcon(vehicle.status)}

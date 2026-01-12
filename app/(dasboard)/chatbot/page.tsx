@@ -52,16 +52,16 @@ export default function ChatbotPage() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem)] max-w-7xl mx-auto p-6 gap-6">
+    <div className="flex flex-col h-[calc(100vh-4rem)] max-w-full mx-auto p-6 gap-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div className="flex items-center gap-4">
           <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-primary/10">
             <Sparkles className="w-6 h-6 text-primary" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Fleet AI Assistant</h1>
-            <p className="text-sm text-muted-foreground flex items-center gap-2 mt-1">
+            <h1 className="text-3xl lg:text-4xl font-bold tracking-tight text-foreground">Fleet AI Assistant</h1>
+            <p className="text-muted-foreground mt-1 text-lg flex items-center gap-2">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>

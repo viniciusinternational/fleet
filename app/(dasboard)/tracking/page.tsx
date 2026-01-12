@@ -311,22 +311,30 @@ const TrackingView: React.FC = () => {
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-6 py-8">
       {/* Header */}
-        <div className="mb-6">
-          <div className="flex items-center gap-4 mb-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => router.push('/dashboard')}
-              className="p-2"
-            >
-              <ArrowLeft className="h-4 w-4" />
-                </Button>
-                <div>
-              <h1 className="text-3xl lg:text-4xl font-bold tracking-tight">Event Tracking</h1>
-              <p className="text-muted-foreground mt-2 text-lg">View and track vehicle journey events and status changes</p>
+        <div className="mb-8">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => router.push('/dashboard')}
+                className="p-2"
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <div>
+                <h1 className="text-3xl lg:text-4xl font-bold tracking-tight">Event Tracking</h1>
+                <p className="text-muted-foreground mt-2 text-lg">View and track vehicle journey events and status changes</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Refresh
+              </Button>
+            </div>
           </div>
         </div>
-      </div>
 
         {/* Main Card */}
         <Card>
@@ -336,12 +344,6 @@ const TrackingView: React.FC = () => {
                 <Activity className="h-5 w-5" />
                 Event Tracking Dashboard
               </CardTitle>
-              <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm">
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  Refresh
-                </Button>
-              </div>
             </div>
           </CardHeader>
           <CardContent className="space-y-6">

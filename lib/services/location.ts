@@ -1,7 +1,6 @@
-import { PrismaClient } from '@prisma/client';
 import type { Location } from '@/types';
-
-const prisma = new PrismaClient();
+import { AuditService } from './audit';
+import { db } from '@/lib/db';
 
 /**
  * Location Service
@@ -60,13 +59,13 @@ export class LocationService {
     try {
       // Get locations with pagination
       const [locations, total] = await Promise.all([
-        prisma.location.findMany({
+        db.location.findMany({
           where,
           orderBy,
           skip,
           take: limit,
         }),
-        prisma.location.count({ where }),
+        db.location.count({ where }),
       ]);
       
       const totalPages = Math.ceil(total / limit);
@@ -116,7 +115,7 @@ export class LocationService {
    */
   static async getLocationById(id: string): Promise<Location | null> {
     try {
-      const location = await prisma.location.findUnique({
+      const location = await db.location.findUnique({
         where: { id },
       });
       
@@ -140,10 +139,10 @@ export class LocationService {
         recentLocations,
       ] = await Promise.all([
         // Total locations count
-        prisma.location.count(),
+        db.location.count(),
         
         // Locations by type
-        prisma.location.groupBy({
+        db.location.groupBy({
           by: ['type'],
           _count: {
             type: true,
@@ -156,7 +155,7 @@ export class LocationService {
         }),
         
         // Locations by status
-        prisma.location.groupBy({
+        db.location.groupBy({
           by: ['status'],
           _count: {
             status: true,
@@ -169,7 +168,7 @@ export class LocationService {
         }),
         
         // Recent locations (last 30 days)
-        prisma.location.count({
+        db.location.count({
           where: {
             lastUpdated: {
               gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // 30 days ago
@@ -220,7 +219,7 @@ export class LocationService {
   /**
    * Create new location
    */
-  static async createLocation(locationData: Omit<Location, 'id'>): Promise<Location> {
+  static async createLocation(locationData: Omit<Location, 'id'>, actorId?: string): Promise<Location> {
     try {
       // Transform nested Location data to flat structure for database
       const flatData = {
@@ -241,9 +240,20 @@ export class LocationService {
         notes: locationData.notes,
       };
 
-      const newLocation = await prisma.location.create({
+      const newLocation = await db.location.create({
         data: flatData,
       });
+
+      // Log audit event
+      if (actorId) {
+        await AuditService.logEvent({
+          action: 'CREATE',
+          actorId,
+          entityType: 'Location',
+          entityId: newLocation.id,
+          after: JSON.parse(JSON.stringify(newLocation)),
+        });
+      }
 
       // Transform back to Location type
       return {
@@ -279,8 +289,11 @@ export class LocationService {
   /**
    * Update location
    */
-  static async updateLocation(id: string, locationData: Partial<Omit<Location, 'id'>>): Promise<Location | null> {
+  static async updateLocation(id: string, locationData: Partial<Omit<Location, 'id'>>, actorId?: string): Promise<Location | null> {
     try {
+      // Get before state for audit log
+      const beforeState = actorId ? await AuditService.getBeforeState('Location', id) : null;
+
       // Transform nested Location data to flat structure for database
       const flatData: any = {};
       
@@ -306,10 +319,22 @@ export class LocationService {
       if (locationData.lastUpdated) flatData.lastUpdated = new Date(locationData.lastUpdated);
       if (locationData.notes !== undefined) flatData.notes = locationData.notes;
 
-      const updatedLocation = await prisma.location.update({
+      const updatedLocation = await db.location.update({
         where: { id },
         data: flatData,
       });
+
+      // Log audit event
+      if (actorId) {
+        await AuditService.logEvent({
+          action: 'UPDATE',
+          actorId,
+          entityType: 'Location',
+          entityId: updatedLocation.id,
+          before: beforeState,
+          after: JSON.parse(JSON.stringify(updatedLocation)),
+        });
+      }
 
       // Transform back to Location type
       return {
@@ -345,11 +370,26 @@ export class LocationService {
   /**
    * Delete location
    */
-  static async deleteLocation(id: string): Promise<boolean> {
+  static async deleteLocation(id: string, actorId?: string): Promise<boolean> {
     try {
-      await prisma.location.delete({
+      // Get before state for audit log
+      const beforeState = actorId ? await AuditService.getBeforeState('Location', id) : null;
+
+      await db.location.delete({
         where: { id },
       });
+
+      // Log audit event
+      if (actorId) {
+        await AuditService.logEvent({
+          action: 'DELETE',
+          actorId,
+          entityType: 'Location',
+          entityId: id,
+          before: beforeState,
+        });
+      }
+
       return true;
     } catch (error) {
       console.error('Error deleting location:', error);

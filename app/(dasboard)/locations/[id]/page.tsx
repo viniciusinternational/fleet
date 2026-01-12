@@ -44,6 +44,7 @@ import {
 } from 'lucide-react';
 import { LocationType, LocationStatus } from '@/types';
 import type { User, Vehicle } from '@/types';
+import { MetricCard } from '@/components/dashboard/metric-card';
 
 const LocationDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -309,30 +310,50 @@ const LocationDetail: React.FC = () => {
     <div className="min-h-screen bg-background">
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
         {/* Header */}
-        <div className="mb-6 lg:mb-8">
-          <div className="flex items-center gap-4 mb-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => router.push('/admin/locations')}
-              className="p-2"
-            >
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <div>
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight">{location.name}</h1>
-              <p className="text-muted-foreground mt-2 text-sm sm:text-base">Location Details & Management</p>
+        <div className="mb-8">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => router.push('/admin/locations')}
+                className="p-2"
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <div>
+                <h1 className="text-3xl lg:text-4xl font-bold tracking-tight">{location.name}</h1>
+                <p className="text-muted-foreground mt-2 text-lg">Location Details & Management</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <Button
+                variant="outline"
+                onClick={() => router.push(`/locations/edit?id=${location.id}`)}
+                className="flex items-center gap-2"
+              >
+                <Edit className="h-4 w-4" />
+                Edit Location
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={openDeleteDialog}
+                className="flex items-center gap-2"
+              >
+                <Trash2 className="h-4 w-4" />
+                Delete
+              </Button>
             </div>
           </div>
         </div>
 
         {/* Location Profile Header */}
-        <Card className="mb-6">
+        <Card className="mb-8">
           <CardContent className="p-6">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
               <div className="flex items-start gap-4">
-                <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900 rounded-xl flex items-center justify-center flex-shrink-0">
-                  {getTypeIcon(location.type)}
+                <div className="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                  {React.cloneElement(getTypeIcon(location.type) as React.ReactElement, { className: 'h-8 w-8 text-primary' })}
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
@@ -362,25 +383,6 @@ const LocationDetail: React.FC = () => {
                     </div>
                   </div>
                 </div>
-              </div>
-              
-              <div className="flex items-center gap-3">
-                <Button
-                  variant="outline"
-                  onClick={() => router.push(`/locations/edit?id=${location.id}`)}
-                  className="flex items-center gap-2"
-                >
-                  <Edit className="h-4 w-4" />
-                  Edit Location
-                </Button>
-                <Button
-                  variant="destructive"
-                  onClick={openDeleteDialog}
-                  className="flex items-center gap-2"
-                >
-                  <Trash2 className="h-4 w-4" />
-                  Delete
-                </Button>
               </div>
             </div>
           </CardContent>
@@ -451,53 +453,39 @@ const LocationDetail: React.FC = () => {
               </Card>
 
               {/* Location Statistics */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Activity className="h-5 w-5" />
-                    Location Statistics
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                     <Card className="border-2 border-blue-200 bg-blue-50/50 dark:border-blue-700 dark:bg-blue-950/50">
-                       <CardContent className="p-4 text-center">
-                         <div className="text-2xl font-bold text-blue-700 dark:text-blue-300">
-                           {usersAtLocation.length}
-                         </div>
-                         <div className="text-sm text-blue-600 dark:text-blue-400 font-medium">Users Assigned</div>
-                       </CardContent>
-                     </Card>
-                     <Card className="border-2 border-green-200 bg-green-50/50 dark:border-green-700 dark:bg-green-950/50">
-                       <CardContent className="p-4 text-center">
-                         <div className="text-2xl font-bold text-green-700 dark:text-green-300">
-                           {vehiclesAtLocation.length}
-                         </div>
-                         <div className="text-sm text-green-600 dark:text-green-400 font-medium">Vehicles at Location</div>
-                       </CardContent>
-                     </Card>
-                   </div>
-                   
-                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                     <Card className="border-2 border-purple-200 bg-purple-50/50 dark:border-purple-700 dark:bg-purple-950/50">
-                       <CardContent className="p-4 text-center">
-                         <div className="text-2xl font-bold text-purple-700 dark:text-purple-300">
-                           {location.status === 'Operational' ? 'Yes' : 'No'}
-                         </div>
-                         <div className="text-sm text-purple-600 dark:text-purple-400 font-medium">Fully Operational</div>
-                       </CardContent>
-                     </Card>
-                     <Card className="border-2 border-gray-200 bg-gray-50/50 dark:border-gray-700 dark:bg-gray-950/50">
-                       <CardContent className="p-4 text-center">
-                         <div className="text-sm text-muted-foreground mb-1">Last Updated</div>
-                         <div className="text-lg font-semibold text-gray-700 dark:text-gray-300">
-                           {formatDateTime(location.lastUpdated)}
-                         </div>
-                       </CardContent>
-                     </Card>
-                   </div>
-                </CardContent>
-              </Card>
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <MetricCard
+                    title="Users Assigned"
+                    value={usersAtLocation.length}
+                    icon={Users}
+                    variant="blue"
+                  />
+                  <MetricCard
+                    title="Vehicles"
+                    value={vehiclesAtLocation.length}
+                    icon={Truck}
+                    variant="green"
+                  />
+                </div>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <MetricCard
+                    title="Operational"
+                    value={location.status === 'Operational' ? 'Yes' : 'No'}
+                    icon={CheckCircle}
+                    variant="purple"
+                  />
+                  <Card>
+                    <CardContent className="p-6 text-center">
+                      <div className="text-sm text-muted-foreground mb-1">Last Updated</div>
+                      <div className="text-lg font-semibold text-foreground">
+                        {formatDateTime(location.lastUpdated)}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
             </div>
 
             {/* Additional Information */}
@@ -545,9 +533,9 @@ const LocationDetail: React.FC = () => {
                       <div key={user.id} className="flex items-center gap-4 p-4 border rounded-lg hover:bg-muted/50">
                         <Avatar className="w-12 h-12">
                           <AvatarImage src={user.avatar} />
-                          <AvatarFallback className="bg-blue-100 text-blue-600 text-sm font-semibold">
-                            {((user.firstName?.[0] || '') + (user.lastName?.[0] || '')).toUpperCase()}
-                          </AvatarFallback>
+                    <AvatarFallback className="bg-primary/10 text-primary text-sm font-semibold">
+                      {((user.firstName?.[0] || '') + (user.lastName?.[0] || '')).toUpperCase()}
+                    </AvatarFallback>
                         </Avatar>
                         <div className="flex-1">
                           <div className="font-medium">{user.firstName} {user.lastName}</div>
@@ -589,8 +577,8 @@ const LocationDetail: React.FC = () => {
                   <div className="space-y-4">
                     {vehiclesAtLocation.map((vehicle) => (
                       <div key={vehicle.id} className="flex items-center gap-4 p-4 border rounded-lg hover:bg-muted/50">
-                        <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center flex-shrink-0">
-                          <Truck className="h-6 w-6 text-blue-600 dark:text-blue-300" />
+                        <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <Truck className="h-6 w-6 text-primary" />
                         </div>
                         <div className="flex-1">
                           <div className="font-medium">{vehicle.make} {vehicle.model}</div>

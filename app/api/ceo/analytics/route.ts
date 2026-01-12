@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { VehicleService } from '@/lib/services/vehicle';
 import { LocationService } from '@/lib/services/location';
 import { OwnerService } from '@/lib/services/owner';
-import { prisma } from '@/lib/prisma';
 import type { VehicleStatus } from '@/types';
 import { VehicleStatus as VehicleStatusEnum } from '@/types';
 

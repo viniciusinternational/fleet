@@ -132,7 +132,7 @@ const OwnerDetailsPage: React.FC = () => {
               <p className="text-muted-foreground mt-2 text-lg">Owner Details & Information</p>
               <div className="flex items-center gap-4 mt-3">
                 <div className="flex items-center gap-2">
-                  <Mail className="h-4 w-4 text-blue-500" />
+                  <Mail className="h-4 w-4 text-primary" />
                   <span className="text-sm text-muted-foreground">
                     {owner.email}
                   </span>
@@ -229,8 +229,8 @@ const OwnerDetailsPage: React.FC = () => {
                 <div className="space-y-3">
                   {(owner as any).vehicles.map((vehicle: any) => (
                     <div key={vehicle.id} className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg">
-                      <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
-                        <Car className="h-5 w-5 text-blue-600 dark:text-blue-300" />
+                      <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                        <Car className="h-5 w-5 text-primary" />
                       </div>
                       <div className="flex-1">
                         <div className="font-medium text-sm">{vehicle.make} {vehicle.model}</div>

@@ -81,6 +81,7 @@ const AddUser: React.FC = () => {
     view_analytics: false,
     view_reports: false,
     view_chatbot: false,
+    view_audit_logs: false,
   });
 
   // Check if current user has permission to add users

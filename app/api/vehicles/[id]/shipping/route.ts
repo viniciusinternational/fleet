@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { db } from '@/lib/db';
 import { uploadShippingDocument } from '@/lib/s3';
 import { z } from 'zod';
-
-const prisma = new PrismaClient();
 
 // Validation schema for shipping details
 const shippingDetailsSchema = z.object({
@@ -114,7 +112,7 @@ export async function POST(
     const validatedData = shippingDetailsSchema.parse(fullShippingData);
     
     // Check if vehicle exists
-    const vehicle = await prisma.vehicle.findUnique({
+    const vehicle = await db.vehicle.findUnique({
       where: { id: vehicleId },
     });
     
@@ -129,7 +127,7 @@ export async function POST(
     }
 
     // Check if shipping details already exist for this vehicle
-    const existingShippingDetails = await prisma.shippingDetails.findFirst({
+    const existingShippingDetails = await db.shippingDetails.findFirst({
       where: { vehicle: { id: vehicleId } },
     });
     
@@ -145,7 +143,7 @@ export async function POST(
 
     // Create shipping details
     // Use empty strings for required fields if undefined (Prisma schema requires non-null)
-    const shippingDetails = await prisma.shippingDetails.create({
+    const shippingDetails = await db.shippingDetails.create({
       data: {
         vehicleId: vehicleId,
         vehicle: { connect: { id: vehicleId } },
@@ -162,7 +160,7 @@ export async function POST(
     });
 
     // Update vehicle to link shipping details
-    await prisma.vehicle.update({
+    await db.vehicle.update({
       where: { id: vehicleId },
       data: { shippingDetailsId: shippingDetails.id },
     });
@@ -288,7 +286,7 @@ export async function PUT(
     });
     
     // Check if vehicle exists
-    const vehicle = await prisma.vehicle.findUnique({
+    const vehicle = await db.vehicle.findUnique({
       where: { id: vehicleId },
     });
     
@@ -304,7 +302,7 @@ export async function PUT(
 
     // Update shipping details
     // Use empty strings for required fields if undefined (Prisma schema requires non-null)
-    const updatedShippingDetails = await prisma.shippingDetails.update({
+    const updatedShippingDetails = await db.shippingDetails.update({
       where: { vehicleId },
       data: {
         originPort: validatedData.originPort || '',

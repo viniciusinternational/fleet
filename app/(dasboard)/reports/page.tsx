@@ -1,13 +1,76 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, FileText, Download, BarChart3 } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { ReportConfig, type ReportType, type ReportFilters } from '@/components/reports/report-config';
+import { ArrowLeft, FileText, AlertCircle, CheckCircle2 } from 'lucide-react';
 
 const CustomReports: React.FC = () => {
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+
+  const handleGenerateReport = async (reportType: ReportType, filters: ReportFilters) => {
+    setLoading(true);
+    setError(null);
+    setSuccess(false);
+
+    try {
+      const response = await fetch('/api/reports/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          reportType,
+          filters,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to generate report');
+      }
+
+      // Get the PDF blob
+      const blob = await response.blob();
+
+      // Create a download link
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+
+      // Get filename from Content-Disposition header or generate one
+      const contentDisposition = response.headers.get('Content-Disposition');
+      let filename = `Vehicle_Report_${reportType}_${new Date().toISOString().split('T')[0]}.pdf`;
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename="(.+)"/);
+        if (filenameMatch) {
+          filename = filenameMatch[1];
+        }
+      }
+
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+
+      // Clean up
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+      setSuccess(true);
+      setTimeout(() => setSuccess(false), 5000);
+    } catch (err) {
+      console.error('Error generating report:', err);
+      setError(err instanceof Error ? err.message : 'Failed to generate report. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -16,13 +79,13 @@ const CustomReports: React.FC = () => {
         <div className="mb-6">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div>
-              <h1 className="text-3xl lg:text-4xl font-bold tracking-tight">Custom Reports</h1>
+              <h1 className="text-3xl lg:text-4xl font-bold tracking-tight">Vehicle Reports</h1>
               <p className="text-muted-foreground mt-2 text-lg">
-                Generate and view custom business reports
+                Generate comprehensive PDF reports for your vehicle fleet
               </p>
             </div>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => router.push('/dashboard')}
               className="flex items-center gap-2"
             >
@@ -32,86 +95,59 @@ const CustomReports: React.FC = () => {
           </div>
         </div>
 
-        {/* Main Reports Card */}
-        <Card>
+        {/* Error Alert */}
+        {error && (
+          <Alert variant="destructive" className="mb-6">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+
+        {/* Success Alert */}
+        {success && (
+          <Alert className="mb-6 border-green-500 bg-green-50 dark:bg-green-950/50">
+            <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
+            <AlertDescription className="text-green-800 dark:text-green-200">
+              Report generated successfully! The PDF download should start automatically.
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Report Configuration */}
+        <div className="max-w-4xl mx-auto">
+          <ReportConfig onGenerate={handleGenerateReport} loading={loading} />
+        </div>
+
+        {/* Information Card */}
+        <Card className="mt-6 max-w-4xl mx-auto">
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-bold tracking-tight">Report Generator</h2>
-                <p className="text-muted-foreground">Create custom reports for business intelligence</p>
-              </div>
-            </div>
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              Report Types
+            </CardTitle>
+            <CardDescription>
+              Learn about the different types of reports available
+            </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-8">
-            {/* Report Types */}
-            <div>
-              <h3 className="text-lg font-semibold mb-4">Available Report Types</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <Button
-                  variant="outline"
-                  className="h-auto p-6 flex flex-col items-center gap-3 hover:bg-blue-50 hover:border-blue-200 dark:hover:bg-blue-950/50 dark:hover:border-blue-700"
-                >
-                  <BarChart3 className="h-8 w-8 text-blue-600 dark:text-blue-400" />
-                  <div className="text-center">
-                    <div className="font-semibold">Financial Reports</div>
-                    <div className="text-sm text-muted-foreground">Revenue, costs, and profit analysis</div>
-                  </div>
-                </Button>
-                
-                <Button
-                  variant="outline"
-                  className="h-auto p-6 flex flex-col items-center gap-3 hover:bg-green-50 hover:border-green-200 dark:hover:bg-green-950/50 dark:hover:border-green-700"
-                >
-                  <FileText className="h-8 w-8 text-green-600 dark:text-green-400" />
-                  <div className="text-center">
-                    <div className="font-semibold">Operational Reports</div>
-                    <div className="text-sm text-muted-foreground">Delivery times and performance metrics</div>
-                  </div>
-                </Button>
-                
-                <Button
-                  variant="outline"
-                  className="h-auto p-6 flex flex-col items-center gap-3 hover:bg-purple-50 hover:border-purple-200 dark:hover:bg-purple-950/50 dark:hover:border-purple-700"
-                >
-                  <Download className="h-8 w-8 text-purple-600 dark:text-purple-400" />
-                  <div className="text-center">
-                    <div className="font-semibold">Custom Reports</div>
-                    <div className="text-sm text-muted-foreground">Build your own report templates</div>
-                  </div>
-                </Button>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <h4 className="font-semibold">Inventory List</h4>
+                <p className="text-sm text-muted-foreground">
+                  Complete list of all vehicles with detailed information including VIN, make, model, status, location, and owner details.
+                </p>
               </div>
-            </div>
-
-            {/* Coming Soon Message */}
-            <div className="text-center py-12">
-              <div className="text-6xl mb-4">📊</div>
-              <h3 className="text-xl font-semibold mb-2">Advanced Reporting Coming Soon</h3>
-              <p className="text-muted-foreground max-w-md mx-auto">
-                We're working on comprehensive reporting features including custom dashboards, 
-                automated report generation, and advanced analytics.
-              </p>
-            </div>
-
-            {/* Quick Actions */}
-            <div>
-              <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
-              <div className="flex flex-wrap gap-4">
-                <Button variant="outline" size="sm">
-                  <Download className="h-4 w-4 mr-2" />
-                  Export Current Data
-                </Button>
-                <Button variant="outline" size="sm">
-                  <FileText className="h-4 w-4 mr-2" />
-                  View Sample Reports
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => router.push('/ceo/analytics')}
-                >
-                  <BarChart3 className="h-4 w-4 mr-2" />
-                  Analytics Dashboard
-                </Button>
+              <div className="space-y-2">
+                <h4 className="font-semibold">Status Summary</h4>
+                <p className="text-sm text-muted-foreground">
+                  Vehicles grouped by status with count and percentage breakdown. Includes detailed vehicle listings for each status group.
+                </p>
+              </div>
+              <div className="space-y-2">
+                <h4 className="font-semibold">Location-Based</h4>
+                <p className="text-sm text-muted-foreground">
+                  Vehicles organized by their current location. Shows location summary and detailed vehicle information for each location.
+                </p>
               </div>
             </div>
           </CardContent>

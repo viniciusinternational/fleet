@@ -26,6 +26,8 @@
   "view_tracking": true,
   "view_analytics": true,
   "view_reports": true,
-  "view_chatbot": true
+  "generate_reports": true,
+  "view_chatbot": true,
+  "view_audit_logs": true
 }
 

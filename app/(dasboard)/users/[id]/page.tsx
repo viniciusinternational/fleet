@@ -50,6 +50,7 @@ import type { User as UserType, PermissionKey } from '@/types';
 import { useAuthStore } from '@/store/auth';
 import { hasPermission } from '@/lib/permissions';
 import { getRoleBadgeClass, getStatusBadgeClass } from '@/lib/utils/user-colors';
+import { EntityAuditLogs } from '@/components/audit/entity-audit-logs';
 
 const UserDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -515,21 +516,7 @@ const UserDetail: React.FC = () => {
 
           {/* Activity Tab */}
           <TabsContent value="activity" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Activity className="h-5 w-5" />
-                  User Activity
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8 text-muted-foreground">
-                  <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>User activity history will be displayed here</p>
-                  <p className="text-sm">This could include login history, actions performed, etc.</p>
-                </div>
-              </CardContent>
-            </Card>
+            <EntityAuditLogs entityType="User" entityId={id} limit={20} />
           </TabsContent>
 
           {/* Permissions Tab */}

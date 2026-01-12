@@ -1,7 +1,6 @@
-import { PrismaClient } from '@prisma/client';
 import type { Vehicle } from '@/types';
-
-const prisma = new PrismaClient();
+import { AuditService } from './audit';
+import { db } from '@/lib/db';
 
 type VehicleImageInput = {
   data?: string; // Optional - can be empty for S3 URLs
@@ -72,7 +71,7 @@ export class VehicleService {
     try {
       // Get vehicles with pagination
       const [vehicles, total] = await Promise.all([
-        prisma.vehicle.findMany({
+        db.vehicle.findMany({
           where,
           orderBy,
           skip,
@@ -111,7 +110,7 @@ export class VehicleService {
             }, // Exclude base64 payloads for list queries
           },
         }),
-        prisma.vehicle.count({ where }),
+        db.vehicle.count({ where }),
       ]);
 
       const totalPages = Math.ceil(total / limit);
@@ -155,7 +154,7 @@ export class VehicleService {
    */
   static async getVehicleById(id: string): Promise<Vehicle | null> {
     try {
-      const vehicle = await prisma.vehicle.findUnique({
+      const vehicle = await db.vehicle.findUnique({
         where: { id },
         include: {
           owner: true,
@@ -193,7 +192,7 @@ export class VehicleService {
    */
   static async getVehicleByVin(vin: string) {
     try {
-      return prisma.vehicle.findUnique({
+      return db.vehicle.findUnique({
         where: { vin },
       });
     } catch (error) {
@@ -207,7 +206,7 @@ export class VehicleService {
    */
   static async getRecentVehicles(limit: number = 5): Promise<Vehicle[]> {
     try {
-      const vehicles = await prisma.vehicle.findMany({
+      const vehicles = await db.vehicle.findMany({
         take: limit,
         orderBy: {
           orderDate: 'desc',
@@ -264,10 +263,10 @@ export class VehicleService {
         recentVehicles,
       ] = await Promise.all([
         // Total vehicles count
-        prisma.vehicle.count(),
+        db.vehicle.count(),
         
         // Vehicles by status
-        prisma.vehicle.groupBy({
+        db.vehicle.groupBy({
           by: ['status'],
           _count: {
             status: true,
@@ -280,7 +279,7 @@ export class VehicleService {
         }),
         
         // Recent vehicles (last 30 days)
-        prisma.vehicle.count({
+        db.vehicle.count({
           where: {
             orderDate: {
               gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // 30 days ago
@@ -319,11 +318,28 @@ export class VehicleService {
   /**
    * Create new vehicle
    */
-  static async createVehicle(vehicleData: any): Promise<any> {
+  static async createVehicle(vehicleData: any, actorId?: string): Promise<any> {
     try {
-      const newVehicle = await prisma.vehicle.create({
+      const newVehicle = await db.vehicle.create({
         data: vehicleData,
+        include: {
+          owner: true,
+          currentLocation: true,
+          source: true,
+        },
       });
+
+      // Log audit event
+      if (actorId) {
+        await AuditService.logEvent({
+          action: 'CREATE',
+          actorId,
+          entityType: 'Vehicle',
+          entityId: newVehicle.id,
+          after: JSON.parse(JSON.stringify(newVehicle)),
+        });
+      }
+
       return newVehicle;
     } catch (error) {
       console.error('Error creating vehicle:', error);
@@ -334,12 +350,33 @@ export class VehicleService {
   /**
    * Update vehicle
    */
-  static async updateVehicle(id: string, vehicleData: any): Promise<any> {
+  static async updateVehicle(id: string, vehicleData: any, actorId?: string): Promise<any> {
     try {
-      const updatedVehicle = await prisma.vehicle.update({
+      // Get before state for audit log
+      const beforeState = actorId ? await AuditService.getBeforeState('Vehicle', id) : null;
+
+      const updatedVehicle = await db.vehicle.update({
         where: { id },
         data: vehicleData,
+        include: {
+          owner: true,
+          currentLocation: true,
+          source: true,
+        },
       });
+
+      // Log audit event
+      if (actorId) {
+        await AuditService.logEvent({
+          action: 'UPDATE',
+          actorId,
+          entityType: 'Vehicle',
+          entityId: updatedVehicle.id,
+          before: beforeState,
+          after: JSON.parse(JSON.stringify(updatedVehicle)),
+        });
+      }
+
       return updatedVehicle;
     } catch (error) {
       console.error('Error updating vehicle:', error);
@@ -350,11 +387,26 @@ export class VehicleService {
   /**
    * Delete vehicle
    */
-  static async deleteVehicle(id: string): Promise<boolean> {
+  static async deleteVehicle(id: string, actorId?: string): Promise<boolean> {
     try {
-      await prisma.vehicle.delete({
+      // Get before state for audit log
+      const beforeState = actorId ? await AuditService.getBeforeState('Vehicle', id) : null;
+
+      await db.vehicle.delete({
         where: { id },
       });
+
+      // Log audit event
+      if (actorId) {
+        await AuditService.logEvent({
+          action: 'DELETE',
+          actorId,
+          entityType: 'Vehicle',
+          entityId: id,
+          before: beforeState,
+        });
+      }
+
       return true;
     } catch (error) {
       console.error('Error deleting vehicle:', error);
@@ -373,7 +425,7 @@ export class VehicleService {
     const { includeData = false } = options;
 
     try {
-      const images = await prisma.vehicleImage.findMany({
+      const images = await db.vehicleImage.findMany({
         where: { vehicleId },
         orderBy: [
           { isPrimary: 'desc' },
@@ -416,7 +468,7 @@ export class VehicleService {
 
       const createdImages = await Promise.all(
         normalizedImages.map((image) =>
-          prisma.vehicleImage.create({
+          db.vehicleImage.create({
             data: {
               url: image.url,
               alt: image.alt,
@@ -440,7 +492,7 @@ export class VehicleService {
 
   static async replaceVehicleImages(vehicleId: string, images: VehicleImageInput[]) {
     try {
-      await prisma.vehicleImage.deleteMany({
+      await db.vehicleImage.deleteMany({
         where: { vehicleId },
       });
 

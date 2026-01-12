@@ -1,7 +1,5 @@
-import { PrismaClient } from '@prisma/client';
 import type { Source } from '@/types';
-
-const prisma = new PrismaClient();
+import { db } from '@/lib/db';
 
 /**
  * Source Service
@@ -54,7 +52,7 @@ export class SourceService {
     try {
       // Get sources with pagination
       const [sources, total] = await Promise.all([
-        prisma.source.findMany({
+        db.source.findMany({
           where,
           orderBy,
           skip,
@@ -71,7 +69,7 @@ export class SourceService {
             },
           },
         }),
-        prisma.source.count({ where }),
+        db.source.count({ where }),
       ]);
       
       const totalPages = Math.ceil(total / limit);
@@ -95,7 +93,7 @@ export class SourceService {
    */
   static async getSourceById(id: string): Promise<Source | null> {
     try {
-      const source = await prisma.source.findUnique({
+      const source = await db.source.findUnique({
         where: { id },
         include: {
           vehicles: {
@@ -135,7 +133,7 @@ export class SourceService {
    */
   static async createSource(sourceData: Omit<Source, 'id' | 'createdAt' | 'updatedAt'>): Promise<Source> {
     try {
-      const newSource = await prisma.source.create({
+      const newSource = await db.source.create({
         data: sourceData,
       });
       return newSource;
@@ -150,7 +148,7 @@ export class SourceService {
    */
   static async updateSource(id: string, sourceData: Partial<Omit<Source, 'id' | 'createdAt' | 'updatedAt'>>): Promise<Source | null> {
     try {
-      const updatedSource = await prisma.source.update({
+      const updatedSource = await db.source.update({
         where: { id },
         data: sourceData,
       });
@@ -166,7 +164,7 @@ export class SourceService {
    */
   static async deleteSource(id: string): Promise<boolean> {
     try {
-      await prisma.source.delete({
+      await db.source.delete({
         where: { id },
       });
       return true;
@@ -190,10 +188,10 @@ export class SourceService {
         recentSources,
       ] = await Promise.all([
         // Total sources count
-        prisma.source.count(),
+        db.source.count(),
         
         // Sources with vehicles
-        prisma.source.count({
+        db.source.count({
           where: {
             vehicles: {
               some: {},
@@ -202,7 +200,7 @@ export class SourceService {
         }),
         
         // Sources without vehicles
-        prisma.source.count({
+        db.source.count({
           where: {
             vehicles: {
               none: {},
@@ -211,7 +209,7 @@ export class SourceService {
         }),
         
         // Nationality distribution
-        prisma.source.groupBy({
+        db.source.groupBy({
           by: ['nationality'],
           _count: {
             nationality: true,
@@ -224,7 +222,7 @@ export class SourceService {
         }),
         
         // Recent sources (last 30 days)
-        prisma.source.count({
+        db.source.count({
           where: {
             createdAt: {
               gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // 30 days ago
@@ -292,7 +290,7 @@ export class SourceService {
    */
   static async getNationalities() {
     try {
-      const nationalityStats = await prisma.source.groupBy({
+      const nationalityStats = await db.source.groupBy({
         by: ['nationality'],
         _count: {
           nationality: true,
@@ -314,7 +312,7 @@ export class SourceService {
    */
   static async getSourceByEmail(email: string): Promise<Source | null> {
     try {
-      const source = await prisma.source.findFirst({
+      const source = await db.source.findFirst({
         where: { email },
       });
       return source;

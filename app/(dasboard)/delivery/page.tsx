@@ -99,23 +99,21 @@ export default function DeliveryNotesListPage() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
-            <FileText className="h-8 w-8 text-primary" />
-            Delivery Notes
-          </h1>
-          <p className="text-muted-foreground mt-2">
-            View and manage all delivery notes
-          </p>
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto px-6 py-8 space-y-8">
+        {/* Header */}
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl lg:text-4xl font-bold tracking-tight">Delivery Notes</h1>
+            <p className="text-muted-foreground mt-2 text-lg">
+              View and manage all delivery notes
+            </p>
+          </div>
+          <Button onClick={() => router.push('/delivery/new')}>
+            <Plus className="h-4 w-4 mr-2" />
+            New Delivery Note
+          </Button>
         </div>
-        <Button onClick={() => router.push('/delivery/new')}>
-          <Plus className="h-4 w-4 mr-2" />
-          New Delivery Note
-        </Button>
-      </div>
 
       <Separator />
 

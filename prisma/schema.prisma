@@ -8,20 +8,21 @@ datasource db {
 }
 
 model User {
-  id          String    @id @default(cuid())
+  id          String     @id @default(cuid())
   firstName   String
   lastName    String
   phone       String
-  email       String    @unique
-  role        Role      @default(NORMAL)
+  email       String     @unique
+  role        Role       @default(NORMAL)
   locationId  String
-  createdAt   DateTime  @default(now())
+  createdAt   DateTime   @default(now())
   lastLogin   DateTime?
-  isActive    Boolean   @default(true)
+  isActive    Boolean    @default(true)
   avatar      String?
   password    String?
   permissions Json?
-  location    Location  @relation(fields: [locationId], references: [id])
+  auditLogs   AuditLog[]
+  location    Location   @relation(fields: [locationId], references: [id])
 
   @@map("users")
 }
@@ -71,16 +72,16 @@ model Vehicle {
   importDuty           Float
   customsNotes         String?
   currentLocationId    String
-  ownerId              String
-  sourceId             String?
+  ownerId              String?
+  sourceId             String
   shippingDetailsId    String?           @unique
   trackingHistory      TrackingEvent[]
   vehicleDocuments     VehicleDocument[]
   vehicleImages        VehicleImage[]
   currentLocation      Location          @relation("VehicleLocation", fields: [currentLocationId], references: [id])
-  owner                Owner             @relation(fields: [ownerId], references: [id])
-  source               Source?            @relation(fields: [sourceId], references: [id])
+  owner                Owner?            @relation(fields: [ownerId], references: [id])
   shippingDetails      ShippingDetails?  @relation(fields: [shippingDetailsId], references: [id], onDelete: Cascade)
+  source               Source            @relation(fields: [sourceId], references: [id])
 
   @@map("vehicles")
 }
@@ -114,8 +115,8 @@ model Owner {
   idNumber      String         @unique
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
-  vehicles      Vehicle[]
   deliveryNotes DeliveryNote[]
+  vehicles      Vehicle[]
 
   @@map("owners")
 }
@@ -171,6 +172,37 @@ model VehicleDocument {
   @@map("vehicle_documents")
 }
 
+model DeliveryNote {
+  id           String   @id @default(cuid())
+  ownerId      String
+  deliveryDate DateTime
+  notes        String?
+  vehicleIds   Json
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  owner        Owner    @relation(fields: [ownerId], references: [id])
+
+  @@map("delivery_notes")
+}
+
+model AuditLog {
+  id         String      @id @default(cuid())
+  action     AuditAction
+  actorId    String
+  entityType String
+  entityId   String
+  before     Json?
+  after      Json?
+  timestamp  DateTime    @default(now())
+  metadata   Json?
+  actor      User        @relation(fields: [actorId], references: [id])
+
+  @@index([entityType, entityId])
+  @@index([actorId])
+  @@index([timestamp])
+  @@map("audit_logs")
+}
+
 enum Role {
   ADMIN
   NORMAL
@@ -222,15 +254,8 @@ enum DocumentType {
   OTHER
 }
 
-model DeliveryNote {
-  id           String   @id @default(cuid())
-  ownerId      String
-  deliveryDate DateTime
-  notes        String?
-  vehicleIds   Json // Array of vehicle IDs
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  owner        Owner    @relation(fields: [ownerId], references: [id])
-
-  @@map("delivery_notes")
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
 }

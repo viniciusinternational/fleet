@@ -62,6 +62,20 @@ function AuthCallbackPage() {
         const user: User = await response.json();
 
         console.log({user});
+        
+        // Update lastLogin and log to audit log
+        try {
+          await fetch(`/api/users/${user.id}/last-login`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
+        } catch (loginUpdateError) {
+          // Don't fail the login if updating lastLogin fails
+          console.error('Failed to update lastLogin:', loginUpdateError);
+        }
+        
         // Set tokens in store
         setToken(token, refreshToken || '');
         setAuthenticated(true);

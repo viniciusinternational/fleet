@@ -105,6 +105,7 @@ const EditUser: React.FC = () => {
     view_analytics: false,
     view_reports: false,
     view_chatbot: false,
+    view_audit_logs: false,
   });
 
   // Fetch user data from API

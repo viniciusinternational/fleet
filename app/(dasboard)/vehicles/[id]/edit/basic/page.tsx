@@ -25,6 +25,7 @@ import {
   User
 } from 'lucide-react';
 import { VehicleStatus, LocationType } from '@/types';
+import { VEHICLE_COLORS, VEHICLE_MAKES, VEHICLE_MODELS, TRANSMISSION_TYPES, TRANSMISSION_ENUM_MAP, TRANSMISSION_DISPLAY_MAP, getModelsForMake } from '@/lib/constants/vehicle';
 import type { Vehicle, Owner, Location, Source } from '@/types';
 import { Badge } from '@/components/ui/badge';
 
@@ -52,6 +53,7 @@ const EditBasicInfo: React.FC = () => {
     trim: '',
     engineType: '',
     fuelType: 'Gasoline' as 'Gasoline' | 'Diesel' | 'Electric' | 'Hybrid',
+    transmission: undefined as string | undefined,
     weightKg: 0,
     lengthMm: 0,
     widthMm: 0,
@@ -103,6 +105,7 @@ const EditBasicInfo: React.FC = () => {
             trim: vehicleResult.trim || '',
             engineType: vehicleResult.engineType || '',
             fuelType: vehicleResult.fuelType || 'Gasoline',
+            transmission: vehicleResult.transmission ? TRANSMISSION_DISPLAY_MAP[vehicleResult.transmission] || vehicleResult.transmission : undefined,
             weightKg: vehicleResult.weightKg || 0,
             lengthMm: vehicleResult.lengthMm || 0,
             widthMm: vehicleResult.widthMm || 0,
@@ -141,10 +144,17 @@ const EditBasicInfo: React.FC = () => {
   }, [vehicleId]);
 
   const handleInputChange = (field: string, value: any) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    setFormData(prev => {
+      const newData = {
+        ...prev,
+        [field]: value
+      };
+      // Reset model when make changes
+      if (field === 'make') {
+        newData.model = '';
+      }
+      return newData;
+    });
     // Clear error when user starts typing
     if (errors[field]) {
       setErrors(prev => ({
@@ -186,6 +196,9 @@ const EditBasicInfo: React.FC = () => {
       formDataToSubmit.append('trim', formData.trim);
       formDataToSubmit.append('engineType', formData.engineType);
       formDataToSubmit.append('fuelType', formData.fuelType);
+      if (formData.transmission) {
+        formDataToSubmit.append('transmission', TRANSMISSION_ENUM_MAP[formData.transmission as keyof typeof TRANSMISSION_ENUM_MAP] || formData.transmission);
+      }
       formDataToSubmit.append('weightKg', formData.weightKg.toString());
       formDataToSubmit.append('lengthMm', formData.lengthMm.toString());
       formDataToSubmit.append('widthMm', formData.widthMm.toString());
@@ -194,8 +207,10 @@ const EditBasicInfo: React.FC = () => {
       formDataToSubmit.append('estimatedDelivery', formData.estimatedDelivery ? new Date(formData.estimatedDelivery).toISOString() : '');
       formDataToSubmit.append('status', formData.status);
       formDataToSubmit.append('currentLocationId', formData.currentLocationId);
-      formDataToSubmit.append('ownerId', formData.ownerId);
-      formDataToSubmit.append('sourceId', formData.sourceId || '');
+      if (formData.ownerId) {
+        formDataToSubmit.append('ownerId', formData.ownerId);
+      }
+      formDataToSubmit.append('sourceId', formData.sourceId);
       
       // Add new images
       images.forEach(file => {
@@ -314,26 +329,40 @@ const EditBasicInfo: React.FC = () => {
               {/* Make */}
               <div className="space-y-2">
                 <Label htmlFor="make">Make *</Label>
-                <Input
-                  id="make"
-                  value={formData.make}
-                  onChange={(e) => handleInputChange('make', e.target.value)}
-                  placeholder="Enter make"
-                  className={errors.make ? 'border-red-500' : ''}
-                />
+                <Select value={formData.make} onValueChange={(value) => handleInputChange('make', value)}>
+                  <SelectTrigger className={errors.make ? 'border-red-500' : ''}>
+                    <SelectValue placeholder="Select make" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {VEHICLE_MAKES.map((make) => (
+                      <SelectItem key={make} value={make}>
+                        {make}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 {errors.make && <p className="text-sm text-red-500">{errors.make}</p>}
               </div>
 
               {/* Model */}
               <div className="space-y-2">
                 <Label htmlFor="model">Model *</Label>
-                <Input
-                  id="model"
-                  value={formData.model}
-                  onChange={(e) => handleInputChange('model', e.target.value)}
-                  placeholder="Enter model"
-                  className={errors.model ? 'border-red-500' : ''}
-                />
+                <Select 
+                  value={formData.model} 
+                  onValueChange={(value) => handleInputChange('model', value)}
+                  disabled={!formData.make}
+                >
+                  <SelectTrigger className={errors.model ? 'border-red-500' : ''}>
+                    <SelectValue placeholder={formData.make ? "Select model" : "Select make first"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {formData.make && getModelsForMake(formData.make as any).map((model) => (
+                      <SelectItem key={model} value={model}>
+                        {model}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 {errors.model && <p className="text-sm text-red-500">{errors.model}</p>}
               </div>
 
@@ -356,13 +385,18 @@ const EditBasicInfo: React.FC = () => {
               {/* Color */}
               <div className="space-y-2">
                 <Label htmlFor="color">Color *</Label>
-                <Input
-                  id="color"
-                  value={formData.color}
-                  onChange={(e) => handleInputChange('color', e.target.value)}
-                  placeholder="Enter color"
-                  className={errors.color ? 'border-red-500' : ''}
-                />
+                <Select value={formData.color} onValueChange={(value) => handleInputChange('color', value)}>
+                  <SelectTrigger className={errors.color ? 'border-red-500' : ''}>
+                    <SelectValue placeholder="Select color" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {VEHICLE_COLORS.map((color) => (
+                      <SelectItem key={color} value={color}>
+                        {color}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 {errors.color && <p className="text-sm text-red-500">{errors.color}</p>}
               </div>
 
@@ -403,6 +437,23 @@ const EditBasicInfo: React.FC = () => {
                   </SelectContent>
                 </Select>
                 {errors.fuelType && <p className="text-sm text-red-500">{errors.fuelType}</p>}
+              </div>
+
+              {/* Transmission */}
+              <div className="space-y-2">
+                <Label htmlFor="transmission">Transmission</Label>
+                <Select value={formData.transmission || ''} onValueChange={(value) => handleInputChange('transmission', value || undefined)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select transmission" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {TRANSMISSION_TYPES.map((transmission) => (
+                      <SelectItem key={transmission} value={transmission}>
+                        {transmission}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* Weight */}
@@ -554,7 +605,7 @@ const EditBasicInfo: React.FC = () => {
 
               {/* Owner */}
               <div className="space-y-2">
-                <Label htmlFor="ownerId">Owner *</Label>
+                <Label htmlFor="ownerId">Owner</Label>
                 <Select value={formData.ownerId} onValueChange={(value) => handleInputChange('ownerId', value)}>
                   <SelectTrigger className={errors.ownerId ? 'border-red-500' : ''}>
                     <SelectValue placeholder="Select owner" />
@@ -572,9 +623,9 @@ const EditBasicInfo: React.FC = () => {
 
               {/* Source */}
               <div className="space-y-2">
-                <Label htmlFor="sourceId">Source</Label>
+                <Label htmlFor="sourceId">Source *</Label>
                 <Select value={formData.sourceId || ''} onValueChange={(value) => handleInputChange('sourceId', value)}>
-                  <SelectTrigger>
+                  <SelectTrigger className={errors.sourceId ? 'border-red-500' : ''}>
                     <SelectValue placeholder="Select source" />
                   </SelectTrigger>
                   <SelectContent>
@@ -585,6 +636,7 @@ const EditBasicInfo: React.FC = () => {
                     ))}
                   </SelectContent>
                 </Select>
+                {errors.sourceId && <p className="text-sm text-red-500">{errors.sourceId}</p>}
               </div>
             </div>
           </CardContent>
@@ -600,8 +652,8 @@ const EditBasicInfo: React.FC = () => {
             {/* Image Upload */}
             <div className="flex items-center gap-4">
               <label htmlFor="image-upload" className="cursor-pointer">
-                <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors">
-                  <Upload className="h-8 w-8 text-blue-600 dark:text-blue-300" />
+                <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center hover:bg-primary/20 transition-colors">
+                  <Upload className="h-8 w-8 text-primary" />
                 </div>
                 <input
                   id="image-upload"

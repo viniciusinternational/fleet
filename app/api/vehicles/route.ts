@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { VehicleService } from '@/lib/services/vehicle';
 import { uploadVehicleImage } from '@/lib/s3';
 import { z } from 'zod';
+import { TRANSMISSION_ENUM_MAP } from '@/lib/constants/vehicle';
 
 // Validation schema for vehicle creation
 export const createVehicleSchema = z.object({
@@ -13,6 +14,7 @@ export const createVehicleSchema = z.object({
   trim: z.string().min(1, 'Trim is required'),
   engineType: z.string().min(1, 'Engine type is required'),
   fuelType: z.enum(['GASOLINE', 'DIESEL', 'ELECTRIC', 'HYBRID']),
+  transmission: z.enum(['MANUAL', 'AUTOMATIC', 'CVT', 'DUAL_CLUTCH', 'SEMI_AUTOMATIC']).optional(),
   weightKg: z.number().min(0),
   lengthMm: z.number().min(0).optional(),
   widthMm: z.number().min(0).optional(),
@@ -21,8 +23,8 @@ export const createVehicleSchema = z.object({
   estimatedDelivery: z.string().min(1, 'Estimated delivery is required'),
   status: z.enum(['ORDERED', 'IN_TRANSIT', 'CLEARING_CUSTOMS', 'AT_PORT', 'IN_LOCAL_DELIVERY', 'DELIVERED']),
   currentLocationId: z.string().min(1, 'Current location is required'),
-  ownerId: z.string().min(1, 'Owner is required'),
-  sourceId: z.string().optional(),
+  ownerId: z.string().optional(),
+  sourceId: z.string().min(1, 'Source is required'),
   customsStatus: z.enum(['PENDING', 'IN_PROGRESS', 'CLEARED', 'HELD']),
   importDuty: z.number().min(0),
   customsNotes: z.string().optional(),
@@ -76,6 +78,9 @@ export async function POST(request: NextRequest) {
       trim: String(formData.get('trim') ?? '').trim(),
       engineType: String(formData.get('engineType') ?? '').trim(),
       fuelType: String(formData.get('fuelType') ?? '').toUpperCase(),
+      transmission: formData.get('transmission') 
+        ? TRANSMISSION_ENUM_MAP[formData.get('transmission') as keyof typeof TRANSMISSION_ENUM_MAP] || String(formData.get('transmission')).replace(/-/g, '_').toUpperCase()
+        : undefined,
       weightKg: Number(formData.get('weightKg') ?? 0),
       lengthMm: formData.get('lengthMm') ? Number(formData.get('lengthMm')) : undefined,
       widthMm: formData.get('widthMm') ? Number(formData.get('widthMm')) : undefined,
@@ -84,8 +89,8 @@ export async function POST(request: NextRequest) {
       estimatedDelivery: String(formData.get('estimatedDelivery') ?? ''),
       status: String(formData.get('status') ?? '').toUpperCase(),
       currentLocationId: String(formData.get('currentLocationId') ?? '').trim(),
-      ownerId: String(formData.get('ownerId') ?? '').trim(),
-      sourceId: formData.get('sourceId') ? String(formData.get('sourceId')).trim() : undefined,
+      ownerId: formData.get('ownerId') ? String(formData.get('ownerId')).trim() : undefined,
+      sourceId: String(formData.get('sourceId') ?? '').trim(),
       customsStatus: String(formData.get('customsStatus') ?? '').toUpperCase(),
       importDuty: Number(formData.get('importDuty') ?? 0),
       customsNotes: formData.get('customsNotes') ? String(formData.get('customsNotes')) : undefined,
@@ -114,15 +119,15 @@ export async function POST(request: NextRequest) {
       currentLocation: {
         connect: { id: currentLocationId },
       },
-      owner: {
-        connect: { id: ownerId },
+      source: {
+        connect: { id: sourceId },
       },
     };
     
-    // Only add source connection if sourceId is provided
-    if (sourceId) {
-      vehicleCreateData.source = {
-        connect: { id: sourceId },
+    // Only add owner connection if ownerId is provided
+    if (ownerId) {
+      vehicleCreateData.owner = {
+        connect: { id: ownerId },
       };
     }
     

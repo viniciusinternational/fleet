@@ -39,8 +39,11 @@ export type PermissionKey =
   | 'view_analytics'
   // Reports
   | 'view_reports'
+  | 'generate_reports'
   // Chatbot
-  | 'view_chatbot';
+  | 'view_chatbot'
+  // Audit Logs
+  | 'view_audit_logs';
 
 export interface UserPermissions extends Record<PermissionKey, boolean> {}
 
@@ -96,6 +99,7 @@ export interface Vehicle {
   trim: string;
   engineType: string;
   fuelType: 'Gasoline' | 'Diesel' | 'Electric' | 'Hybrid';
+  transmission?: 'Manual' | 'Automatic' | 'CVT' | 'Dual-Clutch' | 'Semi-Automatic';
   weightKg: number;
   dimensions?: {
       lengthMm: number;
@@ -120,8 +124,8 @@ export interface Vehicle {
       }[],
   };
 
-  owner: Owner;
-  source?: Source;
+  owner?: Owner;
+  source: Source;
   trackingHistory: TrackingEvent[];
   notes: string[];
   shippingDetails : shippingDetails;
@@ -254,6 +258,7 @@ export interface VehicleFormData {
   trim: string;
   engineType: string;
   fuelType: 'Gasoline' | 'Diesel' | 'Electric' | 'Hybrid';
+  transmission?: string;
   weightKg: number;
   
   // Dimensions
@@ -270,10 +275,10 @@ export interface VehicleFormData {
   currentLocationId: string;
   
   // Owner
-  ownerId: string;
+  ownerId?: string;
   
   
-  sourceId?: string;
+  sourceId: string;
   
   // Shipping Details
   originPort: string;

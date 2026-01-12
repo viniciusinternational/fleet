@@ -3,7 +3,8 @@ import React from 'react';
 import { redirect } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, MapPin } from 'lucide-react';
+import { Plus, MapPin, Ship, Warehouse } from 'lucide-react';
+import { MetricCard } from '@/components/dashboard/metric-card';
 import { SearchInput } from '@/components/locations/search-input';
 import { TypeFilter } from '@/components/locations/type-filter';
 import { StatusFilter } from '@/components/locations/status-filter';
@@ -154,37 +155,39 @@ export default async function LocationManagement({ searchParams }: LocationPageP
                     </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-          <div className="text-center p-4 bg-blue-50 dark:bg-blue-950/50 rounded-lg border border-blue-200 dark:border-blue-700">
-            <div className="text-2xl font-bold text-blue-700 dark:text-blue-300">{stats.overview?.totalLocations || 0}</div>
-            <div className="text-sm text-blue-600 dark:text-blue-400 font-medium">Total Locations</div>
-            <div className="text-xs text-blue-500 dark:text-blue-400 mt-1">In the system</div>
-                      </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <MetricCard
+            title="Total Locations"
+            value={stats.overview?.totalLocations || 0}
+            icon={MapPin}
+            variant="blue"
+            description="In the system"
+          />
 
-          <div className="text-center p-4 bg-green-50 dark:bg-green-950/50 rounded-lg border border-green-200 dark:border-green-700">
-            <div className="text-2xl font-bold text-green-700 dark:text-green-300">
-              {stats.status?.breakdown?.find((item: any) => item.status === 'OPERATIONAL')?.count || 0}
-            </div>
-            <div className="text-sm text-green-600 dark:text-green-400 font-medium">Operational</div>
-            <div className="text-xs text-green-500 dark:text-green-400 mt-1">Currently active</div>
-                        </div>
+          <MetricCard
+            title="Operational"
+            value={stats.status?.breakdown?.find((item: any) => item.status === 'OPERATIONAL')?.count || 0}
+            icon={MapPin}
+            variant="green"
+            description="Currently active"
+          />
 
-          <div className="text-center p-4 bg-purple-50 dark:bg-purple-950/50 rounded-lg border border-purple-200 dark:border-purple-700">
-            <div className="text-2xl font-bold text-purple-700 dark:text-purple-300">
-              {stats.type?.breakdown?.find((item: any) => item.type === 'PORT')?.count || 0}
-            </div>
-            <div className="text-sm text-purple-600 dark:text-purple-400 font-medium">Ports</div>
-            <div className="text-xs text-purple-500 dark:text-purple-400 mt-1">Shipping ports</div>
-                        </div>
+          <MetricCard
+            title="Ports"
+            value={stats.type?.breakdown?.find((item: any) => item.type === 'PORT')?.count || 0}
+            icon={Ship}
+            variant="purple"
+            description="Shipping ports"
+          />
 
-          <div className="text-center p-4 bg-yellow-50 dark:bg-yellow-950/50 rounded-lg border border-yellow-200 dark:border-yellow-700">
-            <div className="text-2xl font-bold text-yellow-700 dark:text-yellow-300">
-              {stats.type?.breakdown?.find((item: any) => item.type === 'WAREHOUSE')?.count || 0}
-            </div>
-            <div className="text-sm text-yellow-600 dark:text-yellow-400 font-medium">Warehouses</div>
-            <div className="text-xs text-yellow-500 dark:text-yellow-400 mt-1">Storage facilities</div>
-                      </div>
-                    </div>
+          <MetricCard
+            title="Warehouses"
+            value={stats.type?.breakdown?.find((item: any) => item.type === 'WAREHOUSE')?.count || 0}
+            icon={Warehouse}
+            variant="yellow"
+            description="Storage facilities"
+          />
+        </div>
 
         {/* Main Content */}
         <Card>

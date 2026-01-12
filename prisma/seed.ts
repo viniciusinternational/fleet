@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { LocationType, PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
@@ -28,6 +28,9 @@ async function main() {
   await prisma.owner.deleteMany();
   console.log('  ✓ Cleared owners');
 
+  await prisma.source.deleteMany();
+  console.log('  ✓ Cleared sources');
+
   await prisma.location.deleteMany();
   console.log('  ✓ Cleared locations');
 
@@ -38,7 +41,7 @@ async function main() {
     prisma.location.create({
       data: {
         name: 'Vinicius Int',
-        type: 'PORT',
+        type: LocationType.WAREHOUSE,
         latitude: 33.7366,
         longitude: -118.2685,
         street: '425 S Palos Verdes St, Abuja, Nigeria',
@@ -56,6 +59,42 @@ async function main() {
   ]);
 
   console.log(`✅ Created ${locations.length} locations`);
+
+  // Create sources
+  const sources = await Promise.all([
+    prisma.source.create({
+      data: {
+        name: 'John Smith',
+        email: 'john.smith@example.com',
+        phone: '+1-555-0123',
+        address: '123 Maple Ave, New York, NY',
+        nationality: 'American',
+        idNumber: 'US123456789',
+      },
+    }),
+    prisma.source.create({
+      data: {
+        name: 'Maria Garcia',
+        email: 'maria.garcia@example.com',
+        phone: '+34-912-345-678',
+        address: 'Calle Mayor 1, Madrid, Spain',
+        nationality: 'Spanish',
+        idNumber: 'ES987654321',
+      },
+    }),
+    prisma.source.create({
+      data: {
+        name: 'Yuki Tanaka',
+        email: 'yuki.tanaka@example.com',
+        phone: '+81-3-1234-5678',
+        address: '1-2-3 Shibuya, Tokyo, Japan',
+        nationality: 'Japanese',
+        idNumber: 'JP456789123',
+      },
+    }),
+  ]);
+
+  console.log(`✅ Created ${sources.length} sources`);
 
   // Create admin users with all permissions
   const allPermissions = {
@@ -98,6 +137,8 @@ async function main() {
     view_reports: true,
     // Chatbot
     view_chatbot: true,
+    // Audit Logs
+    view_audit_logs: true,
   };
 
   const adminUsers = await Promise.all([

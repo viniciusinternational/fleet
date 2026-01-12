@@ -1,6 +1,7 @@
 import { db } from '@/lib/db';
 import { User, Role, Location } from '@/types';
 import { Prisma } from '@prisma/client';
+import { AuditService } from './audit';
 
 /**
  * User Service
@@ -51,7 +52,8 @@ export class UserService {
       role: Role; 
       locationId: string 
     }, 
-    userRole: Role
+    userRole: Role,
+    actorId?: string
   ): Promise<User> {
     if (!this.hasAdminAccess(userRole)) {
       throw new Error('Insufficient permissions: Admin or CEO role required');
@@ -71,7 +73,21 @@ export class UserService {
           avatar: input.avatar,
           createdAt: new Date(),
         },
+        include: {
+          location: true,
+        },
       });
+
+      // Log audit event
+      if (actorId) {
+        await AuditService.logEvent({
+          action: 'CREATE',
+          actorId,
+          entityType: 'User',
+          entityId: user.id,
+          after: JSON.parse(JSON.stringify(user)),
+        });
+      }
 
       return this.mapPrismaUserToType(user);
     } catch (error) {
@@ -239,7 +255,8 @@ export class UserService {
   static async updateUser(
     input: Partial<User> & { id: string; locationId?: string }, 
     userRole: Role,
-    requestingUserId?: string
+    requestingUserId?: string,
+    actorId?: string
   ): Promise<User> {
     // Normal users can only update their own profile
     if (userRole === Role.NORMAL && requestingUserId !== input.id) {
@@ -249,6 +266,9 @@ export class UserService {
     const { id, ...updateData } = input;
 
     try {
+      // Get before state for audit log
+      const beforeState = actorId ? await AuditService.getBeforeState('User', id) : null;
+
       const user = await db.user.update({
         where: { id },
         data: {
@@ -269,6 +289,18 @@ export class UserService {
         },
       });
 
+      // Log audit event
+      if (actorId) {
+        await AuditService.logEvent({
+          action: 'UPDATE',
+          actorId,
+          entityType: 'User',
+          entityId: user.id,
+          before: beforeState,
+          after: JSON.parse(JSON.stringify(user)),
+        });
+      }
+
       return this.mapPrismaUserToType(user);
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
@@ -288,16 +320,31 @@ export class UserService {
    */
   static async deleteUser(
     userId: string, 
-    userRole: Role
+    userRole: Role,
+    actorId?: string
   ): Promise<void> {
     if (!this.hasAdminAccess(userRole)) {
       throw new Error('Insufficient permissions: Admin or CEO role required');
     }
 
     try {
+      // Get before state for audit log
+      const beforeState = actorId ? await AuditService.getBeforeState('User', userId) : null;
+
       await db.user.delete({
         where: { id: userId },
       });
+
+      // Log audit event
+      if (actorId) {
+        await AuditService.logEvent({
+          action: 'DELETE',
+          actorId,
+          entityType: 'User',
+          entityId: userId,
+          before: beforeState,
+        });
+      }
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2025') {

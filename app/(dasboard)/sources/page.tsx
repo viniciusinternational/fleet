@@ -3,12 +3,13 @@ import React from 'react';
 import { redirect } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, Package } from 'lucide-react';
+import { Plus, Package, Car, Globe } from 'lucide-react';
 import { SourceSearchInput } from '@/components/sources/source-search-input';
 import { NationalityFilter } from '@/components/sources/nationality-filter';
 import { SourceTableV2 } from '@/components/sources/source-table-v2';
 import { SourcePagination } from '@/components/sources/source-pagination';
 import { SourceService } from '@/lib/services/source';
+import { MetricCard } from '@/components/dashboard/metric-card';
 
 async function redirectToAddSource() {
   'use server';
@@ -69,30 +70,38 @@ export default async function SourceManagement({ searchParams }: SourcePageProps
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-6">
-          <div className="text-center p-3 sm:p-4 bg-blue-50 dark:bg-blue-950/50 rounded-lg border border-blue-200 dark:border-blue-700">
-            <div className="text-xl sm:text-2xl font-bold text-blue-700 dark:text-blue-300">{stats.overview.totalSources}</div>
-            <div className="text-xs sm:text-sm text-blue-600 dark:text-blue-400 font-medium">Total Sources</div>
-            <div className="text-xs text-blue-500 dark:text-blue-400 mt-1">In the system</div>
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <MetricCard
+            title="Total Sources"
+            value={stats.overview.totalSources}
+            icon={Package}
+            variant="blue"
+            description="In the system"
+          />
 
-          <div className="text-center p-3 sm:p-4 bg-green-50 dark:bg-green-950/50 rounded-lg border border-green-200 dark:border-green-700">
-            <div className="text-xl sm:text-2xl font-bold text-green-700 dark:text-green-300">{stats.overview.sourcesWithVehicles}</div>
-            <div className="text-xs sm:text-sm text-green-600 dark:text-green-400 font-medium">With Vehicles</div>
-            <div className="text-xs text-green-500 dark:text-green-400 mt-1">Active sources</div>
-          </div>
+          <MetricCard
+            title="With Vehicles"
+            value={stats.overview.sourcesWithVehicles}
+            icon={Car}
+            variant="green"
+            description="Active sources"
+          />
 
-          <div className="text-center p-3 sm:p-4 bg-purple-50 dark:bg-purple-950/50 rounded-lg border border-purple-200 dark:border-purple-700">
-            <div className="text-xl sm:text-2xl font-bold text-purple-700 dark:text-purple-300">{stats.nationality.topNationalities[0]?.count || 0}</div>
-            <div className="text-xs sm:text-sm text-purple-600 dark:text-purple-400 font-medium">{stats.nationality.topNationalities[0]?.nationality || 'Nigerian'}</div>
-            <div className="text-xs text-purple-500 dark:text-purple-400 mt-1">Most common</div>
-          </div>
+          <MetricCard
+            title={stats.nationality.topNationalities[0]?.nationality || 'Nigerian'}
+            value={stats.nationality.topNationalities[0]?.count || 0}
+            icon={Globe}
+            variant="purple"
+            description="Most common nationality"
+          />
 
-          <div className="text-center p-3 sm:p-4 bg-yellow-50 dark:bg-yellow-950/50 rounded-lg border border-yellow-200 dark:border-yellow-700">
-            <div className="text-xl sm:text-2xl font-bold text-yellow-700 dark:text-yellow-300">{stats.overview.sourcesWithoutVehicles}</div>
-            <div className="text-xs sm:text-sm text-yellow-600 dark:text-yellow-400 font-medium">Without Vehicles</div>
-            <div className="text-xs text-yellow-500 dark:text-yellow-400 mt-1">Potential sources</div>
-          </div>
+          <MetricCard
+            title="Without Vehicles"
+            value={stats.overview.sourcesWithoutVehicles}
+            icon={Package}
+            variant="yellow"
+            description="Potential sources"
+          />
         </div>
 
         {/* Main Content */}

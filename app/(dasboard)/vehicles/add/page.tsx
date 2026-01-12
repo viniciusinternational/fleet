@@ -34,6 +34,7 @@ import {
 } from 'lucide-react';
 import { VehicleStatus, LocationType, LocationStatus } from '@/types';
 import type { Vehicle, Owner, Location, Source, VehicleFormData } from '@/types';
+import { VEHICLE_COLORS, VEHICLE_MAKES, VEHICLE_MODELS, TRANSMISSION_TYPES, TRANSMISSION_ENUM_MAP, getModelsForMake } from '@/lib/constants/vehicle';
 
 const AddVehicle: React.FC = () => {
   const router = useRouter();
@@ -145,6 +146,9 @@ const AddVehicle: React.FC = () => {
       };
       
       vehicleFormData.append('fuelType', fuelTypeMap[formData.fuelType] || formData.fuelType.toUpperCase());
+      if (formData.transmission) {
+        vehicleFormData.append('transmission', TRANSMISSION_ENUM_MAP[formData.transmission as keyof typeof TRANSMISSION_ENUM_MAP] || formData.transmission);
+      }
       vehicleFormData.append('weightKg', formData.weightKg.toString());
       vehicleFormData.append('lengthMm', (formData.lengthMm || 0).toString());
       vehicleFormData.append('widthMm', (formData.widthMm || 0).toString());
@@ -164,10 +168,10 @@ const AddVehicle: React.FC = () => {
       
       vehicleFormData.append('status', statusMap[formData.status] || formData.status.toUpperCase());
       vehicleFormData.append('currentLocationId', formData.currentLocationId);
-      vehicleFormData.append('ownerId', formData.ownerId);
-      if (formData.sourceId) {
-        vehicleFormData.append('sourceId', formData.sourceId);
+      if (formData.ownerId) {
+        vehicleFormData.append('ownerId', formData.ownerId);
       }
+      vehicleFormData.append('sourceId', formData.sourceId);
       
       // Convert customs status to proper enum format
       const customsStatusMap: Record<string, string> = {
@@ -250,6 +254,7 @@ const AddVehicle: React.FC = () => {
     trim: '',
     engineType: '',
     fuelType: 'Gasoline',
+    transmission: undefined,
     weightKg: 0,
     
     // Dimensions
@@ -492,23 +497,37 @@ const AddVehicle: React.FC = () => {
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="make">Make *</Label>
-                          <Input
-                            id="make"
-                            value={formData.make}
-                            onChange={(e) => handleInputChange('make', e.target.value)}
-                            placeholder="Vehicle make"
-                            required
-                          />
+                          <Select value={formData.make} onValueChange={(value) => handleInputChange('make', value)}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select make" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {VEHICLE_MAKES.map((make) => (
+                                <SelectItem key={make} value={make}>
+                                  {make}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="model">Model *</Label>
-                          <Input
-                            id="model"
-                            value={formData.model}
-                            onChange={(e) => handleInputChange('model', e.target.value)}
-                            placeholder="Vehicle model"
-                            required
-                          />
+                          <Select 
+                            value={formData.model} 
+                            onValueChange={(value) => handleInputChange('model', value)}
+                            disabled={!formData.make}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder={formData.make ? "Select model" : "Select make first"} />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {formData.make && getModelsForMake(formData.make as any).map((model) => (
+                                <SelectItem key={model} value={model}>
+                                  {model}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="year">Year *</Label>
@@ -560,6 +579,21 @@ const AddVehicle: React.FC = () => {
                               <SelectItem value="Diesel">Diesel</SelectItem>
                               <SelectItem value="Electric">Electric</SelectItem>
                               <SelectItem value="Hybrid">Hybrid</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="transmission">Transmission</Label>
+                          <Select value={formData.transmission || ''} onValueChange={(value) => handleInputChange('transmission', value || undefined)}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select transmission" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {TRANSMISSION_TYPES.map((transmission) => (
+                                <SelectItem key={transmission} value={transmission}>
+                                  {transmission}
+                                </SelectItem>
+                              ))}
                             </SelectContent>
                           </Select>
                         </div>
@@ -793,7 +827,7 @@ const AddVehicle: React.FC = () => {
                         {/* Owner Row */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           <div className="space-y-2">
-                            <Label htmlFor="ownerId">Owner/Client *</Label>
+                            <Label htmlFor="ownerId">Owner/Client</Label>
                             <Select value={formData.ownerId} onValueChange={(value) => handleInputChange('ownerId', value)}>
                               <SelectTrigger>
                                 <SelectValue placeholder="Select owner" />
@@ -841,7 +875,7 @@ const AddVehicle: React.FC = () => {
                         {/* Source Row */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           <div className="space-y-2">
-                            <Label htmlFor="sourceId">Source</Label>
+                            <Label htmlFor="sourceId">Source *</Label>
                             <Select value={formData.sourceId || ''} onValueChange={(value) => handleInputChange('sourceId', value)}>
                               <SelectTrigger>
                                 <SelectValue placeholder="Select source" />
@@ -896,8 +930,8 @@ const AddVehicle: React.FC = () => {
                         {/* Single Upload Icon */}
                         <div className="flex items-center gap-4">
                           <label htmlFor="image-upload" className="cursor-pointer">
-                            <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors">
-                              <Upload className="h-8 w-8 text-blue-600 dark:text-blue-300" />
+                            <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center hover:bg-primary/20 transition-colors">
+                              <Upload className="h-8 w-8 text-primary" />
                             </div>
                             <input
                               id="image-upload"
@@ -1109,8 +1143,8 @@ const AddVehicle: React.FC = () => {
                         {/* Document Upload */}
                         <div className="flex items-center gap-4">
                           <label htmlFor="shipping-docs-upload" className="cursor-pointer">
-                            <div className="w-16 h-16 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center hover:bg-green-200 dark:hover:bg-green-800 transition-colors">
-                              <Upload className="h-8 w-8 text-green-600 dark:text-green-300" />
+                            <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center hover:bg-primary/20 transition-colors">
+                              <Upload className="h-8 w-8 text-primary" />
                             </div>
                             <input
                               id="shipping-docs-upload"
@@ -1136,8 +1170,8 @@ const AddVehicle: React.FC = () => {
                               <div key={index} className="relative group">
                                 <div className="bg-muted rounded-lg p-4 border">
                                   <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
-                                      <span className="text-xs font-medium text-blue-600 dark:text-blue-300">
+                                    <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                                      <span className="text-xs font-medium text-primary">
                                         {document.name.split('.').pop()?.toUpperCase()}
                                       </span>
                                     </div>

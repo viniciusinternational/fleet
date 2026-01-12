@@ -57,6 +57,10 @@ const permissionGroups = [
     label: 'Chatbot',
     permissions: ['view_chatbot'] as PermissionKey[],
   },
+  {
+    label: 'Audit Logs',
+    permissions: ['view_audit_logs'] as PermissionKey[],
+  },
 ];
 
 const getActionLabel = (permission: PermissionKey): string => {

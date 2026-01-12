@@ -94,17 +94,17 @@ export function LocationTable({
   const getTypeColor = (type: LocationType) => {
     switch (type) {
       case 'Port':
-        return 'bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 border-blue-200 dark:from-blue-950 dark:to-blue-900 dark:text-blue-300 dark:border-blue-700';
+        return 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-700';
       case 'Warehouse':
-        return 'bg-gradient-to-r from-green-50 to-green-100 text-green-700 border-green-200 dark:from-green-950 dark:to-green-900 dark:text-green-300 dark:border-green-700';
+        return 'bg-green-100 text-green-700 border-green-200 dark:bg-green-950 dark:text-green-300 dark:border-green-700';
       case 'Customs Office':
-        return 'bg-gradient-to-r from-purple-50 to-purple-100 text-purple-700 border-purple-200 dark:from-purple-950 dark:to-purple-900 dark:text-purple-300 dark:border-purple-700';
+        return 'bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-950 dark:text-purple-300 dark:border-purple-700';
       case 'Dealership':
-        return 'bg-gradient-to-r from-orange-50 to-orange-100 text-orange-700 border-orange-200 dark:from-orange-950 dark:to-orange-900 dark:text-orange-300 dark:border-orange-700';
+        return 'bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-950 dark:text-orange-300 dark:border-orange-700';
       case 'Delivery Point':
-        return 'bg-gradient-to-r from-gray-50 to-gray-100 text-gray-700 border-gray-200 dark:from-gray-950 dark:to-gray-900 dark:text-gray-300 dark:border-gray-700';
+        return 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-950 dark:text-gray-300 dark:border-gray-700';
       default:
-        return 'bg-gradient-to-r from-gray-50 to-gray-100 text-gray-700 border-gray-200 dark:from-gray-950 dark:to-gray-900 dark:text-gray-300 dark:border-gray-700';
+        return 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-950 dark:text-gray-300 dark:border-gray-700';
     }
   };
 
@@ -180,7 +180,7 @@ export function LocationTable({
               >
                 <TableCell className="px-3 py-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
+                    <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
                       {getTypeIcon(location.type)}
                     </div>
                     <div className="min-w-0 flex-1">
