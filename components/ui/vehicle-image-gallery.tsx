@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ChevronLeft, ChevronRight, X, ZoomIn } from 'lucide-react';
 import type { VehicleImage } from '@/types';
+import { isHeicImage, convertHeicToJpeg } from '@/lib/utils/heic-converter';
 
 interface VehicleImageGalleryProps {
   images: VehicleImage[];
@@ -14,6 +15,8 @@ export const VehicleImageGallery: React.FC<VehicleImageGalleryProps> = ({ images
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isFullscreenOpen, setIsFullscreenOpen] = useState(false);
   const [fullscreenImageIndex, setFullscreenImageIndex] = useState(0);
+  const [convertedUrls, setConvertedUrls] = useState<Map<string, string>>(new Map());
+  const [convertingImages, setConvertingImages] = useState<Set<string>>(new Set());
 
   if (!images || images.length === 0) {
     return (
@@ -47,6 +50,77 @@ export const VehicleImageGallery: React.FC<VehicleImageGalleryProps> = ({ images
     setFullscreenImageIndex((prev) => (prev - 1 + images.length) % images.length);
   };
 
+  // Convert HEIC images on load
+  useEffect(() => {
+    const convertHeicImages = async () => {
+      const processedIds = new Set<string>();
+      
+      for (const image of images) {
+        const originalUrl = image.url || '';
+        if (!originalUrl || processedIds.has(image.id)) continue;
+
+        // Only convert HEIC images
+        if (isHeicImage(originalUrl)) {
+          processedIds.add(image.id);
+          setConvertingImages((prev) => {
+            if (prev.has(image.id)) return prev;
+            return new Set(prev).add(image.id);
+          });
+          
+          try {
+            const convertedUrl = await convertHeicToJpeg(originalUrl);
+            if (convertedUrl) {
+              setConvertedUrls((prev) => {
+                if (prev.has(image.id)) return prev;
+                const newMap = new Map(prev);
+                newMap.set(image.id, convertedUrl);
+                return newMap;
+              });
+            }
+          } catch (error) {
+            console.error(`Failed to convert HEIC image ${image.id}:`, error);
+          } finally {
+            setConvertingImages((prev) => {
+              const newSet = new Set(prev);
+              newSet.delete(image.id);
+              return newSet;
+            });
+          }
+        }
+      }
+    };
+
+    if (images && images.length > 0) {
+      convertHeicImages();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [images]);
+
+  // Cleanup object URLs on unmount
+  useEffect(() => {
+    return () => {
+      convertedUrls.forEach((url) => {
+        if (url.startsWith('blob:')) {
+          URL.revokeObjectURL(url);
+        }
+      });
+    };
+  }, [convertedUrls]);
+
+  const getImageSrc = useCallback((image: VehicleImage): string => {
+    const originalUrl = image.url || '';
+    if (!originalUrl) return '';
+
+    // Use converted URL if available
+    const convertedUrl = convertedUrls.get(image.id);
+    if (convertedUrl) {
+      return convertedUrl;
+    }
+
+    // Return original URL (will work for non-HEIC images)
+    return originalUrl;
+  }, [convertedUrls]);
+
   const currentImage = images[currentImageIndex];
   const fullscreenImage = images[fullscreenImageIndex];
 
@@ -57,11 +131,23 @@ export const VehicleImageGallery: React.FC<VehicleImageGalleryProps> = ({ images
         {/* Main Image Display */}
         <div className="relative group">
           <div className="relative w-full h-64 md:h-80 lg:h-96 rounded-lg overflow-hidden bg-muted/50">
+            {convertingImages.has(currentImage.id) && (
+              <div className="absolute inset-0 flex items-center justify-center bg-muted/50 z-10">
+                <div className="text-sm text-muted-foreground">Converting...</div>
+              </div>
+            )}
             <img
-              src={currentImage.url}
+              src={getImageSrc(currentImage)}
               alt={currentImage.alt}
               className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 cursor-pointer"
               onClick={() => openFullscreen(currentImageIndex)}
+              onError={(e) => {
+                // Fallback for failed images
+                const target = e.target as HTMLImageElement;
+                if (target.src && !target.src.includes('data:')) {
+                  console.warn('Failed to load image:', target.src);
+                }
+              }}
             />
             
             {/* Image Overlay */}
@@ -140,7 +226,7 @@ export const VehicleImageGallery: React.FC<VehicleImageGalleryProps> = ({ images
                 }`}
               >
                 <img
-                  src={image.url}
+                  src={getImageSrc(image)}
                   alt={image.alt}
                   className="w-full h-full object-cover"
                 />
@@ -175,10 +261,22 @@ export const VehicleImageGallery: React.FC<VehicleImageGalleryProps> = ({ images
           <div className="flex-1 relative overflow-hidden">
             {/* Fullscreen Image */}
             <div className="relative w-full h-full flex items-center justify-center bg-black">
+              {convertingImages.has(fullscreenImage.id) && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/50 z-10">
+                  <div className="text-white">Converting...</div>
+                </div>
+              )}
               <img
-                src={fullscreenImage.url}
+                src={getImageSrc(fullscreenImage)}
                 alt={fullscreenImage.alt}
                 className="max-w-full max-h-full object-contain"
+                onError={(e) => {
+                  // Fallback for failed images
+                  const target = e.target as HTMLImageElement;
+                  if (target.src && !target.src.includes('data:')) {
+                    console.warn('Failed to load image:', target.src);
+                  }
+                }}
               />
 
               {/* Navigation Arrows */}

@@ -7,7 +7,6 @@
     "build": "prisma generate && next build --turbopack",
     "start": "next start",
     "lint": "eslint",
-
     "db:migrate": "prisma migrate dev",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
@@ -41,6 +40,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
+    "heic2any": "^0.0.4",
     "jspdf": "^3.0.3",
     "jspdf-autotable": "^5.0.2",
     "jwt-decode": "^4.0.0",
