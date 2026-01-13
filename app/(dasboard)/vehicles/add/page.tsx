@@ -424,842 +424,724 @@ const AddVehicle: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-6 py-8">
+    <div className="min-h-screen bg-muted/30">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 pb-32">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-4">
-            <div>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-8 w-8 -ml-2" 
+                onClick={() => router.push('/vehicles')}
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
               <h1 className="text-3xl font-bold tracking-tight">Add New Vehicle</h1>
-              <p className="text-muted-foreground mt-2">Fill out the required information and submit from any tab</p>
             </div>
+            <p className="text-muted-foreground ml-8">Register a new vehicle into the fleet management system.</p>
+          </div>
+          
+          <div className="flex items-center gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => router.push('/vehicles')}
+              className="bg-background"
+            >
+              Cancel
+            </Button>
           </div>
         </div>
 
         {/* Success Alert */}
         {showSuccess && (
-          <Alert className="mb-6 border-green-200 bg-green-50">
+          <Alert className="mb-6 border-green-200 bg-green-50 animate-in fade-in slide-in-from-top-4">
             <CheckCircle className="h-4 w-4 text-green-600" />
-            <AlertDescription className="text-green-800">
+            <AlertDescription className="text-green-800 font-medium">
               Vehicle added successfully! Redirecting to vehicles list...
             </AlertDescription>
           </Alert>
         )}
 
         {/* Error Alerts */}
-        {errors.fetch && (
-          <Alert className="mb-6 border-red-200 bg-red-50">
-            <AlertDescription className="text-red-800">
-              {errors.fetch}
+        {(errors.fetch || errors.submit) && (
+          <Alert className="mb-6 border-red-200 bg-red-50 animate-in fade-in slide-in-from-top-4">
+            <AlertTriangle className="h-4 w-4 text-red-600" />
+            <AlertDescription className="text-red-800 font-medium">
+              {errors.fetch || errors.submit}
             </AlertDescription>
           </Alert>
         )}
 
-        {errors.submit && (
-          <Alert className="mb-6 border-red-200 bg-red-50">
-            <AlertDescription className="text-red-800">
-              {errors.submit}
-            </AlertDescription>
-          </Alert>
-        )}
-
-        <form onSubmit={handleSubmit}>
-          {/* Stepper */}
-          <Card className="mb-4">
-            <CardContent className="p-4">
+        <div className="space-y-8">
+          {/* Stepper Card */}
+          <Card className="border-none shadow-sm bg-background">
+            <CardContent className="p-0">
               <Stepper 
                 steps={steps}
                 currentStep={currentStep}
                 onStepClick={goToStep}
+                className="py-2"
               />
             </CardContent>
           </Card>
 
-          {/* Form Content */}
-          <Card>
-            <CardContent className="p-6">
-
-                {/* Basic Information Step */}
-                {currentStep === 0 && (
-                  <div className="space-y-6">
-                    <div>
-                      <h3 className="text-lg font-semibold mb-4">Vehicle Specifications</h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-2">
-                          <Label htmlFor="vin">VIN *</Label>
-                          <Input
-                            id="vin"
-                            value={formData.vin}
-                            onChange={(e) => handleInputChange('vin', e.target.value)}
-                            placeholder="Vehicle Identification Number"
-                            required
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="make">Make *</Label>
-                          <Select value={formData.make} onValueChange={(value) => handleInputChange('make', value)}>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select make" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {VEHICLE_MAKES.map((make) => (
-                                <SelectItem key={make} value={make}>
-                                  {make}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="model">Model *</Label>
-                          <Select 
-                            value={formData.model} 
-                            onValueChange={(value) => handleInputChange('model', value)}
-                            disabled={!formData.make}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder={formData.make ? "Select model" : "Select make first"} />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {formData.make && getModelsForMake(formData.make as any).map((model) => (
-                                <SelectItem key={model} value={model}>
-                                  {model}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="year">Year *</Label>
-                          <Input
-                            id="year"
-                            type="number"
-                            value={formData.year}
-                            onChange={(e) => handleInputChange('year', parseInt(e.target.value))}
-                            min="1900"
-                            max={new Date().getFullYear() + 1}
-                            required
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="color">Color</Label>
-                          <Input
-                            id="color"
-                            value={formData.color}
-                            onChange={(e) => handleInputChange('color', e.target.value)}
-                            placeholder="Vehicle color"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="trim">Trim</Label>
-                          <Input
-                            id="trim"
-                            value={formData.trim}
-                            onChange={(e) => handleInputChange('trim', e.target.value)}
-                            placeholder="Vehicle trim level"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="engineType">Engine Type</Label>
-                          <Input
-                            id="engineType"
-                            value={formData.engineType}
-                            onChange={(e) => handleInputChange('engineType', e.target.value)}
-                            placeholder="Engine type"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="fuelType">Fuel Type</Label>
-                          <Select value={formData.fuelType} onValueChange={(value) => handleInputChange('fuelType', value as VehicleFormData['fuelType'])}>
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="Gasoline">Gasoline</SelectItem>
-                              <SelectItem value="Diesel">Diesel</SelectItem>
-                              <SelectItem value="Electric">Electric</SelectItem>
-                              <SelectItem value="Hybrid">Hybrid</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="transmission">Transmission</Label>
-                          <Select value={formData.transmission || ''} onValueChange={(value) => handleInputChange('transmission', value || undefined)}>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select transmission" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {TRANSMISSION_TYPES.map((transmission) => (
-                                <SelectItem key={transmission} value={transmission}>
-                                  {transmission}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="weightKg">Weight (kg)</Label>
-                          <Input
-                            id="weightKg"
-                            type="number"
-                            value={formData.weightKg}
-                            onChange={(e) => handleInputChange('weightKg', parseInt(e.target.value))}
-                            placeholder="Weight in kg"
-                            min="0"
-                          />
-                        </div>
+          <form onSubmit={handleSubmit}>
+            {/* Basic Information Step */}
+            {currentStep === 0 && (
+              <div className="space-y-6">
+                {/* Vehicle Specifications Section */}
+                <Card className="border-none shadow-sm">
+                  <CardHeader className="pb-4">
+                    <div className="flex items-center gap-2">
+                      <div className="p-2 rounded-lg bg-primary/10">
+                        <Car className="h-5 w-5 text-primary" />
                       </div>
+                      <CardTitle className="text-xl">Vehicle Specifications</CardTitle>
                     </div>
-
-                    <Separator />
-
-                    <div>
-                      <h3 className="text-lg font-semibold mb-4">Dimensions (mm)</h3>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="lengthMm">Length</Label>
-                          <Input
-                            id="lengthMm"
-                            type="number"
-                            value={formData.lengthMm}
-                            onChange={(e) => handleInputChange('lengthMm', parseInt(e.target.value))}
-                            placeholder="Length in mm"
-                            min="0"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="widthMm">Width</Label>
-                          <Input
-                            id="widthMm"
-                            type="number"
-                            value={formData.widthMm}
-                            onChange={(e) => handleInputChange('widthMm', parseInt(e.target.value))}
-                            placeholder="Width in mm"
-                            min="0"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="heightMm">Height</Label>
-                          <Input
-                            id="heightMm"
-                            type="number"
-                            value={formData.heightMm}
-                            onChange={(e) => handleInputChange('heightMm', parseInt(e.target.value))}
-                            placeholder="Height in mm"
-                            min="0"
-                          />
-                        </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      <div className="space-y-2">
+                        <Label htmlFor="vin" className="text-sm font-semibold">VIN *</Label>
+                        <Input
+                          id="vin"
+                          value={formData.vin}
+                          onChange={(e) => handleInputChange('vin', e.target.value)}
+                          placeholder="Vehicle Identification Number"
+                          className="bg-muted/30 focus-visible:bg-background transition-colors"
+                          required
+                        />
                       </div>
-                    </div>
-
-                    <Separator />
-
-                    <div>
-                      <h3 className="text-lg font-semibold mb-4">Dates and Status</h3>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div className="space-y-2">
-                          <Label htmlFor="orderDate">Order Date *</Label>
-                          <Input
-                            id="orderDate"
-                            type="date"
-                            value={formData.orderDate}
-                            onChange={(e) => handleInputChange('orderDate', e.target.value)}
-                            required
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="estimatedDelivery">Estimated Delivery</Label>
-                          <Input
-                            id="estimatedDelivery"
-                            type="date"
-                            value={formData.estimatedDelivery}
-                            onChange={(e) => handleInputChange('estimatedDelivery', e.target.value)}
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="status">Status</Label>
-                          <Select value={formData.status} onValueChange={(value) => handleInputChange('status', value as VehicleStatus)}>
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value={VehicleStatus.ORDERED}>Ordered</SelectItem>
-                              <SelectItem value={VehicleStatus.IN_TRANSIT}>In Transit</SelectItem>
-                              <SelectItem value={VehicleStatus.AT_PORT}>At Port</SelectItem>
-                              <SelectItem value={VehicleStatus.CLEARING_CUSTOMS}>Clearing Customs</SelectItem>
-                              <SelectItem value={VehicleStatus.IN_LOCAL_DELIVERY}>In Local Delivery</SelectItem>
-                              <SelectItem value={VehicleStatus.DELIVERED}>Delivered</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
-                    </div>
-
-                    <Separator />
-
-                    <div>
-                      <h3 className="text-lg font-semibold mb-4">Location and Owner</h3>
-                      <div className="space-y-6">
-                        {/* Location Row */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          <div className="space-y-2">
-                            <Label htmlFor="currentLocationId">Current Location *</Label>
-                            <Select value={formData.currentLocationId} onValueChange={(value) => handleInputChange('currentLocationId', value)}>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select location" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {locations.map((location) => (
-                                  <SelectItem key={location.id} value={location.id}>
-                                    {location.name} - {(location as any).city || 'Unknown'}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-
-                          {/* Location Preview Card */}
-                          {formData.currentLocationId && (() => {
-                            const selectedLocation = locations.find(loc => loc.id === formData.currentLocationId);
-                            if (!selectedLocation) return null;
-
-                            const getLocationAddress = (location: Location) => {
-                              if (location.address) {
-                                return {
-                                  city: location.address.city || '',
-                                  country: location.address.country || ''
-                                };
-                              }
-                              return {
-                                city: (location as any).city || '',
-                                country: (location as any).country || ''
-                              };
-                            };
-
-                            const getTypeIcon = (type: LocationType) => {
-                              switch (type) {
-                                case 'Port':
-                                  return <Ship className="h-3 w-3" />;
-                                case 'Warehouse':
-                                  return <Warehouse className="h-3 w-3" />;
-                                case 'Customs Office':
-                                  return <Building className="h-3 w-3" />;
-                                case 'Dealership':
-                                  return <Truck className="h-3 w-3" />;
-                                case 'Delivery Point':
-                                  return <Package className="h-3 w-3" />;
-                                default:
-                                  return <MapPin className="h-3 w-3" />;
-                              }
-                            };
-
-                            const getTypeColor = (type: LocationType) => {
-                              switch (type) {
-                                case 'Port':
-                                  return 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-700';
-                                case 'Warehouse':
-                                  return 'bg-green-50 text-green-700 border-green-200 dark:bg-green-950 dark:text-green-300 dark:border-green-700';
-                                case 'Customs Office':
-                                  return 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950 dark:text-purple-300 dark:border-purple-700';
-                                case 'Dealership':
-                                  return 'bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-950 dark:text-orange-300 dark:border-orange-700';
-                                case 'Delivery Point':
-                                  return 'bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-950 dark:text-gray-300 dark:border-gray-700';
-                                default:
-                                  return 'bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-950 dark:text-gray-300 dark:border-gray-700';
-                              }
-                            };
-
-                            const getStatusColor = (status: LocationStatus) => {
-                              switch (status) {
-                                case 'Operational':
-                                  return 'bg-green-100 text-green-700 border-green-200 dark:bg-green-950 dark:text-green-300 dark:border-green-700';
-                                case 'Temporarily Closed':
-                                  return 'bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-950 dark:text-yellow-300 dark:border-yellow-700';
-                                case 'Under Maintenance':
-                                  return 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-700';
-                                default:
-                                  return 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-950 dark:text-gray-300 dark:border-gray-700';
-                              }
-                            };
-
-                            const getStatusIcon = (status: LocationStatus) => {
-                              switch (status) {
-                                case 'Operational':
-                                  return <CheckCircle className="h-3 w-3" />;
-                                case 'Temporarily Closed':
-                                  return <AlertTriangle className="h-3 w-3" />;
-                                case 'Under Maintenance':
-                                  return <Wrench className="h-3 w-3" />;
-                                default:
-                                  return <MapPin className="h-3 w-3" />;
-                              }
-                            };
-
-                            const address = getLocationAddress(selectedLocation);
-                            
-                            return (
-                              <Card className="border">
-                                <CardContent className="p-2">
-                                  <div className="flex items-center gap-2 flex-wrap">
-                                    <MapPin className="h-3 w-3 text-muted-foreground flex-shrink-0" />
-                                    <span className="font-medium text-xs">{selectedLocation.name}</span>
-                                    <Badge variant="outline" className={`${getTypeColor(selectedLocation.type)} text-xs px-1.5 py-0.5`}>
-                                      {getTypeIcon(selectedLocation.type)}
-                                      <span className="ml-1">{selectedLocation.type}</span>
-                                    </Badge>
-                                    <Badge variant="outline" className={`${getStatusColor(selectedLocation.status)} text-xs px-1.5 py-0.5`}>
-                                      {getStatusIcon(selectedLocation.status)}
-                                      <span className="ml-1">{selectedLocation.status}</span>
-                                    </Badge>
-                                    {address.city && (
-                                      <span className="text-xs text-muted-foreground">
-                                        {address.city}{address.country && `, ${address.country}`}
-                                      </span>
-                                    )}
-                                  </div>
-                                </CardContent>
-                              </Card>
-                            );
-                          })()}
-                        </div>
-
-                        {/* Owner Row */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          <div className="space-y-2">
-                            <Label htmlFor="ownerId">Owner/Client</Label>
-                            <Select value={formData.ownerId} onValueChange={(value) => handleInputChange('ownerId', value)}>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select owner" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {owners.map((owner) => (
-                                  <SelectItem key={owner.id} value={owner.id}>
-                                    {owner.name}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-
-                          {/* Owner Preview Card */}
-                          {formData.ownerId && (() => {
-                            const selectedOwner = owners.find(owner => owner.id === formData.ownerId);
-                            if (!selectedOwner) return null;
-
-                            return (
-                              <Card className="border">
-                                <CardContent className="p-2">
-                                  <div className="flex items-center gap-2 flex-wrap">
-                                    <User className="h-3 w-3 text-muted-foreground flex-shrink-0" />
-                                    <span className="font-medium text-xs">{selectedOwner.name}</span>
-                                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                                      <Mail className="h-3 w-3" />
-                                      <span>{selectedOwner.email}</span>
-                                    </div>
-                                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                                      <Phone className="h-3 w-3" />
-                                      <span>{selectedOwner.phone}</span>
-                                    </div>
-                                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                                      <Globe className="h-3 w-3" />
-                                      <span>{selectedOwner.nationality}</span>
-                                    </div>
-                                  </div>
-                                </CardContent>
-                              </Card>
-                            );
-                          })()}
-                        </div>
-
-                        {/* Source Row */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          <div className="space-y-2">
-                            <Label htmlFor="sourceId">Source *</Label>
-                            <Select value={formData.sourceId || ''} onValueChange={(value) => handleInputChange('sourceId', value)}>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select source" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {sources.map((source) => (
-                                  <SelectItem key={source.id} value={source.id}>
-                                    {source.name}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-
-                          {/* Source Preview Card */}
-                          {formData.sourceId && (() => {
-                            const selectedSource = sources.find(source => source.id === formData.sourceId);
-                            if (!selectedSource) return null;
-
-                            return (
-                              <Card className="border">
-                                <CardContent className="p-2">
-                                  <div className="flex items-center gap-2 flex-wrap">
-                                    <Package className="h-3 w-3 text-muted-foreground flex-shrink-0" />
-                                    <span className="font-medium text-xs">{selectedSource.name}</span>
-                                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                                      <Mail className="h-3 w-3" />
-                                      <span>{selectedSource.email}</span>
-                                    </div>
-                                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                                      <Phone className="h-3 w-3" />
-                                      <span>{selectedSource.phone}</span>
-                                    </div>
-                                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                                      <Globe className="h-3 w-3" />
-                                      <span>{selectedSource.nationality}</span>
-                                    </div>
-                                  </div>
-                                </CardContent>
-                              </Card>
-                            );
-                          })()}
-                        </div>
-                      </div>
-                    </div>
-
-                    <Separator />
-
-                    <div>
-                      <h3 className="text-lg font-semibold mb-4">Vehicle Images</h3>
-                      <div className="space-y-4">
-                        {/* Single Upload Icon */}
-                        <div className="flex items-center gap-4">
-                          <label htmlFor="image-upload" className="cursor-pointer">
-                            <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center hover:bg-primary/20 transition-colors">
-                              <Upload className="h-8 w-8 text-primary" />
-                            </div>
-                            <input
-                              id="image-upload"
-                              type="file"
-                              multiple
-                              accept="image/*"
-                              onChange={handleImageUpload}
-                              className="hidden"
-                            />
-                          </label>
-                          <div className="flex-1">
-                            <p className="text-sm font-medium">Upload Vehicle Images</p>
-                            <p className="text-xs text-muted-foreground">
-                              Click the icon to select images • JPG, PNG, WebP • Max 5MB each
-                            </p>
-                          </div>
-                        </div>
-                        
-                        {/* Image Preview Area - Only show when images exist */}
-                        {formData.images && formData.images.length > 0 && (
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            {formData.images.map((image, index) => (
-                              <div key={index} className="relative group">
-                                <div className="aspect-square bg-muted rounded-lg overflow-hidden border">
-                                  <img
-                                    src={URL.createObjectURL(image)}
-                                    alt={`Vehicle image ${index + 1}`}
-                                    className="w-full h-full object-cover"
-                                  />
-                                </div>
-                      <Button 
-                        type="button" 
-                                  variant="destructive"
-                                  size="sm"
-                                  className="absolute top-2 right-2 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                                  onClick={() => removeImage(index)}
-                                >
-                                  ×
-                      </Button>
-                              </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="make" className="text-sm font-semibold">Make *</Label>
+                        <Select value={formData.make} onValueChange={(value) => handleInputChange('make', value)}>
+                          <SelectTrigger className="bg-muted/30 focus:bg-background transition-colors">
+                            <SelectValue placeholder="Select make" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {VEHICLE_MAKES.map((make) => (
+                              <SelectItem key={make} value={make}>{make}</SelectItem>
                             ))}
-                          </div>
-                        )}
+                          </SelectContent>
+                        </Select>
                       </div>
-                    </div>
-
-                    <div className="flex justify-end">
-                        <Button 
-                          type="button" 
-                          onClick={saveBasicInfo}
-                          disabled={isSavingBasicInfo}
-                          className="flex items-center gap-2"
+                      <div className="space-y-2">
+                        <Label htmlFor="model" className="text-sm font-semibold">Model *</Label>
+                        <Select 
+                          value={formData.model} 
+                          onValueChange={(value) => handleInputChange('model', value)}
+                          disabled={!formData.make}
                         >
-                          {isSavingBasicInfo ? (
-                            <>
-                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                              Saving...
-                            </>
-                          ) : (
-                            <>
-                              Save and Continue
-                              <ArrowRight className="h-4 w-4" />
-                            </>
-                          )}
-                        </Button>
+                          <SelectTrigger className="bg-muted/30 focus:bg-background transition-colors">
+                            <SelectValue placeholder={formData.make ? "Select model" : "Select make first"} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {formData.make && getModelsForMake(formData.make as any).map((model) => (
+                              <SelectItem key={model} value={model}>{model}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="year" className="text-sm font-semibold">Year *</Label>
+                        <Input
+                          id="year"
+                          type="number"
+                          value={formData.year}
+                          onChange={(e) => handleInputChange('year', parseInt(e.target.value))}
+                          min="1900"
+                          max={new Date().getFullYear() + 1}
+                          className="bg-muted/30 focus-visible:bg-background transition-colors"
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="color" className="text-sm font-semibold">Color</Label>
+                        <Input
+                          id="color"
+                          value={formData.color}
+                          onChange={(e) => handleInputChange('color', e.target.value)}
+                          placeholder="Vehicle color"
+                          className="bg-muted/30 focus-visible:bg-background transition-colors"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="trim" className="text-sm font-semibold">Trim</Label>
+                        <Input
+                          id="trim"
+                          value={formData.trim}
+                          onChange={(e) => handleInputChange('trim', e.target.value)}
+                          placeholder="Vehicle trim level"
+                          className="bg-muted/30 focus-visible:bg-background transition-colors"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="engineType" className="text-sm font-semibold">Engine Type</Label>
+                        <Input
+                          id="engineType"
+                          value={formData.engineType}
+                          onChange={(e) => handleInputChange('engineType', e.target.value)}
+                          placeholder="Engine type"
+                          className="bg-muted/30 focus-visible:bg-background transition-colors"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="fuelType" className="text-sm font-semibold">Fuel Type</Label>
+                        <Select value={formData.fuelType} onValueChange={(value) => handleInputChange('fuelType', value as VehicleFormData['fuelType'])}>
+                          <SelectTrigger className="bg-muted/30 focus:bg-background transition-colors">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Gasoline">Gasoline</SelectItem>
+                            <SelectItem value="Diesel">Diesel</SelectItem>
+                            <SelectItem value="Electric">Electric</SelectItem>
+                            <SelectItem value="Hybrid">Hybrid</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="transmission" className="text-sm font-semibold">Transmission</Label>
+                        <Select value={formData.transmission || ''} onValueChange={(value) => handleInputChange('transmission', value || undefined)}>
+                          <SelectTrigger className="bg-muted/30 focus:bg-background transition-colors">
+                            <SelectValue placeholder="Select transmission" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {TRANSMISSION_TYPES.map((transmission) => (
+                              <SelectItem key={transmission} value={transmission}>{transmission}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
-                  </div>
-                )}
+                  </CardContent>
+                </Card>
 
-                {/* Shipping Step */}
-                {currentStep === 1 && (
-                  <div className="space-y-6">
-                    {/* Success indicator for basic info */}
-                    {savedVehicleId && (
-                      <Alert className="border-green-200 bg-green-50">
-                        <CheckCircle className="h-4 w-4 text-green-600" />
-                        <AlertDescription className="text-green-800">
-                          ✅ Basic vehicle information has been saved successfully! Vehicle ID: {savedVehicleId}
-                        </AlertDescription>
-                      </Alert>
-                    )}
-                    
-                    <div>
-                      <h3 className="text-lg font-semibold mb-4">Shipping Information</h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-2">
-                          <Label htmlFor="originPort">Origin Port</Label>
-                          <Input
-                            id="originPort"
-                            value={formData.originPort}
-                            onChange={(e) => handleInputChange('originPort', e.target.value)}
-                            placeholder="Origin port"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="destinationPort">Destination Port</Label>
-                          <Input
-                            id="destinationPort"
-                            value={formData.destinationPort}
-                            onChange={(e) => handleInputChange('destinationPort', e.target.value)}
-                            placeholder="Destination port"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="shippingCompany">Shipping Company</Label>
-                          <Input
-                            id="shippingCompany"
-                            value={formData.shippingCompany}
-                            onChange={(e) => handleInputChange('shippingCompany', e.target.value)}
-                            placeholder="Shipping company name"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="vesselName">Vessel Name</Label>
-                          <Input
-                            id="vesselName"
-                            value={formData.vesselName}
-                            onChange={(e) => handleInputChange('vesselName', e.target.value)}
-                            placeholder="Vessel name"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="containerNumber">Container Number</Label>
-                          <Input
-                            id="containerNumber"
-                            value={formData.containerNumber}
-                            onChange={(e) => handleInputChange('containerNumber', e.target.value)}
-                            placeholder="Container number"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="bookingNumber">Booking Number</Label>
-                          <Input
-                            id="bookingNumber"
-                            value={formData.bookingNumber}
-                            onChange={(e) => handleInputChange('bookingNumber', e.target.value)}
-                            placeholder="Booking number"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="departureDate">Departure Date</Label>
-                          <Input
-                            id="departureDate"
-                            type="date"
-                            value={formData.departureDate}
-                            onChange={(e) => handleInputChange('departureDate', e.target.value)}
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="expectedArrivalDate">Expected Arrival Date</Label>
-                          <Input
-                            id="expectedArrivalDate"
-                            type="date"
-                            value={formData.expectedArrivalDate}
-                            onChange={(e) => handleInputChange('expectedArrivalDate', e.target.value)}
-                          />
-                        </div>
+                {/* Dimensions Section */}
+                <Card className="border-none shadow-sm">
+                  <CardHeader className="pb-4">
+                    <div className="flex items-center gap-2">
+                      <div className="p-2 rounded-lg bg-primary/10">
+                        <Truck className="h-5 w-5 text-primary" />
+                      </div>
+                      <CardTitle className="text-xl">Dimensions & Weight</CardTitle>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                      <div className="space-y-2">
+                        <Label htmlFor="weightKg" className="text-sm font-semibold">Weight (kg)</Label>
+                        <Input
+                          id="weightKg"
+                          type="number"
+                          value={formData.weightKg}
+                          onChange={(e) => handleInputChange('weightKg', parseInt(e.target.value))}
+                          placeholder="0"
+                          className="bg-muted/30 focus-visible:bg-background transition-colors"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="lengthMm" className="text-sm font-semibold">Length (mm)</Label>
+                        <Input
+                          id="lengthMm"
+                          type="number"
+                          value={formData.lengthMm}
+                          onChange={(e) => handleInputChange('lengthMm', parseInt(e.target.value))}
+                          placeholder="0"
+                          className="bg-muted/30 focus-visible:bg-background transition-colors"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="widthMm" className="text-sm font-semibold">Width (mm)</Label>
+                        <Input
+                          id="widthMm"
+                          type="number"
+                          value={formData.widthMm}
+                          onChange={(e) => handleInputChange('widthMm', parseInt(e.target.value))}
+                          placeholder="0"
+                          className="bg-muted/30 focus-visible:bg-background transition-colors"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="heightMm" className="text-sm font-semibold">Height (mm)</Label>
+                        <Input
+                          id="heightMm"
+                          type="number"
+                          value={formData.heightMm}
+                          onChange={(e) => handleInputChange('heightMm', parseInt(e.target.value))}
+                          placeholder="0"
+                          className="bg-muted/30 focus-visible:bg-background transition-colors"
+                        />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Operational Details Section */}
+                <Card className="border-none shadow-sm">
+                  <CardHeader className="pb-4">
+                    <div className="flex items-center gap-2">
+                      <div className="p-2 rounded-lg bg-primary/10">
+                        <MapPin className="h-5 w-5 text-primary" />
+                      </div>
+                      <CardTitle className="text-xl">Operational Details</CardTitle>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      <div className="space-y-2">
+                        <Label htmlFor="orderDate" className="text-sm font-semibold">Order Date *</Label>
+                        <Input
+                          id="orderDate"
+                          type="date"
+                          value={formData.orderDate}
+                          onChange={(e) => handleInputChange('orderDate', e.target.value)}
+                          className="bg-muted/30 focus-visible:bg-background transition-colors"
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="estimatedDelivery" className="text-sm font-semibold">Estimated Delivery</Label>
+                        <Input
+                          id="estimatedDelivery"
+                          type="date"
+                          value={formData.estimatedDelivery}
+                          onChange={(e) => handleInputChange('estimatedDelivery', e.target.value)}
+                          className="bg-muted/30 focus-visible:bg-background transition-colors"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="status" className="text-sm font-semibold">Initial Status</Label>
+                        <Select value={formData.status} onValueChange={(value) => handleInputChange('status', value as VehicleStatus)}>
+                          <SelectTrigger className="bg-muted/30 focus:bg-background transition-colors">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value={VehicleStatus.ORDERED}>Ordered</SelectItem>
+                            <SelectItem value={VehicleStatus.IN_TRANSIT}>In Transit</SelectItem>
+                            <SelectItem value={VehicleStatus.AT_PORT}>At Port</SelectItem>
+                            <SelectItem value={VehicleStatus.CLEARING_CUSTOMS}>Clearing Customs</SelectItem>
+                            <SelectItem value={VehicleStatus.IN_LOCAL_DELIVERY}>In Local Delivery</SelectItem>
+                            <SelectItem value={VehicleStatus.DELIVERED}>Delivered</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
                     </div>
 
-                    <Separator />
-
-                    <div>
-                      <h3 className="text-lg font-semibold mb-4">Customs Information</h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
+                      {/* Current Location */}
+                      <div className="space-y-4">
                         <div className="space-y-2">
-                          <Label htmlFor="customsStatus">Customs Status</Label>
-                          <Select value={formData.customsStatus} onValueChange={(value) => handleInputChange('customsStatus', value as VehicleFormData['customsStatus'])}>
-                            <SelectTrigger>
-                              <SelectValue />
+                          <Label htmlFor="currentLocationId" className="text-sm font-semibold">Current Location *</Label>
+                          <Select value={formData.currentLocationId} onValueChange={(value) => handleInputChange('currentLocationId', value)}>
+                            <SelectTrigger className="bg-muted/30 focus:bg-background transition-colors">
+                              <SelectValue placeholder="Select location" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="Pending">Pending</SelectItem>
-                              <SelectItem value="In Progress">In Progress</SelectItem>
-                              <SelectItem value="Cleared">Cleared</SelectItem>
-                              <SelectItem value="Held">Held</SelectItem>
+                              {locations.map((location) => (
+                                <SelectItem key={location.id} value={location.id}>
+                                  {location.name} - {(location as any).city || 'Unknown'}
+                                </SelectItem>
+                              ))}
                             </SelectContent>
                           </Select>
                         </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="importDuty">Import Duty</Label>
-                          <Input
-                            id="importDuty"
-                            type="number"
-                            value={formData.importDuty}
-                            onChange={(e) => handleInputChange('importDuty', parseInt(e.target.value))}
-                            placeholder="Import duty amount"
-                            min="0"
-                          />
-                        </div>
-                      </div>
-                      <div className="mt-6">
-                        <Label htmlFor="customsNotes">Customs Notes</Label>
-                        <Textarea
-                          id="customsNotes"
-                          value={formData.customsNotes}
-                          onChange={(e) => handleInputChange('customsNotes', e.target.value)}
-                          placeholder="Customs notes and comments"
-                          rows={3}
-                        />
-                      </div>
-                    </div>
 
-                    <Separator />
-
-                    <div>
-                      <h3 className="text-lg font-semibold mb-4">Shipping Documents</h3>
-                      <div className="space-y-4">
-                        {/* Document Upload */}
-                        <div className="flex items-center gap-4">
-                          <label htmlFor="shipping-docs-upload" className="cursor-pointer">
-                            <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center hover:bg-primary/20 transition-colors">
-                              <Upload className="h-8 w-8 text-primary" />
+                        {formData.currentLocationId && (() => {
+                          const loc = locations.find(l => l.id === formData.currentLocationId);
+                          if (!loc) return null;
+                          return (
+                            <div className="p-4 rounded-xl border bg-muted/20 flex items-start gap-3">
+                              <MapPin className="h-5 w-5 text-primary mt-0.5" />
+                              <div className="space-y-1">
+                                <p className="text-sm font-semibold">{loc.name}</p>
+                                <div className="flex flex-wrap gap-2">
+                                  <Badge variant="secondary" className="text-[10px] uppercase tracking-wider">{loc.type}</Badge>
+                                  <Badge variant="outline" className="text-[10px] uppercase tracking-wider text-green-600 border-green-200 bg-green-50">{loc.status}</Badge>
+                                </div>
+                              </div>
                             </div>
-                            <input
-                              id="shipping-docs-upload"
-                              type="file"
-                              multiple
-                              accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                              onChange={handleShippingDocumentUpload}
-                              className="hidden"
-                            />
-                          </label>
-                          <div className="flex-1">
-                            <p className="text-sm font-medium">Upload Shipping Documents</p>
-                            <p className="text-xs text-muted-foreground">
-                              Click the icon to select documents • PDF, DOC, DOCX, JPG, PNG • Max 10MB each
-                            </p>
-                          </div>
+                          );
+                        })()}
+                      </div>
+
+                      {/* Owner and Source */}
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="ownerId" className="text-sm font-semibold">Owner / Client</Label>
+                          <Select value={formData.ownerId} onValueChange={(value) => handleInputChange('ownerId', value)}>
+                            <SelectTrigger className="bg-muted/30 focus:bg-background transition-colors">
+                              <SelectValue placeholder="Select owner" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {owners.map((owner) => (
+                                <SelectItem key={owner.id} value={owner.id}>{owner.name}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         </div>
                         
-                        {/* Document Preview Area - Only show when documents exist */}
-                        {formData.shippingDocuments && formData.shippingDocuments.length > 0 && (
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {formData.shippingDocuments.map((document, index) => (
-                              <div key={index} className="relative group">
-                                <div className="bg-muted rounded-lg p-4 border">
-                                  <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-                                      <span className="text-xs font-medium text-primary">
-                                        {document.name.split('.').pop()?.toUpperCase()}
-                                      </span>
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                      <p className="text-sm font-medium truncate">{document.name}</p>
-                                      <p className="text-xs text-muted-foreground">
-                                        {(document.size / 1024 / 1024).toFixed(2)} MB
-                                      </p>
-                                    </div>
-                                  </div>
-                                </div>
-                                <Button
-                                  type="button"
-                                  variant="destructive"
-                                  size="sm"
-                                  className="absolute top-2 right-2 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                                  onClick={() => removeShippingDocument(index)}
-                                >
-                                  ×
-                                </Button>
-                              </div>
-                            ))}
-                          </div>
-                        )}
+                        <div className="space-y-2">
+                          <Label htmlFor="sourceId" className="text-sm font-semibold">Source *</Label>
+                          <Select value={formData.sourceId || ''} onValueChange={(value) => handleInputChange('sourceId', value)}>
+                            <SelectTrigger className="bg-muted/30 focus:bg-background transition-colors">
+                              <SelectValue placeholder="Select source" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {sources.map((source) => (
+                                <SelectItem key={source.id} value={source.id}>{source.name}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
                       </div>
                     </div>
+                  </CardContent>
+                </Card>
 
-                    <Separator />
+                {/* Media Section */}
+                <Card className="border-none shadow-sm">
+                  <CardHeader className="pb-4">
+                    <div className="flex items-center gap-2">
+                      <div className="p-2 rounded-lg bg-primary/10">
+                        <Upload className="h-5 w-5 text-primary" />
+                      </div>
+                      <CardTitle className="text-xl">Vehicle Images</CardTitle>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div 
+                      className="border-2 border-dashed border-muted-foreground/25 rounded-2xl p-10 flex flex-col items-center justify-center bg-muted/10 hover:bg-muted/20 transition-all cursor-pointer group"
+                      onClick={() => document.getElementById('image-upload')?.click()}
+                    >
+                      <div className="p-4 rounded-full bg-background shadow-sm group-hover:scale-110 transition-transform mb-4">
+                        <Upload className="h-8 w-8 text-primary" />
+                      </div>
+                      <div className="text-center">
+                        <p className="text-lg font-semibold mb-1">Upload photos of the vehicle</p>
+                        <p className="text-sm text-muted-foreground">Select multiple images to showcase the vehicle condition.</p>
+                      </div>
+                      <input
+                        id="image-upload"
+                        type="file"
+                        multiple
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="hidden"
+                      />
+                    </div>
 
-                    <div>
-                      <h3 className="text-lg font-semibold mb-4">Additional Notes</h3>
-                      <div className="space-y-4">
-                        <Textarea
-                          value={formData.notes}
-                          onChange={(e) => handleInputChange('notes', e.target.value)}
-                          placeholder="Add any additional notes or comments..."
-                          rows={4}
-                          className="w-full"
+                    {formData.images && formData.images.length > 0 && (
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                        {formData.images.map((image, index) => (
+                          <div key={index} className="relative aspect-square rounded-xl overflow-hidden group border-2 border-muted">
+                            <img
+                              src={URL.createObjectURL(image)}
+                              alt="preview"
+                              className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                            />
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                              <Button
+                                type="button"
+                                variant="destructive"
+                                size="sm"
+                                className="h-8 w-8 p-0 rounded-full shadow-lg"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  removeImage(index);
+                                }}
+                              >
+                                ×
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
+            {/* Shipping Step */}
+            {currentStep === 1 && (
+              <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
+                <Card className="border-none shadow-sm">
+                  <CardHeader className="pb-4">
+                    <div className="flex items-center gap-2">
+                      <div className="p-2 rounded-lg bg-primary/10">
+                        <Ship className="h-5 w-5 text-primary" />
+                      </div>
+                      <CardTitle className="text-xl">Shipping Details</CardTitle>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <Label htmlFor="originPort" className="text-sm font-semibold">Origin Port</Label>
+                        <Input
+                          id="originPort"
+                          value={formData.originPort}
+                          onChange={(e) => handleInputChange('originPort', e.target.value)}
+                          placeholder="Departure port"
+                          className="bg-muted/30 focus-visible:bg-background transition-colors"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="destinationPort" className="text-sm font-semibold">Destination Port</Label>
+                        <Input
+                          id="destinationPort"
+                          value={formData.destinationPort}
+                          onChange={(e) => handleInputChange('destinationPort', e.target.value)}
+                          placeholder="Arrival port"
+                          className="bg-muted/30 focus-visible:bg-background transition-colors"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="shippingCompany" className="text-sm font-semibold">Shipping Line</Label>
+                        <Input
+                          id="shippingCompany"
+                          value={formData.shippingCompany}
+                          onChange={(e) => handleInputChange('shippingCompany', e.target.value)}
+                          placeholder="Company name"
+                          className="bg-muted/30 focus-visible:bg-background transition-colors"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="vesselName" className="text-sm font-semibold">Vessel Name</Label>
+                        <Input
+                          id="vesselName"
+                          value={formData.vesselName}
+                          onChange={(e) => handleInputChange('vesselName', e.target.value)}
+                          placeholder="Ship name"
+                          className="bg-muted/30 focus-visible:bg-background transition-colors"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="containerNumber" className="text-sm font-semibold">Container Number</Label>
+                        <Input
+                          id="containerNumber"
+                          value={formData.containerNumber}
+                          onChange={(e) => handleInputChange('containerNumber', e.target.value)}
+                          placeholder="e.g. MSKU1234567"
+                          className="bg-muted/30 focus-visible:bg-background transition-colors"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="bookingNumber" className="text-sm font-semibold">Booking Number</Label>
+                        <Input
+                          id="bookingNumber"
+                          value={formData.bookingNumber}
+                          onChange={(e) => handleInputChange('bookingNumber', e.target.value)}
+                          placeholder="Reference number"
+                          className="bg-muted/30 focus-visible:bg-background transition-colors"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="departureDate" className="text-sm font-semibold">Departure Date</Label>
+                        <Input
+                          id="departureDate"
+                          type="date"
+                          value={formData.departureDate}
+                          onChange={(e) => handleInputChange('departureDate', e.target.value)}
+                          className="bg-muted/30 focus-visible:bg-background transition-colors"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="expectedArrivalDate" className="text-sm font-semibold">Expected Arrival</Label>
+                        <Input
+                          id="expectedArrivalDate"
+                          type="date"
+                          value={formData.expectedArrivalDate}
+                          onChange={(e) => handleInputChange('expectedArrivalDate', e.target.value)}
+                          className="bg-muted/30 focus-visible:bg-background transition-colors"
                         />
                       </div>
                     </div>
+                  </CardContent>
+                </Card>
 
-                    <div className="flex justify-between">
-                      <Button 
-                        type="button" 
-                        variant="outline"
-                        onClick={prevStep}
-                        title="Basic vehicle information is already saved"
-                      >
-                        <ArrowLeft className="h-4 w-4 mr-2" />
-                        Previous
-                      </Button>
-                      <Button 
-                        type="submit"
-                        disabled={isSubmitting}
-                        className="min-w-[120px]"
-                      >
-                        {isSubmitting ? (
-                          <>
-                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                            {submissionStep === 'shipping' && 'Adding Shipping Details...'}
-                            {submissionStep === 'complete' && 'Complete!'}
-                          </>
-                        ) : (
-                          <>
-                            <CheckCircle2 className="h-4 w-4 mr-2" />
-                            Complete Vehicle
-                          </>
-                        )}
-                      </Button>
+                <Card className="border-none shadow-sm">
+                  <CardHeader className="pb-4">
+                    <div className="flex items-center gap-2">
+                      <div className="p-2 rounded-lg bg-primary/10">
+                        <Building className="h-5 w-5 text-primary" />
+                      </div>
+                      <CardTitle className="text-xl">Customs Information</CardTitle>
                     </div>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <Label htmlFor="customsStatus" className="text-sm font-semibold">Customs Status</Label>
+                        <Select value={formData.customsStatus} onValueChange={(value) => handleInputChange('customsStatus', value as VehicleFormData['customsStatus'])}>
+                          <SelectTrigger className="bg-muted/30 focus:bg-background transition-colors">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Pending">Pending</SelectItem>
+                            <SelectItem value="In Progress">In Progress</SelectItem>
+                            <SelectItem value="Cleared">Cleared</SelectItem>
+                            <SelectItem value="Held">Held</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="importDuty" className="text-sm font-semibold">Import Duty (USD)</Label>
+                        <Input
+                          id="importDuty"
+                          type="number"
+                          value={formData.importDuty}
+                          onChange={(e) => handleInputChange('importDuty', parseInt(e.target.value))}
+                          className="bg-muted/30 focus-visible:bg-background transition-colors"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="customsNotes" className="text-sm font-semibold">Customs Notes</Label>
+                      <Textarea
+                        id="customsNotes"
+                        value={formData.customsNotes}
+                        onChange={(e) => handleInputChange('customsNotes', e.target.value)}
+                        placeholder="Additional information for customs clearance..."
+                        rows={3}
+                        className="bg-muted/30 focus-visible:bg-background transition-colors resize-none"
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-none shadow-sm">
+                  <CardHeader className="pb-4">
+                    <div className="flex items-center gap-2">
+                      <div className="p-2 rounded-lg bg-primary/10">
+                        <Package className="h-5 w-5 text-primary" />
+                      </div>
+                      <CardTitle className="text-xl">Documents & Notes</CardTitle>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div 
+                      className="border-2 border-dashed border-muted-foreground/25 rounded-2xl p-8 flex flex-col items-center justify-center bg-muted/10 hover:bg-muted/20 transition-all cursor-pointer group"
+                      onClick={() => document.getElementById('shipping-docs-upload')?.click()}
+                    >
+                      <Upload className="h-8 w-8 text-primary mb-3 group-hover:scale-110 transition-transform" />
+                      <p className="font-semibold text-center">Click to upload shipping documents</p>
+                      <p className="text-xs text-muted-foreground mt-1 text-center">PDF, JPG, PNG, DOCX up to 10MB</p>
+                      <input
+                        id="shipping-docs-upload"
+                        type="file"
+                        multiple
+                        accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                        onChange={handleShippingDocumentUpload}
+                        className="hidden"
+                      />
+                    </div>
+
+                    {formData.shippingDocuments && formData.shippingDocuments.length > 0 && (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {formData.shippingDocuments.map((doc, index) => (
+                          <div key={index} className="flex items-center justify-between p-4 bg-background rounded-xl border group hover:border-primary/50 transition-colors">
+                            <div className="flex items-center gap-3 overflow-hidden">
+                              <div className="h-10 w-10 rounded-lg bg-primary/5 flex items-center justify-center flex-shrink-0 font-bold text-[10px] text-primary">
+                                {doc.name.split('.').pop()?.toUpperCase()}
+                              </div>
+                              <div className="overflow-hidden">
+                                <p className="text-sm font-medium truncate">{doc.name}</p>
+                                <p className="text-[10px] text-muted-foreground uppercase">{(doc.size / 1024 / 1024).toFixed(2)} MB</p>
+                              </div>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:bg-destructive/10"
+                              onClick={() => removeShippingDocument(index)}
+                            >
+                              ×
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className="space-y-2">
+                      <Label htmlFor="notes" className="text-sm font-semibold">General Notes</Label>
+                      <Textarea
+                        id="notes"
+                        value={formData.notes}
+                        onChange={(e) => handleInputChange('notes', e.target.value)}
+                        placeholder="Any additional remarks..."
+                        rows={4}
+                        className="bg-muted/30 focus-visible:bg-background transition-colors resize-none"
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+          </form>
+        </div>
+      </div>
+
+      {/* Sticky Action Bar */}
+      <div className="fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-md border-t z-50 py-4 shadow-[0_-8px_30px_rgb(0,0,0,0.04)]">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {currentStep > 0 && (
+              <Button 
+                variant="outline" 
+                onClick={prevStep}
+                className="bg-background shadow-sm h-11"
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Previous
+              </Button>
+            )}
+          </div>
+
+          <div className="flex items-center gap-3">
+            {currentStep === 0 ? (
+              <Button 
+                onClick={saveBasicInfo}
+                disabled={isSavingBasicInfo || !formData.vin || !formData.make || !formData.model || !formData.currentLocationId || !formData.sourceId}
+                className="h-11 px-8 shadow-lg shadow-primary/20 transition-all hover:translate-y-[-1px] active:translate-y-[0px]"
+              >
+                {isSavingBasicInfo ? (
+                  <div className="flex items-center gap-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    Saving...
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    Continue to Shipping
+                    <ArrowRight className="h-4 w-4" />
                   </div>
                 )}
-
-            </CardContent>
-          </Card>
-
-          {/* Form Actions */}
-          <div className="flex justify-end gap-4 mt-6">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => router.push('/vehicles')}
-            >
-              Cancel
-            </Button>
+              </Button>
+            ) : (
+              <Button 
+                onClick={handleSubmit}
+                disabled={isSubmitting}
+                className="h-11 px-8 shadow-lg shadow-primary/20 transition-all hover:translate-y-[-1px] active:translate-y-[0px]"
+              >
+                {isSubmitting ? (
+                  <div className="flex items-center gap-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    Finalizing...
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4" />
+                    Complete Vehicle Registration
+                  </div>
+                )}
+              </Button>
+            )}
           </div>
-        </form>
+        </div>
       </div>
     </div>
   );
