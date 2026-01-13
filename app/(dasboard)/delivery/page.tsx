@@ -201,6 +201,7 @@ export default function DeliveryNotesListPage() {
           </CardContent>
         </Card>
       )}
+      </div>
     </div>
   );
 }
