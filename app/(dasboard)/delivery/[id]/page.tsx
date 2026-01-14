@@ -208,17 +208,13 @@ export default function DeliveryNoteViewPage({ params }: DeliveryNoteViewPagePro
                 <p className="text-sm">{deliveryNote.owner.phone}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-muted-foreground">Nationality</label>
-                <p className="text-sm">{deliveryNote.owner.nationality}</p>
+                <label className="text-sm font-medium text-muted-foreground">Country</label>
+                <p className="text-sm">{deliveryNote.owner.country}</p>
               </div>
             </div>
             <div>
               <label className="text-sm font-medium text-muted-foreground">Address</label>
               <p className="text-sm">{deliveryNote.owner.address}</p>
-            </div>
-            <div>
-              <label className="text-sm font-medium text-muted-foreground">ID Number</label>
-              <p className="text-sm font-mono">{deliveryNote.owner.idNumber}</p>
             </div>
           </CardContent>
         </Card>

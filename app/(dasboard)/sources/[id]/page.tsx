@@ -5,7 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { ArrowLeft, Edit, Trash2, Package, Mail, Phone, MapPin, Globe, Hash, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Edit, Trash2, Package, Mail, Phone, MapPin, Globe, AlertCircle } from 'lucide-react';
 import type { Source } from '@/types';
 
 const SourceDetailsPage: React.FC = () => {
@@ -158,14 +158,6 @@ const SourceDetailsPage: React.FC = () => {
                 </div>
 
                 <div className="flex items-start gap-3">
-                  <Hash className="h-5 w-5 text-muted-foreground mt-0.5" />
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">ID Number</p>
-                    <p className="text-lg">{source.idNumber}</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
                   <Mail className="h-5 w-5 text-muted-foreground mt-0.5" />
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Email</p>
@@ -184,8 +176,8 @@ const SourceDetailsPage: React.FC = () => {
                 <div className="flex items-start gap-3">
                   <Globe className="h-5 w-5 text-muted-foreground mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Nationality</p>
-                    <p className="text-lg">{source.nationality}</p>
+                    <p className="text-sm font-medium text-muted-foreground">Country</p>
+                    <p className="text-lg">{source.country}</p>
                   </div>
                 </div>
 

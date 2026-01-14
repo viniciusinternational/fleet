@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus, Users, Car, Globe } from 'lucide-react';
 import { OwnerSearchInput } from '@/components/owners/owner-search-input';
-import { NationalityFilter } from '@/components/owners/nationality-filter';
+import { CountryFilter } from '@/components/owners/country-filter';
 import { OwnerTableV2 } from '@/components/owners/owner-table-v2';
 import { OwnerPagination } from '@/components/owners/owner-pagination';
 import { OwnerService } from '@/lib/services/owner';
@@ -19,7 +19,7 @@ async function redirectToAddOwner() {
 interface OwnerPageProps {
   searchParams: {
     search?: string;
-    nationality?: string;
+    country?: string;
     sortBy?: string;
     sortOrder?: 'asc' | 'desc';
     page?: string;
@@ -29,7 +29,7 @@ interface OwnerPageProps {
 export default async function OwnerManagement({ searchParams }: OwnerPageProps) {
   const params = await searchParams;
   const searchTerm = params.search || '';
-  const nationalityFilter = params.nationality || 'all';
+  const countryFilter = params.country || 'all';
   const sortBy = params.sortBy || 'name';
   const sortOrder = params.sortOrder || 'asc';
   const currentPage = parseInt(params.page || '1');
@@ -38,7 +38,7 @@ export default async function OwnerManagement({ searchParams }: OwnerPageProps) 
   const [ownerData, stats] = await Promise.all([
     OwnerService.getOwners({
       search: searchTerm,
-      nationality: nationalityFilter,
+      country: countryFilter,
       sortBy,
       sortOrder,
       page: currentPage,
@@ -87,11 +87,11 @@ export default async function OwnerManagement({ searchParams }: OwnerPageProps) 
           />
 
           <MetricCard
-            title={stats.nationality.topNationalities[0]?.nationality || 'Nigerian'}
-            value={stats.nationality.topNationalities[0]?.count || 0}
+            title={stats.country.topCountries[0]?.country || 'Nigeria'}
+            value={stats.country.topCountries[0]?.count || 0}
             icon={Globe}
             variant="purple"
-            description="Most common nationality"
+            description="Most common country"
           />
 
           <MetricCard
@@ -109,7 +109,7 @@ export default async function OwnerManagement({ searchParams }: OwnerPageProps) 
             {/* Filters */}
             <div className="flex flex-col sm:flex-row gap-4 mb-6">
               <OwnerSearchInput initialValue={searchTerm} />
-              <NationalityFilter initialValue={nationalityFilter} />
+              <CountryFilter initialValue={countryFilter} />
             </div>
 
             {/* Owners Table */}

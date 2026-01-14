@@ -138,19 +138,19 @@ export async function GET(request: NextRequest) {
       };
     }).sort((a, b) => b.vehicleCount - a.vehicleCount);
 
-    // Vehicles by owner nationality
-    const vehiclesByOwnerNationality = allOwners.reduce((acc, owner) => {
-      if (!acc[owner.nationality]) {
-        acc[owner.nationality] = {
-          nationality: owner.nationality,
+    // Vehicles by owner country
+    const vehiclesByOwnerCountry = allOwners.reduce((acc, owner) => {
+      if (!acc[owner.country]) {
+        acc[owner.country] = {
+          country: owner.country,
           vehicleCount: 0,
           ownerCount: 0,
         };
       }
-      acc[owner.nationality].vehicleCount += owner.vehicles.length;
-      acc[owner.nationality].ownerCount += 1;
+      acc[owner.country].vehicleCount += owner.vehicles.length;
+      acc[owner.country].ownerCount += 1;
       return acc;
-    }, {} as Record<string, { nationality: string; vehicleCount: number; ownerCount: number }>);
+    }, {} as Record<string, { country: string; vehicleCount: number; ownerCount: number }>);
 
     // Top owners by vehicle count
     const topOwners = allOwners
@@ -158,7 +158,7 @@ export async function GET(request: NextRequest) {
         ownerId: owner.id,
         ownerName: owner.name,
         vehicleCount: owner.vehicles.length,
-        nationality: owner.nationality,
+        country: owner.country,
       }))
       .sort((a, b) => b.vehicleCount - a.vehicleCount)
       .slice(0, 10);
@@ -173,14 +173,14 @@ export async function GET(request: NextRequest) {
             acc[sourceId] = {
               sourceId: v.source.id,
               sourceName: v.source.name,
-              nationality: v.source.nationality,
+              country: v.source.country,
               vehicleCount: 0,
             };
           }
           acc[sourceId].vehicleCount += 1;
         }
         return acc;
-      }, {} as Record<string, { sourceId: string; sourceName: string; nationality: string; vehicleCount: number }>);
+      }, {} as Record<string, { sourceId: string; sourceName: string; country: string; vehicleCount: number }>);
 
     const topSources = Object.values(vehiclesBySource)
       .sort((a, b) => b.vehicleCount - a.vehicleCount)
@@ -364,7 +364,7 @@ export async function GET(request: NextRequest) {
       },
       crossModule: {
         vehiclesByLocation,
-        vehiclesByOwnerNationality: Object.values(vehiclesByOwnerNationality).sort((a, b) => b.vehicleCount - a.vehicleCount),
+        vehiclesByOwnerCountry: Object.values(vehiclesByOwnerCountry).sort((a, b) => b.vehicleCount - a.vehicleCount),
         topOwners,
         topSources,
         customsPerformance,

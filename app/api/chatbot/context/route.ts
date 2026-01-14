@@ -48,8 +48,7 @@ export async function GET() {
         email: o.email,
         phone: o.phone,
         address: o.address,
-        nationality: o.nationality,
-        idNumber: o.idNumber,
+        country: o.country,
         vehicleCount: o.vehicles?.length || 0,
       })),
       locations: locationsResult.locations.map((l: any) => ({

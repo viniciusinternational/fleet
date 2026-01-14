@@ -54,10 +54,10 @@ const EditBasicInfo: React.FC = () => {
     engineType: '',
     fuelType: 'Gasoline' as 'Gasoline' | 'Diesel' | 'Electric' | 'Hybrid',
     transmission: undefined as string | undefined,
-    weightKg: 0,
-    lengthMm: 0,
-    widthMm: 0,
-    heightMm: 0,
+    weightKg: '' as number | string,
+    lengthMm: '' as number | string,
+    widthMm: '' as number | string,
+    heightMm: '' as number | string,
     orderDate: '',
     estimatedDelivery: '',
     status: 'ORDERED' as VehicleStatus,
@@ -106,10 +106,10 @@ const EditBasicInfo: React.FC = () => {
             engineType: vehicleResult.engineType || '',
             fuelType: vehicleResult.fuelType || 'Gasoline',
             transmission: vehicleResult.transmission ? TRANSMISSION_DISPLAY_MAP[vehicleResult.transmission] || vehicleResult.transmission : undefined,
-            weightKg: vehicleResult.weightKg || 0,
-            lengthMm: vehicleResult.lengthMm || 0,
-            widthMm: vehicleResult.widthMm || 0,
-            heightMm: vehicleResult.heightMm || 0,
+            weightKg: vehicleResult.weightKg && vehicleResult.weightKg !== 0 ? vehicleResult.weightKg : '',
+            lengthMm: vehicleResult.lengthMm && vehicleResult.lengthMm !== 0 ? vehicleResult.lengthMm : '',
+            widthMm: vehicleResult.widthMm && vehicleResult.widthMm !== 0 ? vehicleResult.widthMm : '',
+            heightMm: vehicleResult.heightMm && vehicleResult.heightMm !== 0 ? vehicleResult.heightMm : '',
             orderDate: vehicleResult.orderDate ? new Date(vehicleResult.orderDate).toISOString().split('T')[0] : '',
             estimatedDelivery: vehicleResult.estimatedDelivery ? new Date(vehicleResult.estimatedDelivery).toISOString().split('T')[0] : '',
             status: vehicleResult.status || 'ORDERED',
@@ -142,6 +142,14 @@ const EditBasicInfo: React.FC = () => {
 
     fetchData();
   }, [vehicleId]);
+
+  // Helper function to format number input values for display
+  const formatNumberValue = (value: number | string): string => {
+    if (value === '' || value === 0 || value === null || value === undefined) {
+      return '';
+    }
+    return String(value);
+  };
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => {
@@ -191,7 +199,7 @@ const EditBasicInfo: React.FC = () => {
       formDataToSubmit.append('vin', formData.vin);
       formDataToSubmit.append('make', formData.make);
       formDataToSubmit.append('model', formData.model);
-      formDataToSubmit.append('year', formData.year.toString());
+      formDataToSubmit.append('year', (typeof formData.year === 'string' && formData.year === '' ? new Date().getFullYear() : (typeof formData.year === 'number' ? formData.year : parseInt(formData.year) || new Date().getFullYear())).toString());
       formDataToSubmit.append('color', formData.color);
       formDataToSubmit.append('trim', formData.trim);
       formDataToSubmit.append('engineType', formData.engineType);
@@ -199,10 +207,10 @@ const EditBasicInfo: React.FC = () => {
       if (formData.transmission) {
         formDataToSubmit.append('transmission', TRANSMISSION_ENUM_MAP[formData.transmission as keyof typeof TRANSMISSION_ENUM_MAP] || formData.transmission);
       }
-      formDataToSubmit.append('weightKg', formData.weightKg.toString());
-      formDataToSubmit.append('lengthMm', formData.lengthMm.toString());
-      formDataToSubmit.append('widthMm', formData.widthMm.toString());
-      formDataToSubmit.append('heightMm', formData.heightMm.toString());
+      formDataToSubmit.append('weightKg', (typeof formData.weightKg === 'string' && formData.weightKg === '' ? 0 : (typeof formData.weightKg === 'number' ? formData.weightKg : parseFloat(formData.weightKg) || 0)).toString());
+      formDataToSubmit.append('lengthMm', (typeof formData.lengthMm === 'string' && formData.lengthMm === '' ? 0 : (typeof formData.lengthMm === 'number' ? formData.lengthMm : parseInt(formData.lengthMm) || 0)).toString());
+      formDataToSubmit.append('widthMm', (typeof formData.widthMm === 'string' && formData.widthMm === '' ? 0 : (typeof formData.widthMm === 'number' ? formData.widthMm : parseInt(formData.widthMm) || 0)).toString());
+      formDataToSubmit.append('heightMm', (typeof formData.heightMm === 'string' && formData.heightMm === '' ? 0 : (typeof formData.heightMm === 'number' ? formData.heightMm : parseInt(formData.heightMm) || 0)).toString());
       formDataToSubmit.append('orderDate', formData.orderDate ? new Date(formData.orderDate).toISOString() : '');
       formDataToSubmit.append('estimatedDelivery', formData.estimatedDelivery ? new Date(formData.estimatedDelivery).toISOString() : '');
       formDataToSubmit.append('status', formData.status);
@@ -372,8 +380,8 @@ const EditBasicInfo: React.FC = () => {
                 <Input
                   id="year"
                   type="number"
-                  value={formData.year}
-                  onChange={(e) => handleInputChange('year', parseInt(e.target.value))}
+                  value={formatNumberValue(formData.year)}
+                  onChange={(e) => handleInputChange('year', e.target.value === '' ? '' : (parseInt(e.target.value) || ''))}
                   placeholder="Enter year"
                   min="1900"
                   max={new Date().getFullYear() + 1}
@@ -462,8 +470,8 @@ const EditBasicInfo: React.FC = () => {
                 <Input
                   id="weightKg"
                   type="number"
-                  value={formData.weightKg}
-                  onChange={(e) => handleInputChange('weightKg', parseFloat(e.target.value))}
+                  value={formatNumberValue(formData.weightKg)}
+                  onChange={(e) => handleInputChange('weightKg', e.target.value)}
                   placeholder="Enter weight"
                   min="0"
                   step="0.1"
@@ -488,8 +496,8 @@ const EditBasicInfo: React.FC = () => {
                 <Input
                   id="lengthMm"
                   type="number"
-                  value={formData.lengthMm}
-                  onChange={(e) => handleInputChange('lengthMm', parseInt(e.target.value))}
+                  value={formatNumberValue(formData.lengthMm)}
+                  onChange={(e) => handleInputChange('lengthMm', e.target.value)}
                   placeholder="Enter length"
                   min="0"
                 />
@@ -501,8 +509,8 @@ const EditBasicInfo: React.FC = () => {
                 <Input
                   id="widthMm"
                   type="number"
-                  value={formData.widthMm}
-                  onChange={(e) => handleInputChange('widthMm', parseInt(e.target.value))}
+                  value={formatNumberValue(formData.widthMm)}
+                  onChange={(e) => handleInputChange('widthMm', e.target.value)}
                   placeholder="Enter width"
                   min="0"
                 />
@@ -514,8 +522,8 @@ const EditBasicInfo: React.FC = () => {
                 <Input
                   id="heightMm"
                   type="number"
-                  value={formData.heightMm}
-                  onChange={(e) => handleInputChange('heightMm', parseInt(e.target.value))}
+                  value={formatNumberValue(formData.heightMm)}
+                  onChange={(e) => handleInputChange('heightMm', e.target.value)}
                   placeholder="Enter height"
                   min="0"
                 />
@@ -659,7 +667,7 @@ const EditBasicInfo: React.FC = () => {
                   id="image-upload"
                   type="file"
                   multiple
-                  accept="image/*"
+                  accept="image/jpeg,image/jpg,image/png"
                   onChange={handleImageUpload}
                   className="hidden"
                 />

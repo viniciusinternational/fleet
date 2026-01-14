@@ -8,8 +8,7 @@ const createSourceSchema = z.object({
   email: z.string().email('Invalid email format'),
   phone: z.string().min(1, 'Phone is required').max(20, 'Phone too long'),
   address: z.string().min(1, 'Address is required').max(500, 'Address too long'),
-  nationality: z.string().min(1, 'Nationality is required').max(50, 'Nationality too long'),
-  idNumber: z.string().min(1, 'ID Number is required').max(50, 'ID Number too long'),
+  country: z.string().min(1, 'Country is required').max(50, 'Country too long'),
 });
 
 // GET /api/sources - List all sources with pagination, search, and filtering
@@ -21,14 +20,14 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
     const search = searchParams.get('search') || '';
-    const nationality = searchParams.get('nationality') || '';
+    const country = searchParams.get('country') || '';
     const sortBy = searchParams.get('sortBy') || 'name';
     const sortOrder = (searchParams.get('sortOrder') || 'asc') as 'asc' | 'desc';
     
     // Use the consolidated service
     const result = await SourceService.getSources({
       search,
-      nationality,
+      country,
       sortBy,
       sortOrder,
       page,

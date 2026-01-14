@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 import { VehicleSelectionTable } from '@/components/delivery/vehicle-selection-table';
 import { SelectedVehiclesList } from '@/components/delivery/selected-vehicles-list';
 import { OwnerSelector } from '@/components/delivery/owner-selector';
@@ -24,6 +25,8 @@ export default function NewDeliveryNotePage() {
     new Date().toISOString().split('T')[0]
   );
   const [notes, setNotes] = useState<string>('');
+  const [contactPersonFullName, setContactPersonFullName] = useState<string>('');
+  const [contactPersonPhone, setContactPersonPhone] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -33,6 +36,24 @@ export default function NewDeliveryNotePage() {
     async function fetchData() {
       try {
         setIsLoading(true);
+        
+        // Fetch all delivery notes to get excluded vehicle IDs
+        const deliveryNotesResponse = await fetch('/api/delivery-notes');
+        let excludedVehicleIds = new Set<string>();
+        
+        if (deliveryNotesResponse.ok) {
+          const deliveryNotesResult = await deliveryNotesResponse.json();
+          if (deliveryNotesResult.success && deliveryNotesResult.data) {
+            // Extract all vehicle IDs from all delivery notes
+            deliveryNotesResult.data.forEach((note: any) => {
+              if (note.vehicleIds && Array.isArray(note.vehicleIds)) {
+                note.vehicleIds.forEach((vehicleId: string) => {
+                  excludedVehicleIds.add(vehicleId);
+                });
+              }
+            });
+          }
+        }
         
         // Fetch vehicles - get all vehicles for selection (no pagination)
         const vehiclesResponse = await fetch('/api/vehicles?limit=1000');
@@ -45,7 +66,11 @@ export default function NewDeliveryNotePage() {
             const vehiclesWithOwners = vehiclesList.filter((vehicle: Vehicle) => 
               vehicle.owner && vehicle.owner.id
             );
-            setVehicles(vehiclesWithOwners);
+            // Filter out vehicles that are already on delivery lists
+            const availableVehicles = vehiclesWithOwners.filter((vehicle: Vehicle) => 
+              !excludedVehicleIds.has(vehicle.id)
+            );
+            setVehicles(availableVehicles);
           }
         }
 
@@ -222,24 +247,27 @@ export default function NewDeliveryNotePage() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
-            <FileText className="h-8 w-8 text-primary" />
-            New Delivery Note
-          </h1>
-          <p className="text-muted-foreground mt-2">
-            Select vehicles and owner to create a new delivery note
-          </p>
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto px-6 py-8">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <div>
+              <h1 className="text-3xl lg:text-4xl font-bold tracking-tight flex items-center gap-3">
+                <FileText className="h-8 w-8 text-primary" />
+                Delivery Schedule
+              </h1>
+              <p className="text-muted-foreground mt-2 text-lg">
+                Select vehicles and recipient to create a new delivery schedule
+              </p>
+            </div>
+          </div>
         </div>
-      </div>
 
-      <Separator />
+        <Separator className="mb-8" />
 
-      {/* Main Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch" style={{ height: 'calc(100vh - 250px)' }}>
+        {/* Main Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch" style={{ height: 'calc(100vh - 250px)' }}>
         {/* Left Column - Selected Vehicles & Owner Selection */}
         <div className="lg:col-span-1 flex flex-col gap-6">
           {/* Selected Vehicles Card - 30% */}
@@ -273,6 +301,37 @@ export default function NewDeliveryNotePage() {
                 selectedOwner={selectedOwner}
                 onSelectOwner={setSelectedOwner}
               />
+
+              {/* Contact Person Subsection */}
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-sm font-semibold text-foreground mb-3">Contact Person</h3>
+                  <div className="space-y-3">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-foreground">
+                        Fullname
+                      </label>
+                      <Input
+                        type="text"
+                        placeholder="Enter contact person full name"
+                        value={contactPersonFullName}
+                        onChange={(e) => setContactPersonFullName(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-foreground">
+                        Phone Number
+                      </label>
+                      <Input
+                        type="tel"
+                        placeholder="Enter contact person phone number"
+                        value={contactPersonPhone}
+                        onChange={(e) => setContactPersonPhone(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
 
               {/* Delivery Date */}
               <div className="space-y-2">
@@ -397,6 +456,7 @@ export default function NewDeliveryNotePage() {
             </CardContent>
           </Card>
         </div>
+      </div>
       </div>
     </div>
   );

@@ -4,12 +4,13 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Globe } from 'lucide-react';
 import { useCallback } from 'react';
+import { COUNTRIES } from '@/lib/constants/countries';
 
-interface NationalityFilterProps {
+interface CountryFilterProps {
   initialValue?: string;
 }
 
-export function NationalityFilter({ initialValue = 'all' }: NationalityFilterProps) {
+export function CountryFilter({ initialValue = 'all' }: CountryFilterProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -28,16 +29,15 @@ export function NationalityFilter({ initialValue = 'all' }: NationalityFilterPro
     <Select value={initialValue} onValueChange={updateFilter}>
       <SelectTrigger className="w-full sm:w-40">
         <Globe className="h-4 w-4 mr-2" />
-        <SelectValue placeholder="Nationality" />
+        <SelectValue placeholder="Country" />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value="all">All Nationalities</SelectItem>
-        <SelectItem value="Nigerian">Nigerian</SelectItem>
-        <SelectItem value="Ghanaian">Ghanaian</SelectItem>
-        <SelectItem value="Kenyan">Kenyan</SelectItem>
-        <SelectItem value="South African">South African</SelectItem>
-        <SelectItem value="Egyptian">Egyptian</SelectItem>
-        <SelectItem value="Other">Other</SelectItem>
+        <SelectItem value="all">All Countries</SelectItem>
+        {COUNTRIES.map((country) => (
+          <SelectItem key={country} value={country}>
+            {country}
+          </SelectItem>
+        ))}
       </SelectContent>
     </Select>
   );

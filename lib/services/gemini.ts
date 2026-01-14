@@ -42,15 +42,15 @@ export class GeminiService {
     }
 
     // Format Owners
-    contextText += `## OWNERS (Total: ${owners.length})\n\n`;
-    if (owners.length > 0) {
-      contextText += '| Name | Email | Phone | Nationality | ID Number | Vehicle Count |\n';
-      contextText += '|------|-------|-------|-------------|-----------|---------------|\n';
-      owners.forEach((o) => {
-        contextText += `| ${o.name} | ${o.email} | ${o.phone} | ${o.nationality} | ${o.idNumber} | ${o.vehicleCount} |\n`;
-      });
-      contextText += '\n';
-    }
+      contextText += `## OWNERS (Total: ${owners.length})\n\n`;
+      if (owners.length > 0) {
+        contextText += '| Name | Email | Phone | Country | Vehicle Count |\n';
+        contextText += '|------|-------|-------|-------------|---------------|\n';
+        owners.forEach((o) => {
+          contextText += `| ${o.name} | ${o.email} | ${o.phone} | ${o.country} | ${o.vehicleCount} |\n`;
+        });
+        contextText += '\n';
+      }
 
     // Format Locations
     contextText += `## LOCATIONS (Total: ${locations.length})\n\n`;

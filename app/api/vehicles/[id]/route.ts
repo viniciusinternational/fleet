@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { VehicleService } from '@/lib/services/vehicle';
-import { uploadVehicleImage } from '@/lib/s3';
+import { uploadVehicleImage, uploadVehicleThumbnail } from '@/lib/s3';
+import { generateThumbnail, validateImageType } from '@/lib/utils/image-processor';
 import { Role } from '@/types';
 import { createVehicleSchema } from '../route';
 import { TRANSMISSION_ENUM_MAP } from '@/lib/constants/vehicle';
@@ -138,6 +139,7 @@ export async function PUT(
     // Process and upload vehicle images to S3
     const imageFiles = formData.getAll('images') as File[];
     const uploadedImageKeys: string[] = [];
+    const uploadedThumbnailKeys: string[] = [];
 
     if (imageFiles.length > 0) {
       try {
@@ -147,11 +149,20 @@ export async function PUT(
           const file = imageFiles[i];
           
           if (file.size > 0) {
+            // Validate image type
+            if (!validateImageType(file.type)) {
+              console.error(`Invalid file type: ${file.type}. Only JPG, JPEG, and PNG are allowed.`);
+              continue; // Skip invalid files but continue with others
+            }
+
             // Convert file to buffer
             const bytes = await file.arrayBuffer();
             const buffer = Buffer.from(bytes);
 
-            // Upload to S3
+            // Generate thumbnail
+            const thumbnailBuffer = await generateThumbnail(buffer, 400, 300);
+
+            // Upload full image to S3
             const uploadResult = await uploadVehicleImage(
               id,
               buffer,
@@ -161,9 +172,19 @@ export async function PUT(
 
             uploadedImageKeys.push(uploadResult.path);
 
+            // Upload thumbnail to S3
+            const thumbnailResult = await uploadVehicleThumbnail(
+              id,
+              thumbnailBuffer,
+              file.name
+            );
+
+            uploadedThumbnailKeys.push(thumbnailResult.path);
+
             // Prepare image data for database
             preparedImages.push({
               url: uploadResult.url,
+              thumbnailUrl: thumbnailResult.url,
               alt: `${validatedData.make} ${validatedData.model}`.trim() || `Vehicle image ${i + 1}`,
               caption: file.name,
               isPrimary: i === 0,
@@ -176,9 +197,9 @@ export async function PUT(
           await VehicleService.createVehicleImages(id, preparedImages);
         }
       } catch (imageError) {
-        // Rollback: Delete uploaded images from S3
+        // Rollback: Delete uploaded images and thumbnails from S3
         const { deleteFromS3 } = await import('@/lib/s3');
-        for (const key of uploadedImageKeys) {
+        for (const key of [...uploadedImageKeys, ...uploadedThumbnailKeys]) {
           try {
             await deleteFromS3(key);
           } catch (deleteError) {

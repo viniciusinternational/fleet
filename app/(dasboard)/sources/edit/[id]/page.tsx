@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { COUNTRIES } from '@/lib/constants/countries';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ArrowLeft, CheckCircle2 } from 'lucide-react';
 import type { Source } from '@/types';
@@ -23,8 +25,7 @@ const EditSource: React.FC = () => {
     email: '',
     phone: '',
     address: '',
-    nationality: '',
-    idNumber: ''
+    country: ''
   });
 
   useEffect(() => {
@@ -44,8 +45,7 @@ const EditSource: React.FC = () => {
             email: source.email || '',
             phone: source.phone || '',
             address: source.address || '',
-            nationality: source.nationality || '',
-            idNumber: source.idNumber || ''
+            country: source.country || ''
           });
         } else {
           throw new Error(result.error || 'Failed to fetch source');
@@ -97,12 +97,8 @@ const EditSource: React.FC = () => {
       newErrors.address = 'Address is required';
     }
 
-    if (!formData.nationality.trim()) {
-      newErrors.nationality = 'Nationality is required';
-    }
-
-    if (!formData.idNumber.trim()) {
-      newErrors.idNumber = 'ID Number is required';
+    if (!formData.country.trim()) {
+      newErrors.country = 'Country is required';
     }
 
     setErrors(newErrors);
@@ -255,18 +251,26 @@ const EditSource: React.FC = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="nationality">
-                    Nationality <span className="text-red-500">*</span>
+                  <Label htmlFor="country">
+                    Country <span className="text-red-500">*</span>
                   </Label>
-                  <Input
-                    id="nationality"
-                    value={formData.nationality}
-                    onChange={(e) => handleInputChange('nationality', e.target.value)}
-                    placeholder="Enter nationality"
-                    className={errors.nationality ? 'border-red-500' : ''}
-                  />
-                  {errors.nationality && (
-                    <p className="text-sm text-red-500">{errors.nationality}</p>
+                  <Select
+                    value={formData.country}
+                    onValueChange={(value) => handleInputChange('country', value)}
+                  >
+                    <SelectTrigger id="country" className={errors.country ? 'border-red-500' : ''}>
+                      <SelectValue placeholder="Select country" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {COUNTRIES.map((country) => (
+                        <SelectItem key={country} value={country}>
+                          {country}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {errors.country && (
+                    <p className="text-sm text-red-500">{errors.country}</p>
                   )}
                 </div>
 
@@ -283,22 +287,6 @@ const EditSource: React.FC = () => {
                   />
                   {errors.address && (
                     <p className="text-sm text-red-500">{errors.address}</p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="idNumber">
-                    ID Number <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id="idNumber"
-                    value={formData.idNumber}
-                    onChange={(e) => handleInputChange('idNumber', e.target.value)}
-                    placeholder="Enter ID number"
-                    className={errors.idNumber ? 'border-red-500' : ''}
-                  />
-                  {errors.idNumber && (
-                    <p className="text-sm text-red-500">{errors.idNumber}</p>
                   )}
                 </div>
               </div>

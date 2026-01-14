@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
     const userRole = Role.ADMIN; // This should come from your auth system
     
     const body = await request.json();
-    const { zitadelUserId, phone, locationId, role } = body;
+    const { zitadelUserId, phone, locationId, role, permissions } = body;
 
     // Validate required fields
     if (!zitadelUserId || !phone || !locationId) {
@@ -150,6 +150,7 @@ export async function POST(request: NextRequest) {
       role: (role || Role.NORMAL) as Role,
       locationId: locationId,
       isActive: true,
+      permissions: permissions,
     };
 
     // Validate that we have required fields

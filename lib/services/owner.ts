@@ -13,7 +13,7 @@ export class OwnerService {
    */
   static async getOwners(params: {
     search?: string;
-    nationality?: string;
+    country?: string;
     sortBy?: string;
     sortOrder?: 'asc' | 'desc';
     page?: number;
@@ -21,7 +21,7 @@ export class OwnerService {
   } = {}) {
     const {
       search = '',
-      nationality = 'all',
+      country = 'all',
       sortBy = 'name',
       sortOrder = 'asc',
       page = 1,
@@ -38,12 +38,11 @@ export class OwnerService {
         { name: { contains: search, mode: 'insensitive' } },
         { email: { contains: search, mode: 'insensitive' } },
         { phone: { contains: search, mode: 'insensitive' } },
-        { idNumber: { contains: search, mode: 'insensitive' } },
       ];
     }
     
-    if (nationality && nationality !== 'all') {
-      where.nationality = nationality;
+    if (country && country !== 'all') {
+      where.country = country;
     }
     
     // Build orderBy clause
@@ -228,7 +227,7 @@ export class OwnerService {
         totalOwners,
         ownersWithVehicles,
         ownersWithoutVehicles,
-        nationalityStats,
+        countryStats,
         recentOwners,
       ] = await Promise.all([
         // Total owners count
@@ -252,17 +251,10 @@ export class OwnerService {
           },
         }),
         
-        // Nationality distribution
+        // Country distribution
         db.owner.groupBy({
-          by: ['nationality'],
-          _count: {
-            nationality: true,
-          },
-          orderBy: {
-            _count: {
-              nationality: 'desc',
-            },
-          },
+          by: ['country'],
+          _count: true,
         }),
         
         // Recent owners (last 30 days)
@@ -284,17 +276,19 @@ export class OwnerService {
         ? Math.round((ownersWithoutVehicles / totalOwners) * 100) 
         : 0;
       
-      // Format nationality stats
-      const nationalityBreakdown = nationalityStats.map(stat => ({
-        nationality: stat.nationality,
-        count: stat._count.nationality,
-        percentage: totalOwners > 0 
-          ? Math.round((stat._count.nationality / totalOwners) * 100) 
-          : 0,
-      }));
+      // Format country stats and sort by count descending
+      const countryBreakdown = countryStats
+        .map(stat => ({
+          country: stat.country,
+          count: stat._count,
+          percentage: totalOwners > 0 
+            ? Math.round((stat._count / totalOwners) * 100) 
+            : 0,
+        }))
+        .sort((a, b) => b.count - a.count);
       
-      // Get top nationalities (top 5)
-      const topNationalities = nationalityBreakdown.slice(0, 5);
+      // Get top countries (top 5)
+      const topCountries = countryBreakdown.slice(0, 5);
       
       // Simplified vehicle stats for now
       const vehicleStats = {
@@ -312,10 +306,10 @@ export class OwnerService {
           ownersWithVehiclesPercentage,
           ownersWithoutVehiclesPercentage,
         },
-        nationality: {
-          totalNationalities: nationalityStats.length,
-          topNationalities,
-          breakdown: nationalityBreakdown,
+        country: {
+          totalCountries: countryStats.length,
+          topCountries,
+          breakdown: countryBreakdown,
         },
         vehicles: vehicleStats,
         recent: {
@@ -330,23 +324,20 @@ export class OwnerService {
   }
 
   /**
-   * Get unique nationalities for filter options
+   * Get unique countries for filter options
    */
-  static async getNationalities() {
+  static async getCountries() {
     try {
-      const nationalityStats = await db.owner.groupBy({
-        by: ['nationality'],
-        _count: {
-          nationality: true,
-        },
-        orderBy: {
-          nationality: 'asc',
-        },
+      const countryStats = await db.owner.groupBy({
+        by: ['country'],
       });
       
-      return nationalityStats.map(stat => stat.nationality);
+      return countryStats
+        .map(stat => stat.country)
+        .filter((country): country is string => country !== null)
+        .sort((a, b) => a.localeCompare(b));
     } catch (error) {
-      console.error('Error fetching nationalities:', error);
+      console.error('Error fetching countries:', error);
       return [];
     }
   }

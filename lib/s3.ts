@@ -331,6 +331,43 @@ export async function uploadVehicleImage(
   }
 }
 
+// Upload vehicle thumbnail to S3
+export async function uploadVehicleThumbnail(
+  vehicleId: string,
+  thumbnailBuffer: Buffer,
+  fileName: string
+): Promise<{ url: string; path: string }> {
+  // Generate UUID without hyphens
+  const uuid = uuidv4().replace(/-/g, '');
+  const fileExtension = 'jpg'; // Thumbnails are always JPEG
+  const objectName = `vehicles/${vehicleId}/thumbnails/${uuid}.${fileExtension}`;
+
+  try {
+    // Ensure bucket exists before uploading
+    await ensureBucketExists();
+
+    // Upload to S3
+    const params = {
+      Bucket: DOCUMENTS_BUCKET,
+      Key: objectName,
+      Body: thumbnailBuffer,
+      ContentType: 'image/jpeg',
+    };
+
+    const data = await s3Client.upload(params).promise();
+
+    return {
+      url: data.Location,
+      path: data.Key || objectName,
+    };
+  } catch (error) {
+    // Rollback upload on error
+    await rollbackUpload(objectName);
+    console.error('Error uploading vehicle thumbnail to S3:', error);
+    throw new Error('Failed to upload vehicle thumbnail to S3');
+  }
+}
+
 // Upload shipping document to S3
 export async function uploadShippingDocument(
   vehicleId: string,

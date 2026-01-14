@@ -71,6 +71,7 @@ export class UserService {
           password: input.password,
           isActive: input.isActive ?? true,
           avatar: input.avatar,
+          permissions: input.permissions,
           createdAt: new Date(),
         },
         include: {

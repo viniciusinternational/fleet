@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ModuleSection } from './module-section';
 import { LocationPerformanceChart } from './charts/location-performance-chart';
 import { CustomsPerformanceChart } from './charts/customs-performance-chart';
-import { NationalityDistributionChart } from './charts/nationality-distribution-chart';
+import { CountryDistributionChart } from './charts/nationality-distribution-chart';
 import { Link2, TrendingUp, Users, MapPin, Package, FileText } from 'lucide-react';
 
 interface CrossModuleInsightsProps {
@@ -19,8 +19,8 @@ interface CrossModuleInsightsProps {
     averageDeliveryTime: number;
     totalImportDuties: number;
   }>;
-  vehiclesByOwnerNationality: Array<{
-    nationality: string;
+  vehiclesByOwnerCountry: Array<{
+    country: string;
     vehicleCount: number;
     ownerCount: number;
   }>;
@@ -28,12 +28,12 @@ interface CrossModuleInsightsProps {
     ownerId: string;
     ownerName: string;
     vehicleCount: number;
-    nationality: string;
+    country: string;
   }>;
   topSources: Array<{
     sourceId: string;
     sourceName: string;
-    nationality: string;
+    country: string;
     vehicleCount: number;
   }>;
   customsPerformance: Array<{
@@ -52,7 +52,7 @@ interface CrossModuleInsightsProps {
 
 export function CrossModuleInsights({
   vehiclesByLocation,
-  vehiclesByOwnerNationality,
+  vehiclesByOwnerCountry,
   topOwners,
   topSources,
   customsPerformance,
@@ -109,21 +109,21 @@ export function CrossModuleInsights({
 
       <ModuleSection
         title="Vehicles × Owners"
-        description="Top owners and nationality distribution"
+        description="Top owners and country distribution"
         icon={<Users className="h-5 w-5" />}
       >
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <NationalityDistributionChart
-            data={vehiclesByOwnerNationality.map(item => ({
-              nationality: item.nationality,
+          <CountryDistributionChart
+            data={vehiclesByOwnerCountry.map(item => ({
+              country: item.country,
               count: item.vehicleCount,
-              percentage: vehiclesByOwnerNationality.reduce(
+              percentage: vehiclesByOwnerCountry.reduce(
                 (sum, i) => sum + i.vehicleCount,
                 0
               ) > 0
                 ? Math.round(
                     (item.vehicleCount /
-                      vehiclesByOwnerNationality.reduce(
+                      vehiclesByOwnerCountry.reduce(
                         (sum, i) => sum + i.vehicleCount,
                         0
                       )) *
@@ -131,7 +131,7 @@ export function CrossModuleInsights({
                   )
                 : 0,
             }))}
-            title="Vehicles by Owner Nationality"
+            title="Vehicles by Owner Country"
             maxItems={10}
           />
           <Card>
@@ -151,7 +151,7 @@ export function CrossModuleInsights({
                       </div>
                       <div>
                         <p className="font-medium text-sm">{owner.ownerName}</p>
-                        <p className="text-xs text-muted-foreground">{owner.nationality}</p>
+                        <p className="text-xs text-muted-foreground">{owner.country}</p>
                       </div>
                     </div>
                     <div className="text-right">
@@ -188,7 +188,7 @@ export function CrossModuleInsights({
                     </div>
                     <div>
                       <p className="font-medium text-sm">{source.sourceName}</p>
-                      <p className="text-xs text-muted-foreground">{source.nationality}</p>
+                      <p className="text-xs text-muted-foreground">{source.country}</p>
                     </div>
                   </div>
                   <div className="text-right">

@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { COUNTRIES } from '@/lib/constants/countries';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { 
   ArrowLeft, 
@@ -39,8 +41,7 @@ const EditOwnerPage: React.FC<EditOwnerPageProps> = ({ params }) => {
     email: '',
     phone: '',
     address: '',
-    nationality: '',
-    idNumber: ''
+    country: ''
   });
 
   useEffect(() => {
@@ -58,8 +59,7 @@ const EditOwnerPage: React.FC<EditOwnerPageProps> = ({ params }) => {
             email: owner.email,
             phone: owner.phone,
             address: owner.address,
-            nationality: owner.nationality,
-            idNumber: owner.idNumber
+            country: owner.country
           });
         } else {
           router.push('/admin/owners');
@@ -111,12 +111,8 @@ const EditOwnerPage: React.FC<EditOwnerPageProps> = ({ params }) => {
       newErrors.address = 'Address is required';
     }
 
-    if (!formData.nationality.trim()) {
-      newErrors.nationality = 'Nationality is required';
-    }
-
-    if (!formData.idNumber.trim()) {
-      newErrors.idNumber = 'ID Number is required';
+    if (!formData.country.trim()) {
+      newErrors.country = 'Country is required';
     }
 
     setErrors(newErrors);
@@ -279,35 +275,26 @@ const EditOwnerPage: React.FC<EditOwnerPageProps> = ({ params }) => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="nationality">Nationality *</Label>
+                  <Label htmlFor="country">Country *</Label>
                   <div className="relative">
-                    <Globe className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="nationality"
-                      value={formData.nationality}
-                      onChange={(e) => handleInputChange('nationality', e.target.value)}
-                      placeholder="Enter nationality"
-                      className="pl-10"
-                      required
-                    />
+                    <Globe className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground z-10 pointer-events-none" />
+                    <Select
+                      value={formData.country}
+                      onValueChange={(value) => handleInputChange('country', value)}
+                    >
+                      <SelectTrigger id="country" className="pl-10">
+                        <SelectValue placeholder="Select country" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {COUNTRIES.map((country) => (
+                          <SelectItem key={country} value={country}>
+                            {country}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
-                  {errors.nationality && <p className="text-sm text-red-600">{errors.nationality}</p>}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="idNumber">ID Number *</Label>
-                  <div className="relative">
-                    <FileText className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="idNumber"
-                      value={formData.idNumber}
-                      onChange={(e) => handleInputChange('idNumber', e.target.value)}
-                      placeholder="Enter ID number"
-                      className="pl-10"
-                      required
-                    />
-                  </div>
-                  {errors.idNumber && <p className="text-sm text-red-600">{errors.idNumber}</p>}
+                  {errors.country && <p className="text-sm text-red-600">{errors.country}</p>}
                 </div>
               </div>
 

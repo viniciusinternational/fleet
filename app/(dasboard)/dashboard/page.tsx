@@ -27,7 +27,7 @@ import { ModelDistributionChart } from '@/components/dashboard/charts/model-dist
 import { TransmissionDistributionChart } from '@/components/dashboard/charts/transmission-distribution-chart';
 import { MakeModelCombinationsChart } from '@/components/dashboard/charts/make-model-combinations-chart';
 import { LocationPerformanceChart } from '@/components/dashboard/charts/location-performance-chart';
-import { NationalityDistributionChart } from '@/components/dashboard/charts/nationality-distribution-chart';
+import { CountryDistributionChart } from '@/components/dashboard/charts/nationality-distribution-chart';
 import { TimelineChart } from '@/components/dashboard/charts/timeline-chart';
 import { RoleDistributionChart } from '@/components/dashboard/charts/role-distribution-chart';
 import { LocationTypeChart } from '@/components/dashboard/charts/location-type-chart';
@@ -55,7 +55,7 @@ interface DashboardData {
   };
   crossModule: {
     vehiclesByLocation: any[];
-    vehiclesByOwnerNationality: any[];
+    vehiclesByOwnerCountry: any[];
     topOwners: any[];
     topSources: any[];
     customsPerformance: any[];
@@ -451,24 +451,24 @@ const Dashboard: React.FC = () => {
 
             <ModuleSection
               title="Owners"
-              description="Owner statistics and nationality distribution"
+              description="Owner statistics and country distribution"
               icon={<Users className="h-5 w-5" />}
             >
-              <NationalityDistributionChart
-                data={data.modules.owners.nationality?.breakdown || []}
-                title="Owners by Nationality"
+              <CountryDistributionChart
+                data={data.modules.owners.country?.breakdown || []}
+                title="Owners by Country"
                 maxItems={10}
               />
             </ModuleSection>
 
             <ModuleSection
               title="Sources"
-              description="Source statistics and nationality distribution"
+              description="Source statistics and country distribution"
               icon={<Package className="h-5 w-5" />}
             >
-              <NationalityDistributionChart
-                data={data.modules.sources.nationality?.breakdown || []}
-                title="Sources by Nationality"
+              <CountryDistributionChart
+                data={data.modules.sources.country?.breakdown || []}
+                title="Sources by Country"
                 maxItems={10}
               />
             </ModuleSection>
@@ -478,7 +478,7 @@ const Dashboard: React.FC = () => {
           <TabsContent value="cross" className="space-y-6">
             <CrossModuleInsights
               vehiclesByLocation={data.crossModule.vehiclesByLocation}
-              vehiclesByOwnerNationality={data.crossModule.vehiclesByOwnerNationality}
+              vehiclesByOwnerCountry={data.crossModule.vehiclesByOwnerCountry}
               topOwners={data.crossModule.topOwners}
               topSources={data.crossModule.topSources}
               customsPerformance={data.crossModule.customsPerformance}

@@ -77,10 +77,7 @@ export function SourceTableV2({
               <SortButton field="phone">Phone</SortButton>
             </TableHead>
             <TableHead>
-              <SortButton field="nationality">Nationality</SortButton>
-            </TableHead>
-            <TableHead>
-              <SortButton field="idNumber">ID Number</SortButton>
+              <SortButton field="country">Country</SortButton>
             </TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
@@ -95,8 +92,7 @@ export function SourceTableV2({
               <TableCell className="font-medium">{source.name}</TableCell>
               <TableCell>{source.email}</TableCell>
               <TableCell>{source.phone}</TableCell>
-              <TableCell>{source.nationality}</TableCell>
-              <TableCell>{source.idNumber}</TableCell>
+              <TableCell>{source.country}</TableCell>
               <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                 <Button
                   variant="ghost"

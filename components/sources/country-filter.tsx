@@ -10,20 +10,24 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
+import { COUNTRIES } from '@/lib/constants/countries';
 
-interface NationalityFilterProps {
+interface CountryFilterProps {
   initialValue?: string;
-  nationalities?: string[];
+  countries?: string[];
 }
 
-export function NationalityFilter({ 
+export function CountryFilter({ 
   initialValue = 'all',
-  nationalities = []
-}: NationalityFilterProps) {
+  countries = []
+}: CountryFilterProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [nationality, setNationality] = useState(initialValue);
+  const [country, setCountry] = useState(initialValue);
   const isInitialMount = useRef(true);
+
+  // Use provided countries list or fallback to all countries
+  const countryList = countries.length > 0 ? countries : COUNTRIES;
 
   useEffect(() => {
     // Skip on initial mount to avoid loop
@@ -36,13 +40,13 @@ export function NationalityFilter({
     
     // Only update if country value differs from URL param
     const currentCountry = params.get('country') || 'all';
-    if (nationality === currentCountry || 
-        (nationality === 'all' && !params.has('country'))) {
+    if (country === currentCountry || 
+        (country === 'all' && !params.has('country'))) {
       return; // No change needed
     }
     
-    if (nationality && nationality !== 'all') {
-      params.set('country', nationality);
+    if (country && country !== 'all') {
+      params.set('country', country);
     } else {
       params.delete('country');
     }
@@ -51,20 +55,20 @@ export function NationalityFilter({
     params.set('page', '1');
     
     router.push(`/sources?${params.toString()}`);
-  }, [nationality, router]);
+  }, [country, router, searchParams]);
 
   return (
     <div className="space-y-2">
-      <Label htmlFor="nationality-filter">Nationality</Label>
-      <Select value={nationality} onValueChange={setNationality}>
-        <SelectTrigger id="nationality-filter" className="w-[180px]">
-          <SelectValue placeholder="All Nationalities" />
+      <Label htmlFor="country-filter">Country</Label>
+      <Select value={country} onValueChange={setCountry}>
+        <SelectTrigger id="country-filter" className="w-[180px]">
+          <SelectValue placeholder="All Countries" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="all">All Nationalities</SelectItem>
-          {nationalities.map((nat) => (
-            <SelectItem key={nat} value={nat}>
-              {nat}
+          <SelectItem value="all">All Countries</SelectItem>
+          {countryList.map((c) => (
+            <SelectItem key={c} value={c}>
+              {c}
             </SelectItem>
           ))}
         </SelectContent>
@@ -72,4 +76,3 @@ export function NationalityFilter({
     </div>
   );
 }
-

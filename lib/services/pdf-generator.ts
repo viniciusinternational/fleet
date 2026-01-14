@@ -129,8 +129,7 @@ export class DeliveryNotePDFGenerator {
         ['Email', owner.email],
         ['Phone', owner.phone],
         ['Address', owner.address],
-        ['Nationality', owner.nationality],
-        ['ID Number', owner.idNumber],
+        ['Country', owner.country],
       ],
       theme: 'grid',
       headStyles: {

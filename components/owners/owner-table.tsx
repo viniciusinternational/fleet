@@ -112,12 +112,12 @@ export function OwnerTable({
               </TableHead>
               <TableHead 
                 className="cursor-pointer hover:bg-muted/50"
-                onClick={() => handleSort('nationality')}
+                onClick={() => handleSort('country')}
               >
                 <div className="flex items-center gap-2">
                   <Globe className="h-4 w-4" />
-                  Nationality
-                  {getSortIcon('nationality')}
+                  Country
+                  {getSortIcon('country')}
                 </div>
               </TableHead>
               <TableHead className="text-right">Actions</TableHead>
@@ -133,7 +133,6 @@ export function OwnerTable({
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="font-medium text-base">{owner.name}</div>
-                      <div className="text-sm text-muted-foreground">ID: {owner.idNumber}</div>
                     </div>
                   </div>
                 </TableCell>
@@ -158,7 +157,7 @@ export function OwnerTable({
                 </TableCell>
                 <TableCell>
                   <Badge variant="outline" className="text-xs">
-                    {owner.nationality}
+                    {owner.country}
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right">

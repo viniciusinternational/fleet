@@ -132,7 +132,7 @@ const AddVehicle: React.FC = () => {
       vehicleFormData.append('vin', formData.vin);
       vehicleFormData.append('make', formData.make);
       vehicleFormData.append('model', formData.model);
-      vehicleFormData.append('year', formData.year.toString());
+      vehicleFormData.append('year', (typeof formData.year === 'string' && formData.year === '' ? new Date().getFullYear() : (typeof formData.year === 'number' ? formData.year : parseInt(formData.year) || new Date().getFullYear())).toString());
       vehicleFormData.append('color', formData.color);
       vehicleFormData.append('trim', formData.trim);
       vehicleFormData.append('engineType', formData.engineType);
@@ -149,10 +149,10 @@ const AddVehicle: React.FC = () => {
       if (formData.transmission) {
         vehicleFormData.append('transmission', TRANSMISSION_ENUM_MAP[formData.transmission as keyof typeof TRANSMISSION_ENUM_MAP] || formData.transmission);
       }
-      vehicleFormData.append('weightKg', formData.weightKg.toString());
-      vehicleFormData.append('lengthMm', (formData.lengthMm || 0).toString());
-      vehicleFormData.append('widthMm', (formData.widthMm || 0).toString());
-      vehicleFormData.append('heightMm', (formData.heightMm || 0).toString());
+      vehicleFormData.append('weightKg', (typeof formData.weightKg === 'string' && formData.weightKg === '' ? 0 : (typeof formData.weightKg === 'number' ? formData.weightKg : parseFloat(formData.weightKg) || 0)).toString());
+      vehicleFormData.append('lengthMm', (typeof formData.lengthMm === 'string' && formData.lengthMm === '' ? 0 : (typeof formData.lengthMm === 'number' ? formData.lengthMm : parseInt(formData.lengthMm) || 0)).toString());
+      vehicleFormData.append('widthMm', (typeof formData.widthMm === 'string' && formData.widthMm === '' ? 0 : (typeof formData.widthMm === 'number' ? formData.widthMm : parseInt(formData.widthMm) || 0)).toString());
+      vehicleFormData.append('heightMm', (typeof formData.heightMm === 'string' && formData.heightMm === '' ? 0 : (typeof formData.heightMm === 'number' ? formData.heightMm : parseInt(formData.heightMm) || 0)).toString());
       vehicleFormData.append('orderDate', new Date(formData.orderDate).toISOString());
       vehicleFormData.append('estimatedDelivery', new Date(formData.estimatedDelivery).toISOString());
       
@@ -182,7 +182,7 @@ const AddVehicle: React.FC = () => {
       };
       
       vehicleFormData.append('customsStatus', customsStatusMap[formData.customsStatus] || formData.customsStatus.toUpperCase());
-      vehicleFormData.append('importDuty', formData.importDuty.toString());
+      vehicleFormData.append('importDuty', (typeof formData.importDuty === 'string' && formData.importDuty === '' ? 0 : (typeof formData.importDuty === 'number' ? formData.importDuty : parseFloat(formData.importDuty) || 0)).toString());
       vehicleFormData.append('customsNotes', formData.customsNotes || '');
       vehicleFormData.append('notes', formData.notes || '');
 
@@ -255,12 +255,12 @@ const AddVehicle: React.FC = () => {
     engineType: '',
     fuelType: 'Gasoline',
     transmission: undefined,
-    weightKg: 0,
+    weightKg: '',
     
     // Dimensions
-    lengthMm: 0,
-    widthMm: 0,
-    heightMm: 0,
+    lengthMm: '',
+    widthMm: '',
+    heightMm: '',
     
     // Dates
     orderDate: '',
@@ -288,7 +288,7 @@ const AddVehicle: React.FC = () => {
     
     // Customs Details
     customsStatus: 'Pending',
-    importDuty: 0,
+    importDuty: '',
     customsNotes: '',
     
     // Notes
@@ -299,13 +299,21 @@ const AddVehicle: React.FC = () => {
     
     // Shipping Documents
     shippingDocuments: []
-  });
+  } as unknown as VehicleFormData);
 
   const handleInputChange = (field: keyof VehicleFormData, value: string | number) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
     }));
+  };
+
+  // Helper function to format number input values for display
+  const formatNumberValue = (value: number | string): string => {
+    if (value === '' || value === 0 || value === null || value === undefined) {
+      return '';
+    }
+    return String(value);
   };
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -550,8 +558,8 @@ const AddVehicle: React.FC = () => {
                         <Input
                           id="year"
                           type="number"
-                          value={formData.year}
-                          onChange={(e) => handleInputChange('year', parseInt(e.target.value))}
+                          value={formData.year === 0 ? '' : (formData.year || '')}
+                          onChange={(e) => handleInputChange('year', e.target.value === '' ? '' : (parseInt(e.target.value) || ''))}
                           min="1900"
                           max={new Date().getFullYear() + 1}
                           className="bg-muted/30 focus-visible:bg-background transition-colors"
@@ -604,7 +612,7 @@ const AddVehicle: React.FC = () => {
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="transmission" className="text-sm font-semibold">Transmission</Label>
-                        <Select value={formData.transmission || ''} onValueChange={(value) => handleInputChange('transmission', value || undefined)}>
+                        <Select value={formData.transmission || ''} onValueChange={(value) => handleInputChange('transmission', value || '')}>
                           <SelectTrigger className="bg-muted/30 focus:bg-background transition-colors">
                             <SelectValue placeholder="Select transmission" />
                           </SelectTrigger>
@@ -636,8 +644,8 @@ const AddVehicle: React.FC = () => {
                         <Input
                           id="weightKg"
                           type="number"
-                          value={formData.weightKg}
-                          onChange={(e) => handleInputChange('weightKg', parseInt(e.target.value))}
+                          value={formatNumberValue(formData.weightKg)}
+                          onChange={(e) => handleInputChange('weightKg', e.target.value)}
                           placeholder="0"
                           className="bg-muted/30 focus-visible:bg-background transition-colors"
                         />
@@ -647,8 +655,8 @@ const AddVehicle: React.FC = () => {
                         <Input
                           id="lengthMm"
                           type="number"
-                          value={formData.lengthMm}
-                          onChange={(e) => handleInputChange('lengthMm', parseInt(e.target.value))}
+                          value={formatNumberValue(formData.lengthMm)}
+                          onChange={(e) => handleInputChange('lengthMm', e.target.value)}
                           placeholder="0"
                           className="bg-muted/30 focus-visible:bg-background transition-colors"
                         />
@@ -658,8 +666,8 @@ const AddVehicle: React.FC = () => {
                         <Input
                           id="widthMm"
                           type="number"
-                          value={formData.widthMm}
-                          onChange={(e) => handleInputChange('widthMm', parseInt(e.target.value))}
+                          value={formatNumberValue(formData.widthMm)}
+                          onChange={(e) => handleInputChange('widthMm', e.target.value)}
                           placeholder="0"
                           className="bg-muted/30 focus-visible:bg-background transition-colors"
                         />
@@ -669,8 +677,8 @@ const AddVehicle: React.FC = () => {
                         <Input
                           id="heightMm"
                           type="number"
-                          value={formData.heightMm}
-                          onChange={(e) => handleInputChange('heightMm', parseInt(e.target.value))}
+                          value={formatNumberValue(formData.heightMm)}
+                          onChange={(e) => handleInputChange('heightMm', e.target.value)}
                           placeholder="0"
                           className="bg-muted/30 focus-visible:bg-background transition-colors"
                         />
@@ -690,59 +698,20 @@ const AddVehicle: React.FC = () => {
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      <div className="space-y-2">
-                        <Label htmlFor="orderDate" className="text-sm font-semibold">Order Date *</Label>
-                        <Input
-                          id="orderDate"
-                          type="date"
-                          value={formData.orderDate}
-                          onChange={(e) => handleInputChange('orderDate', e.target.value)}
-                          className="bg-muted/30 focus-visible:bg-background transition-colors"
-                          required
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="estimatedDelivery" className="text-sm font-semibold">Estimated Delivery</Label>
-                        <Input
-                          id="estimatedDelivery"
-                          type="date"
-                          value={formData.estimatedDelivery}
-                          onChange={(e) => handleInputChange('estimatedDelivery', e.target.value)}
-                          className="bg-muted/30 focus-visible:bg-background transition-colors"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="status" className="text-sm font-semibold">Initial Status</Label>
-                        <Select value={formData.status} onValueChange={(value) => handleInputChange('status', value as VehicleStatus)}>
-                          <SelectTrigger className="bg-muted/30 focus:bg-background transition-colors">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value={VehicleStatus.ORDERED}>Ordered</SelectItem>
-                            <SelectItem value={VehicleStatus.IN_TRANSIT}>In Transit</SelectItem>
-                            <SelectItem value={VehicleStatus.AT_PORT}>At Port</SelectItem>
-                            <SelectItem value={VehicleStatus.CLEARING_CUSTOMS}>Clearing Customs</SelectItem>
-                            <SelectItem value={VehicleStatus.IN_LOCAL_DELIVERY}>In Local Delivery</SelectItem>
-                            <SelectItem value={VehicleStatus.DELIVERED}>Delivered</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
+                    {/* Top Row: Current Location and Source (Required Fields) */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {/* Current Location */}
                       <div className="space-y-4">
                         <div className="space-y-2">
                           <Label htmlFor="currentLocationId" className="text-sm font-semibold">Current Location *</Label>
                           <Select value={formData.currentLocationId} onValueChange={(value) => handleInputChange('currentLocationId', value)}>
-                            <SelectTrigger className="bg-muted/30 focus:bg-background transition-colors">
+                            <SelectTrigger className="bg-muted/30 focus:bg-background transition-colors w-full min-w-[280px] max-w-full">
                               <SelectValue placeholder="Select location" />
                             </SelectTrigger>
                             <SelectContent>
                               {locations.map((location) => (
                                 <SelectItem key={location.id} value={location.id}>
-                                  {location.name} - {(location as any).city || 'Unknown'}
+                                  {location.name} ({location.type}) - {location.address?.city || 'Unknown'}, {location.address?.country || 'Unknown'}
                                 </SelectItem>
                               ))}
                             </SelectContent>
@@ -767,35 +736,78 @@ const AddVehicle: React.FC = () => {
                         })()}
                       </div>
 
-                      {/* Owner and Source */}
-                      <div className="space-y-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="ownerId" className="text-sm font-semibold">Owner / Client</Label>
-                          <Select value={formData.ownerId} onValueChange={(value) => handleInputChange('ownerId', value)}>
-                            <SelectTrigger className="bg-muted/30 focus:bg-background transition-colors">
-                              <SelectValue placeholder="Select owner" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {owners.map((owner) => (
-                                <SelectItem key={owner.id} value={owner.id}>{owner.name}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <Label htmlFor="sourceId" className="text-sm font-semibold">Source *</Label>
-                          <Select value={formData.sourceId || ''} onValueChange={(value) => handleInputChange('sourceId', value)}>
-                            <SelectTrigger className="bg-muted/30 focus:bg-background transition-colors">
-                              <SelectValue placeholder="Select source" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {sources.map((source) => (
-                                <SelectItem key={source.id} value={source.id}>{source.name}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
+                      {/* Source */}
+                      <div className="space-y-2">
+                        <Label htmlFor="sourceId" className="text-sm font-semibold">From *</Label>
+                        <Select value={formData.sourceId || ''} onValueChange={(value) => handleInputChange('sourceId', value)}>
+                          <SelectTrigger className="bg-muted/30 focus:bg-background transition-colors w-full min-w-[280px] max-w-full">
+                            <SelectValue placeholder="Select from" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {sources.map((source) => (
+                              <SelectItem key={source.id} value={source.id}>
+                                {source.name} - {source.country || 'Unknown'}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    {/* Second Row: Order Date, Estimated Delivery, Initial Status */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      <div className="space-y-2">
+                        <Label htmlFor="orderDate" className="text-sm font-semibold">Order Date</Label>
+                        <Input
+                          id="orderDate"
+                          type="date"
+                          value={formData.orderDate}
+                          onChange={(e) => handleInputChange('orderDate', e.target.value)}
+                          className="bg-muted/30 focus-visible:bg-background transition-colors"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="estimatedDelivery" className="text-sm font-semibold">Estimated Delivery</Label>
+                        <Input
+                          id="estimatedDelivery"
+                          type="date"
+                          value={formData.estimatedDelivery}
+                          onChange={(e) => handleInputChange('estimatedDelivery', e.target.value)}
+                          className="bg-muted/30 focus-visible:bg-background transition-colors"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="status" className="text-sm font-semibold">Initial Status</Label>
+                        <Select value={formData.status} onValueChange={(value) => handleInputChange('status', value as VehicleStatus)}>
+                          <SelectTrigger className="bg-muted/30 focus:bg-background transition-colors w-full min-w-[280px] max-w-full">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value={VehicleStatus.ORDERED}>Ordered</SelectItem>
+                            <SelectItem value={VehicleStatus.IN_TRANSIT}>In Transit</SelectItem>
+                            <SelectItem value={VehicleStatus.AT_PORT}>At Port</SelectItem>
+                            <SelectItem value={VehicleStatus.CLEARING_CUSTOMS}>Clearing Customs</SelectItem>
+                            <SelectItem value={VehicleStatus.IN_LOCAL_DELIVERY}>In Local Delivery</SelectItem>
+                            <SelectItem value={VehicleStatus.DELIVERED}>Delivered</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    {/* Third Row: Owner / Client */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      <div className="space-y-2">
+                        <Label htmlFor="ownerId" className="text-sm font-semibold">To</Label>
+                        <Select value={formData.ownerId} onValueChange={(value) => handleInputChange('ownerId', value)}>
+                          <SelectTrigger className="bg-muted/30 focus:bg-background transition-colors w-full min-w-[280px] max-w-full">
+                            <SelectValue placeholder="Select to" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {owners.map((owner) => (
+                              <SelectItem key={owner.id} value={owner.id}>{owner.name}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
                     </div>
                   </CardContent>
@@ -827,7 +839,7 @@ const AddVehicle: React.FC = () => {
                         id="image-upload"
                         type="file"
                         multiple
-                        accept="image/*"
+                        accept="image/jpeg,image/jpg,image/png"
                         onChange={handleImageUpload}
                         className="hidden"
                       />
@@ -993,8 +1005,8 @@ const AddVehicle: React.FC = () => {
                         <Input
                           id="importDuty"
                           type="number"
-                          value={formData.importDuty}
-                          onChange={(e) => handleInputChange('importDuty', parseInt(e.target.value))}
+                          value={formatNumberValue(formData.importDuty)}
+                          onChange={(e) => handleInputChange('importDuty', e.target.value)}
                           className="bg-muted/30 focus-visible:bg-background transition-colors"
                         />
                       </div>

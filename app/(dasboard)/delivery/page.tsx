@@ -31,8 +31,7 @@ interface DeliveryNote {
     email: string;
     phone: string;
     address: string;
-    nationality: string;
-    idNumber: string;
+    country: string;
   };
 }
 

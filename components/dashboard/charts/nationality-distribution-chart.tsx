@@ -5,9 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
 
-interface NationalityDistributionChartProps {
+interface CountryDistributionChartProps {
   data: Array<{
-    nationality: string;
+    country: string;
     count: number;
     percentage?: number;
   }>;
@@ -15,15 +15,15 @@ interface NationalityDistributionChartProps {
   maxItems?: number;
 }
 
-export function NationalityDistributionChart({
+export function CountryDistributionChart({
   data,
-  title = 'Nationality Distribution',
+  title = 'Country Distribution',
   maxItems = 10,
-}: NationalityDistributionChartProps) {
+}: CountryDistributionChartProps) {
   const chartData = data
     .slice(0, maxItems)
     .map(item => ({
-      nationality: item.nationality,
+      country: item.country,
       count: item.count,
       percentage: item.percentage || 0,
     }));
@@ -47,7 +47,7 @@ export function NationalityDistributionChart({
             <BarChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis 
-                dataKey="nationality" 
+                dataKey="country" 
                 angle={-45}
                 textAnchor="end"
                 height={100}
@@ -61,7 +61,7 @@ export function NationalityDistributionChart({
                     return (
                       <ChartTooltipContent>
                         <div className="flex flex-col gap-1">
-                          <div className="font-medium">{data.nationality}</div>
+                          <div className="font-medium">{data.country}</div>
                           <div className="text-sm">
                             Count: <span className="font-bold">{data.count}</span>
                           </div>

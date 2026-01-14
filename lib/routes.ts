@@ -225,6 +225,14 @@ export const ROUTE_CONFIGS: RouteConfig[] = [
     exact: true,
     description: 'Chatbot page'
   },
+
+  // Audit Logs route
+  {
+    path: '/audit-logs',
+    requiredPermissions: ['view_audit_logs'],
+    exact: true,
+    description: 'Audit logs page'
+  },
 ];
 
 /**

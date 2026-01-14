@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus, Package, Car, Globe } from 'lucide-react';
 import { SourceSearchInput } from '@/components/sources/source-search-input';
-import { NationalityFilter } from '@/components/sources/nationality-filter';
+import { CountryFilter } from '@/components/sources/country-filter';
 import { SourceTableV2 } from '@/components/sources/source-table-v2';
 import { SourcePagination } from '@/components/sources/source-pagination';
 import { SourceService } from '@/lib/services/source';
@@ -19,7 +19,7 @@ async function redirectToAddSource() {
 interface SourcePageProps {
   searchParams: {
     search?: string;
-    nationality?: string;
+    country?: string;
     sortBy?: string;
     sortOrder?: 'asc' | 'desc';
     page?: string;
@@ -29,23 +29,23 @@ interface SourcePageProps {
 export default async function SourceManagement({ searchParams }: SourcePageProps) {
   const params = await searchParams;
   const searchTerm = params.search || '';
-  const nationalityFilter = params.nationality || 'all';
+  const countryFilter = params.country || 'all';
   const sortBy = params.sortBy || 'name';
   const sortOrder = params.sortOrder || 'asc';
   const currentPage = parseInt(params.page || '1');
 
   // Fetch sources and stats
-  const [sourceData, stats, nationalities] = await Promise.all([
+  const [sourceData, stats, countries] = await Promise.all([
     SourceService.getSources({
       search: searchTerm,
-      nationality: nationalityFilter,
+      country: countryFilter,
       sortBy,
       sortOrder,
       page: currentPage,
       limit: 10
     }),
     SourceService.getSourceStats(),
-    SourceService.getNationalities()
+    SourceService.getCountries()
   ]);
 
   const { sources, total, totalPages } = sourceData;
@@ -88,11 +88,11 @@ export default async function SourceManagement({ searchParams }: SourcePageProps
           />
 
           <MetricCard
-            title={stats.nationality.topNationalities[0]?.nationality || 'Nigerian'}
-            value={stats.nationality.topNationalities[0]?.count || 0}
+            title={stats.country.topCountries[0]?.country || 'Nigeria'}
+            value={stats.country.topCountries[0]?.count || 0}
             icon={Globe}
             variant="purple"
-            description="Most common nationality"
+            description="Most common country"
           />
 
           <MetricCard
@@ -110,7 +110,7 @@ export default async function SourceManagement({ searchParams }: SourcePageProps
             {/* Filters */}
             <div className="flex flex-col sm:flex-row gap-4 mb-6">
               <SourceSearchInput initialValue={searchTerm} />
-              <NationalityFilter initialValue={nationalityFilter} nationalities={nationalities} />
+              <CountryFilter initialValue={countryFilter} countries={countries} />
             </div>
 
             {/* Sources Table */}

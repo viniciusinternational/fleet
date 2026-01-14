@@ -32,6 +32,16 @@ export const navigationConfig: NavigationItem[] = [
     description: 'Manage system users'
   },
 
+  // Audit Logs
+  {
+    id: 'audit-logs',
+    label: 'Audit Logs',
+    icon: 'FileText',
+    href: '/audit-logs',
+    requiredPermission: 'view_audit_logs',
+    description: 'View and track all changes made to entities in the system'
+  },
+
   // Owners
   {
     id: 'owners',
@@ -80,16 +90,6 @@ export const navigationConfig: NavigationItem[] = [
     href: '/tracking',
     requiredPermission: 'view_tracking',
     description: 'View and track vehicle journey events and status changes'
-  },
-
-  // Analytics
-  {
-    id: 'analytics',
-    label: 'Analytics & Reports',
-    icon: 'BarChart3',
-    href: '/analytics',
-    requiredPermission: 'view_analytics',
-    description: 'Comprehensive business intelligence and performance metrics'
   },
 
   // Reports

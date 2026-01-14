@@ -43,7 +43,7 @@ const EditShipping: React.FC = () => {
     departureDate: '',
     expectedArrivalDate: '',
     customsStatus: 'Pending' as 'Pending' | 'In Progress' | 'Cleared' | 'Held',
-    importDuty: 0,
+    importDuty: '' as number | string,
     customsNotes: '',
     notes: ''
   });
@@ -83,7 +83,7 @@ const EditShipping: React.FC = () => {
               expectedArrivalDate: vehicleData.shippingDetails.expectedArrivalDate ? 
                 new Date(vehicleData.shippingDetails.expectedArrivalDate).toISOString().split('T')[0] : '',
               customsStatus: vehicleData.customsStatus || 'Pending',
-              importDuty: vehicleData.importDuty || 0,
+              importDuty: vehicleData.importDuty && vehicleData.importDuty !== 0 ? vehicleData.importDuty : '',
               customsNotes: vehicleData.customsNotes || '',
               notes: vehicleData.notes || ''
             });
@@ -104,6 +104,14 @@ const EditShipping: React.FC = () => {
 
     fetchData();
   }, [vehicleId]);
+
+  // Helper function to format number input values for display
+  const formatNumberValue = (value: number | string): string => {
+    if (value === '' || value === 0 || value === null || value === undefined) {
+      return '';
+    }
+    return String(value);
+  };
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({
@@ -152,7 +160,7 @@ const EditShipping: React.FC = () => {
       shippingFormData.append('departureDate', formData.departureDate);
       shippingFormData.append('expectedArrivalDate', formData.expectedArrivalDate);
       shippingFormData.append('customsStatus', formData.customsStatus);
-      shippingFormData.append('importDuty', formData.importDuty.toString());
+      shippingFormData.append('importDuty', (typeof formData.importDuty === 'string' && formData.importDuty === '' ? 0 : (typeof formData.importDuty === 'number' ? formData.importDuty : parseFloat(formData.importDuty) || 0)).toString());
       shippingFormData.append('customsNotes', formData.customsNotes);
       shippingFormData.append('notes', formData.notes);
       
@@ -384,8 +392,8 @@ const EditShipping: React.FC = () => {
                 <Input
                   id="importDuty"
                   type="number"
-                  value={formData.importDuty}
-                  onChange={(e) => handleInputChange('importDuty', parseInt(e.target.value))}
+                  value={formatNumberValue(formData.importDuty)}
+                  onChange={(e) => handleInputChange('importDuty', e.target.value)}
                   placeholder="Import duty amount"
                   min="0"
                 />

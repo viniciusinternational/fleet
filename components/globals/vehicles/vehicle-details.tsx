@@ -594,8 +594,8 @@ const VehicleDetails: React.FC<VehicleDetailsProps> = ({
                           <p className="text-sm">{vehicle.owner.phone}</p>
                       </div>
                       <div>
-                        <label className="text-sm font-medium text-muted-foreground">Nationality</label>
-                        <p className="text-sm">{vehicle.owner.nationality}</p>
+                        <label className="text-sm font-medium text-muted-foreground">Country</label>
+                        <p className="text-sm">{vehicle.owner.country}</p>
                       </div>
                     </div>
 
@@ -621,16 +621,12 @@ const VehicleDetails: React.FC<VehicleDetailsProps> = ({
                               <p className="text-sm">{vehicle.source.phone}</p>
                             </div>
                             <div>
-                              <label className="text-sm font-medium text-muted-foreground">Nationality</label>
-                              <p className="text-sm">{vehicle.source.nationality}</p>
+                              <label className="text-sm font-medium text-muted-foreground">Country</label>
+                              <p className="text-sm">{vehicle.source.country}</p>
                             </div>
                             <div>
                               <label className="text-sm font-medium text-muted-foreground">Address</label>
                               <p className="text-sm">{vehicle.source.address}</p>
-                            </div>
-                            <div>
-                              <label className="text-sm font-medium text-muted-foreground">ID Number</label>
-                              <p className="text-sm font-mono">{vehicle.source.idNumber}</p>
                             </div>
                           </div>
                         </div>

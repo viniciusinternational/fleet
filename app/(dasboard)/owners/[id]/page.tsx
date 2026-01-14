@@ -146,7 +146,7 @@ const OwnerDetailsPage: React.FC = () => {
                 <div className="flex items-center gap-2">
                   <Globe className="h-4 w-4 text-muted-foreground" />
                   <Badge variant="outline" className="text-xs">
-                    {owner.nationality}
+                    {owner.country}
                   </Badge>
                 </div>
               </div>
@@ -188,10 +188,6 @@ const OwnerDetailsPage: React.FC = () => {
                   <p className="text-sm">{owner.name}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">ID Number</label>
-                  <p className="text-sm">{owner.idNumber}</p>
-                </div>
-                <div>
                   <label className="text-sm font-medium text-muted-foreground">Email</label>
                   <p className="text-sm">{owner.email}</p>
                 </div>
@@ -200,9 +196,9 @@ const OwnerDetailsPage: React.FC = () => {
                   <p className="text-sm">{owner.phone}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">Nationality</label>
+                  <label className="text-sm font-medium text-muted-foreground">Country</label>
                   <Badge variant="outline" className="text-xs">
-                    {owner.nationality}
+                    {owner.country}
                   </Badge>
                 </div>
               </div>

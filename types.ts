@@ -152,6 +152,7 @@ export interface  shippingDetails {
 export interface VehicleImage {
   id: string;
   url?: string;
+  thumbnailUrl?: string;
   alt: string;
   caption?: string;
   isPrimary?: boolean;
@@ -164,8 +165,7 @@ export interface Owner {
   email: string;
   phone: string;
   address: string;
-  nationality: string;
-  idNumber: string;
+  country: string;
 }
 
 export interface Source {
@@ -174,8 +174,7 @@ export interface Source {
   email: string;
   phone: string;
   address: string;
-  nationality: string;
-  idNumber: string;
+  country: string;
 }
 
 export interface TrackingEvent {
@@ -253,18 +252,18 @@ export interface VehicleFormData {
   vin: string;
   make: string;
   model: string;
-  year: number;
+  year: number | string;
   color: string;
   trim: string;
   engineType: string;
   fuelType: 'Gasoline' | 'Diesel' | 'Electric' | 'Hybrid';
   transmission?: string;
-  weightKg: number;
+  weightKg: number | string;
   
   // Dimensions
-  lengthMm: number;
-  widthMm: number;
-  heightMm: number;
+  lengthMm: number | string;
+  widthMm: number | string;
+  heightMm: number | string;
   
   // Dates
   orderDate: string;
@@ -292,7 +291,7 @@ export interface VehicleFormData {
   
   // Customs Details
   customsStatus: 'Pending' | 'In Progress' | 'Cleared' | 'Held';
-  importDuty: number;
+  importDuty: number | string;
   customsNotes: string;
   
   // Notes

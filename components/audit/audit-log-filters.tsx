@@ -63,16 +63,16 @@ export function AuditLogFiltersComponent({
           <div className="space-y-2">
             <Label>Entity Type</Label>
             <Select
-              value={filters.entityType || ''}
+              value={filters.entityType || 'all'}
               onValueChange={(value) =>
-                updateFilter('entityType', value || undefined)
+                updateFilter('entityType', value === 'all' ? undefined : value)
               }
             >
               <SelectTrigger>
                 <SelectValue placeholder="All types" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All types</SelectItem>
+                <SelectItem value="all">All types</SelectItem>
                 {entityTypes.map((type) => (
                   <SelectItem key={type} value={type}>
                     {type}
@@ -86,16 +86,16 @@ export function AuditLogFiltersComponent({
           <div className="space-y-2">
             <Label>Action</Label>
             <Select
-              value={filters.action || ''}
+              value={filters.action || 'all'}
               onValueChange={(value) =>
-                updateFilter('action', value || undefined)
+                updateFilter('action', value === 'all' ? undefined : value)
               }
             >
               <SelectTrigger>
                 <SelectValue placeholder="All actions" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All actions</SelectItem>
+                <SelectItem value="all">All actions</SelectItem>
                 {actions.map((action) => (
                   <SelectItem key={action} value={action}>
                     {action}

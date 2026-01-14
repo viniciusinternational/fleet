@@ -68,8 +68,7 @@ async function main() {
         email: 'john.smith@example.com',
         phone: '+1-555-0123',
         address: '123 Maple Ave, New York, NY',
-        nationality: 'American',
-        idNumber: 'US123456789',
+        country: 'United States',
       },
     }),
     prisma.source.create({
@@ -78,8 +77,7 @@ async function main() {
         email: 'maria.garcia@example.com',
         phone: '+34-912-345-678',
         address: 'Calle Mayor 1, Madrid, Spain',
-        nationality: 'Spanish',
-        idNumber: 'ES987654321',
+        country: 'Spain',
       },
     }),
     prisma.source.create({
@@ -88,8 +86,7 @@ async function main() {
         email: 'yuki.tanaka@example.com',
         phone: '+81-3-1234-5678',
         address: '1-2-3 Shibuya, Tokyo, Japan',
-        nationality: 'Japanese',
-        idNumber: 'JP456789123',
+        country: 'Japan',
       },
     }),
   ]);

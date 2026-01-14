@@ -570,9 +570,25 @@ const VehicleTable: React.FC<VehicleTableProps> = ({
                       onClick={() => handleVehicleClick(vehicle.id)}
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                          <Car className="h-5 w-5 text-primary" />
-                        </div>
+                        {/* Thumbnail */}
+                        {(() => {
+                          const primaryImage = vehicle.images?.find(img => img.isPrimary) || vehicle.images?.[0];
+                          const imageUrl = primaryImage?.thumbnailUrl || primaryImage?.url;
+                          
+                          return imageUrl ? (
+                            <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 border-2 border-muted">
+                              <img
+                                src={imageUrl}
+                                alt={primaryImage?.alt || `${vehicle.make} ${vehicle.model}`}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          ) : (
+                            <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                              <Car className="h-6 w-6 text-primary" />
+                            </div>
+                          );
+                        })()}
                         <div className="min-w-0 flex-1">
                           <div className="font-medium text-base">{vehicle.make} {vehicle.model}</div>
                           <div className="text-sm text-muted-foreground">VIN: {vehicle.vin}</div>
@@ -627,49 +643,86 @@ const VehicleTable: React.FC<VehicleTableProps> = ({
         {/* Grid View */}
         {viewMode === 'grid' && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {paginatedVehicles.map((vehicle) => (
-              <Card 
-                key={vehicle.id} 
-                className="hover:shadow-lg transition-all duration-200 cursor-pointer group border-2 hover:border-blue-200 dark:hover:border-blue-700"
-                onClick={() => handleVehicleClick(vehicle.id)}
-              >
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center shadow-sm">
-                      <Car className="h-6 w-6 text-primary" />
+            {paginatedVehicles.map((vehicle) => {
+              // Get primary image or first available image
+              const primaryImage = vehicle.images?.find(img => img.isPrimary) || vehicle.images?.[0];
+              const imageUrl = primaryImage?.thumbnailUrl || primaryImage?.url;
+              
+              return (
+                <Card 
+                  key={vehicle.id} 
+                  className="relative overflow-hidden cursor-pointer group border-0 shadow-md hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] aspect-[4/3]"
+                  onClick={() => handleVehicleClick(vehicle.id)}
+                >
+                  {/* Background Image */}
+                  {imageUrl ? (
+                    <div className="absolute inset-0">
+                      <img
+                        src={imageUrl}
+                        alt={primaryImage?.alt || `${vehicle.make} ${vehicle.model}`}
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110 group-hover:brightness-110"
+                      />
+                      {/* Gradient Overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent" />
                     </div>
-                    <Badge variant="outline" className={`${getStatusColor(vehicle.status)} text-xs`}>
-                      {getStatusIcon(vehicle.status)}
-                      <span className="ml-1">{vehicle.status}</span>
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="space-y-3">
-                    <div>
-                      <h3 className="font-semibold text-lg">{vehicle.make} {vehicle.model}</h3>
-                      <p className="text-sm text-muted-foreground">{vehicle.year} • {vehicle.color}</p>
-                      <p className="text-xs text-muted-foreground font-mono">VIN: {vehicle.vin}</p>
+                  ) : (
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+                      <Car className="h-16 w-16 text-primary/30" />
+                    </div>
+                  )}
+                  
+                  {/* Content Overlay */}
+                  <div className="relative h-full flex flex-col justify-between p-6 text-white">
+                    {/* Top Section - Status Badge */}
+                    <div className="flex justify-end">
+                      <Badge 
+                        variant="outline" 
+                        className={`${getStatusColor(vehicle.status)} text-xs border-white/20 bg-white/10 backdrop-blur-sm text-white`}
+                      >
+                        {getStatusIcon(vehicle.status)}
+                        <span className="ml-1">{vehicle.status}</span>
+                      </Badge>
                     </div>
                     
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <Users className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm font-medium">{vehicle.owner?.name || 'Unknown Owner'}</span>
+                    {/* Bottom Section - Vehicle Info */}
+                    <div className="space-y-3">
+                      <div>
+                        <h3 className="font-bold text-xl leading-tight drop-shadow-lg">
+                          {vehicle.make} {vehicle.model}
+                        </h3>
+                        <p className="text-sm text-white/90 drop-shadow-md mt-1">
+                          {vehicle.year} • {vehicle.color}
+                        </p>
+                        <p className="text-xs text-white/70 font-mono drop-shadow mt-1">
+                          {vehicle.vin}
+                        </p>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <MapPin className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm text-muted-foreground">{vehicle.currentLocation?.name || 'Unknown Location'}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm text-muted-foreground">{formatDate(vehicle.orderDate)}</span>
+                      
+                      <div className="space-y-1.5 pt-2 border-t border-white/20">
+                        <div className="flex items-center gap-2 text-sm">
+                          <Users className="h-3.5 w-3.5 text-white/80" />
+                          <span className="text-white/90 font-medium truncate">
+                            {vehicle.owner?.name || 'Unknown Owner'}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm">
+                          <MapPin className="h-3.5 w-3.5 text-white/80" />
+                          <span className="text-white/80 truncate">
+                            {vehicle.currentLocation?.name || 'Unknown Location'}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm">
+                          <Calendar className="h-3.5 w-3.5 text-white/80" />
+                          <span className="text-white/80">
+                            {formatDate(vehicle.orderDate)}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
+                </Card>
+              );
+            })}
           </div>
         )}
         

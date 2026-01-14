@@ -12,7 +12,7 @@ export class SourceService {
    */
   static async getSources(params: {
     search?: string;
-    nationality?: string;
+    country?: string;
     sortBy?: string;
     sortOrder?: 'asc' | 'desc';
     page?: number;
@@ -20,7 +20,7 @@ export class SourceService {
   } = {}) {
     const {
       search = '',
-      nationality = 'all',
+      country = 'all',
       sortBy = 'name',
       sortOrder = 'asc',
       page = 1,
@@ -37,12 +37,11 @@ export class SourceService {
         { name: { contains: search, mode: 'insensitive' } },
         { email: { contains: search, mode: 'insensitive' } },
         { phone: { contains: search, mode: 'insensitive' } },
-        { idNumber: { contains: search, mode: 'insensitive' } },
       ];
     }
     
-    if (nationality && nationality !== 'all') {
-      where.nationality = nationality;
+    if (country && country !== 'all') {
+      where.country = country;
     }
     
     // Build orderBy clause
@@ -184,7 +183,7 @@ export class SourceService {
         totalSources,
         sourcesWithVehicles,
         sourcesWithoutVehicles,
-        nationalityStats,
+        countryStats,
         recentSources,
       ] = await Promise.all([
         // Total sources count
@@ -208,15 +207,15 @@ export class SourceService {
           },
         }),
         
-        // Nationality distribution
+        // Country distribution
         db.source.groupBy({
-          by: ['nationality'],
+          by: ['country'],
           _count: {
-            nationality: true,
+            country: true,
           },
           orderBy: {
             _count: {
-              nationality: 'desc',
+              country: 'desc',
             },
           },
         }),
@@ -240,17 +239,17 @@ export class SourceService {
         ? Math.round((sourcesWithoutVehicles / totalSources) * 100) 
         : 0;
       
-      // Format nationality stats
-      const nationalityBreakdown = nationalityStats.map(stat => ({
-        nationality: stat.nationality,
-        count: stat._count.nationality,
+      // Format country stats
+      const countryBreakdown = countryStats.map(stat => ({
+        country: stat.country,
+        count: stat._count.country,
         percentage: totalSources > 0 
-          ? Math.round((stat._count.nationality / totalSources) * 100) 
+          ? Math.round((stat._count.country / totalSources) * 100) 
           : 0,
       }));
       
-      // Get top nationalities (top 5)
-      const topNationalities = nationalityBreakdown.slice(0, 5);
+      // Get top countries (top 5)
+      const topCountries = countryBreakdown.slice(0, 5);
       
       // Simplified vehicle stats for now
       const vehicleStats = {
@@ -268,10 +267,10 @@ export class SourceService {
           sourcesWithVehiclesPercentage,
           sourcesWithoutVehiclesPercentage,
         },
-        nationality: {
-          totalNationalities: nationalityStats.length,
-          topNationalities,
-          breakdown: nationalityBreakdown,
+        country: {
+          totalCountries: countryStats.length,
+          topCountries,
+          breakdown: countryBreakdown,
         },
         vehicles: vehicleStats,
         recent: {
@@ -286,23 +285,23 @@ export class SourceService {
   }
 
   /**
-   * Get unique nationalities for filter options
+   * Get unique countries for filter options
    */
-  static async getNationalities() {
+  static async getCountries() {
     try {
-      const nationalityStats = await db.source.groupBy({
-        by: ['nationality'],
+      const countryStats = await db.source.groupBy({
+        by: ['country'],
         _count: {
-          nationality: true,
-        },
-        orderBy: {
-          nationality: 'asc',
+          country: true,
         },
       });
       
-      return nationalityStats.map(stat => stat.nationality);
+      return countryStats
+        .map(stat => stat.country)
+        .filter((country): country is string => country !== null)
+        .sort((a, b) => a.localeCompare(b));
     } catch (error) {
-      console.error('Error fetching nationalities:', error);
+      console.error('Error fetching countries:', error);
       return [];
     }
   }

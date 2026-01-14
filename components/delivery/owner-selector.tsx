@@ -39,7 +39,7 @@ export function OwnerSelector({
     <div className="space-y-2">
       <label className="text-sm font-medium text-foreground flex items-center gap-2">
         <User className="h-4 w-4" />
-        Select Owner
+        To
       </label>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
@@ -56,7 +56,7 @@ export function OwnerSelector({
                 {selectedOwner.name}
               </span>
             ) : (
-              <span className="text-muted-foreground">Select owner...</span>
+              <span className="text-muted-foreground">Select recipient...</span>
             )}
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
@@ -118,8 +118,8 @@ export function OwnerSelector({
             <span className="font-medium text-right ml-2">{selectedOwner.address}</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-muted-foreground">Nationality:</span>
-            <span className="font-medium">{selectedOwner.nationality}</span>
+            <span className="text-muted-foreground">Country:</span>
+            <span className="font-medium">{selectedOwner.country}</span>
           </div>
         </div>
       )}

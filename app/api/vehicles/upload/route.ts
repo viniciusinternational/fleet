@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate file types and sizes
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
     const maxSize = 5 * 1024 * 1024; // 5MB
 
     for (const file of files) {

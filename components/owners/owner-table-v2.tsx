@@ -42,7 +42,6 @@ export function OwnerTableV2({
           </div>
           <div className="min-w-0 flex-1 overflow-hidden">
             <div className="font-medium text-sm sm:text-base truncate">{owner.name}</div>
-            <div className="text-xs sm:text-sm text-muted-foreground truncate">ID: {owner.idNumber}</div>
           </div>
         </div>
       )

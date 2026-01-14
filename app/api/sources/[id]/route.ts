@@ -8,8 +8,7 @@ const updateSourceSchema = z.object({
   email: z.string().email('Invalid email format').optional(),
   phone: z.string().min(1, 'Phone is required').max(20, 'Phone too long').optional(),
   address: z.string().min(1, 'Address is required').max(500, 'Address too long').optional(),
-  nationality: z.string().min(1, 'Nationality is required').max(50, 'Nationality too long').optional(),
-  idNumber: z.string().min(1, 'ID Number is required').max(50, 'ID Number too long').optional(),
+  country: z.string().min(1, 'Country is required').max(50, 'Country too long').optional(),
 });
 
 // GET /api/sources/[id] - Get source by ID

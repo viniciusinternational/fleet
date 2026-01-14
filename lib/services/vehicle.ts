@@ -8,6 +8,7 @@ type VehicleImageInput = {
   caption?: string;
   isPrimary?: boolean;
   url: string; // Required - S3 URL
+  thumbnailUrl?: string; // Optional - S3 thumbnail URL
 };
 
 /**
@@ -85,6 +86,16 @@ export class VehicleService {
                 phone: true,
               },
             },
+            source: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                phone: true,
+                address: true,
+                country: true,
+              },
+            },
             currentLocation: {
               select: {
                 id: true,
@@ -106,6 +117,7 @@ export class VehicleService {
                 caption: true,
                 isPrimary: true,
                 url: true,
+                thumbnailUrl: true,
               },
             }, // Exclude base64 payloads for list queries
           },
@@ -167,6 +179,7 @@ export class VehicleService {
               caption: true,
               isPrimary: true,
               url: true,
+              thumbnailUrl: true,
             },
           }, // Default to metadata only; base64 fetched on demand
         },
@@ -438,6 +451,7 @@ export class VehicleService {
               caption: true,
               isPrimary: true,
               url: true,
+              thumbnailUrl: true,
               data: true,
             }
           : {
@@ -446,6 +460,7 @@ export class VehicleService {
               caption: true,
               isPrimary: true,
               url: true,
+              thumbnailUrl: true,
             },
       });
 
@@ -464,6 +479,7 @@ export class VehicleService {
         caption: image.caption ?? null,
         isPrimary: image.isPrimary ?? index === 0,
         url: image.url, // S3 URL is required
+        thumbnailUrl: image.thumbnailUrl ?? null,
       }));
 
       const createdImages = await Promise.all(
@@ -471,6 +487,7 @@ export class VehicleService {
           db.vehicleImage.create({
             data: {
               url: image.url,
+              thumbnailUrl: image.thumbnailUrl,
               alt: image.alt,
               caption: image.caption,
               isPrimary: image.isPrimary,
