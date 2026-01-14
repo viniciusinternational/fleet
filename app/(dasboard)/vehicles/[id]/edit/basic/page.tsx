@@ -25,7 +25,6 @@ import {
   User
 } from 'lucide-react';
 import { VehicleStatus, LocationType } from '@/types';
-import { VEHICLE_COLORS, VEHICLE_MAKES, VEHICLE_MODELS, TRANSMISSION_TYPES, TRANSMISSION_ENUM_MAP, TRANSMISSION_DISPLAY_MAP, getModelsForMake } from '@/lib/constants/vehicle';
 import type { Vehicle, Owner, Location, Source } from '@/types';
 import { Badge } from '@/components/ui/badge';
 
@@ -42,6 +41,12 @@ const EditBasicInfo: React.FC = () => {
   const [sources, setSources] = useState<Source[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [success, setSuccess] = useState<string | null>(null);
+  
+  // Constants from API
+  const [makes, setMakes] = useState<Array<{ id: string; name: string }>>([]);
+  const [models, setModels] = useState<Array<{ id: string; name: string; makeId: string; make: { name: string } }>>([]);
+  const [colors, setColors] = useState<Array<{ id: string; name: string }>>([]);
+  const [transmissions, setTransmissions] = useState<Array<{ id: string; name: string; enumValue: string }>>([]);
 
   // Form data state
   const [formData, setFormData] = useState({
@@ -70,16 +75,47 @@ const EditBasicInfo: React.FC = () => {
   const [images, setImages] = useState<File[]>([]);
   const [existingImages, setExistingImages] = useState<any[]>([]);
 
+  // Get models for selected make
+  const getModelsForMake = (makeName: string) => {
+    const selectedMake = makes.find(m => m.name === makeName);
+    if (!selectedMake) return [];
+    return models
+      .filter(m => m.makeId === selectedMake.id)
+      .map(m => m.name);
+  };
+
+  // Get transmission enum map
+  const getTransmissionEnumMap = () => {
+    const map: Record<string, string> = {};
+    transmissions.forEach(t => {
+      map[t.name] = t.enumValue;
+    });
+    return map;
+  };
+
+  // Get transmission display map
+  const getTransmissionDisplayMap = () => {
+    const map: Record<string, string> = {};
+    transmissions.forEach(t => {
+      map[t.enumValue] = t.name;
+    });
+    return map;
+  };
+
   // Fetch vehicle data and form options
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [vehicleResponse, locationsResponse, ownersResponse, sourcesResponse] = await Promise.all([
+        const [vehicleResponse, locationsResponse, ownersResponse, sourcesResponse, makesResponse, modelsResponse, colorsResponse, transmissionsResponse] = await Promise.all([
           fetch(`/api/vehicles/${vehicleId}`),
           fetch('/api/locations?limit=1000'),
           fetch('/api/owners?limit=1000'),
           fetch('/api/sources?limit=1000'),
+          fetch('/api/settings/makes'),
+          fetch('/api/settings/models'),
+          fetch('/api/settings/colors'),
+          fetch('/api/settings/transmissions'),
         ]);
         
         if (!vehicleResponse.ok || !locationsResponse.ok || !ownersResponse.ok || !sourcesResponse.ok) {
@@ -105,7 +141,10 @@ const EditBasicInfo: React.FC = () => {
             trim: vehicleResult.trim || '',
             engineType: vehicleResult.engineType || '',
             fuelType: vehicleResult.fuelType || 'Gasoline',
-            transmission: vehicleResult.transmission ? TRANSMISSION_DISPLAY_MAP[vehicleResult.transmission] || vehicleResult.transmission : undefined,
+            transmission: vehicleResult.transmission ? (() => {
+              const displayMap = getTransmissionDisplayMap();
+              return displayMap[vehicleResult.transmission] || vehicleResult.transmission;
+            })() : undefined,
             weightKg: vehicleResult.weightKg && vehicleResult.weightKg !== 0 ? vehicleResult.weightKg : '',
             lengthMm: vehicleResult.lengthMm && vehicleResult.lengthMm !== 0 ? vehicleResult.lengthMm : '',
             widthMm: vehicleResult.widthMm && vehicleResult.widthMm !== 0 ? vehicleResult.widthMm : '',
@@ -364,7 +403,7 @@ const EditBasicInfo: React.FC = () => {
                     <SelectValue placeholder={formData.make ? "Select model" : "Select make first"} />
                   </SelectTrigger>
                   <SelectContent>
-                    {formData.make && getModelsForMake(formData.make as any).map((model) => (
+                    {formData.make && getModelsForMake(formData.make).map((model) => (
                       <SelectItem key={model} value={model}>
                         {model}
                       </SelectItem>
@@ -398,9 +437,9 @@ const EditBasicInfo: React.FC = () => {
                     <SelectValue placeholder="Select color" />
                   </SelectTrigger>
                   <SelectContent>
-                    {VEHICLE_COLORS.map((color) => (
-                      <SelectItem key={color} value={color}>
-                        {color}
+                    {colors.map((color) => (
+                      <SelectItem key={color.id} value={color.name}>
+                        {color.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -455,9 +494,9 @@ const EditBasicInfo: React.FC = () => {
                     <SelectValue placeholder="Select transmission" />
                   </SelectTrigger>
                   <SelectContent>
-                    {TRANSMISSION_TYPES.map((transmission) => (
-                      <SelectItem key={transmission} value={transmission}>
-                        {transmission}
+                    {transmissions.map((transmission) => (
+                      <SelectItem key={transmission.id} value={transmission.name}>
+                        {transmission.name}
                       </SelectItem>
                     ))}
                   </SelectContent>

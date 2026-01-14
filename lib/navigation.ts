@@ -111,6 +111,16 @@ export const navigationConfig: NavigationItem[] = [
     requiredPermission: 'view_chatbot',
     description: 'Chat with AI about vehicles, owners, and locations'
   },
+
+  // Settings
+  {
+    id: 'settings',
+    label: 'Settings',
+    icon: 'Settings',
+    href: '/settings',
+    requiredPermission: 'view_settings',
+    description: 'Manage vehicle makes, models, colors, and transmission types'
+  },
 ];
 
 /**
@@ -123,10 +133,28 @@ export const getNavigationForUser = (user: User | null): NavigationItem[] => {
     return [];
   }
 
+  // DEBUG: Log the settings item
+  const settingsItem = navigationConfig.find(item => item.id === 'settings');
+  console.log('=== NAVIGATION DEBUG ===');
+  console.log('Settings item in config:', settingsItem);
+  console.log('Settings requiredPermission:', settingsItem?.requiredPermission);
+  console.log('User permissions object:', user.permissions);
+  console.log('view_settings in permissions:', user.permissions?.view_settings);
+
   return navigationConfig.filter(item => {
     // If item has requiredPermission, check if user has it
     if (item.requiredPermission) {
-      return hasPermission(user, item.requiredPermission);
+      const hasPerm = hasPermission(user, item.requiredPermission);
+      if (item.id === 'settings') {
+        console.log('Settings permission check:', {
+          permission: item.requiredPermission,
+          hasPermission: hasPerm,
+          userPermissions: user.permissions,
+          directCheck: user.permissions?.[item.requiredPermission],
+          typeCheck: typeof user.permissions?.[item.requiredPermission]
+        });
+      }
+      return hasPerm;
     }
     
     // Fallback to role-based check for backward compatibility

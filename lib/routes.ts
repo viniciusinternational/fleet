@@ -233,6 +233,14 @@ export const ROUTE_CONFIGS: RouteConfig[] = [
     exact: true,
     description: 'Audit logs page'
   },
+
+  // Settings routes
+  {
+    path: '/settings',
+    requiredPermissions: ['view_settings'],
+    exact: false,
+    description: 'Settings page for managing vehicle constants'
+  },
 ];
 
 /**

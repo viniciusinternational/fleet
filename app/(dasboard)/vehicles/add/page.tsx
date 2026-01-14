@@ -34,8 +34,6 @@ import {
 } from 'lucide-react';
 import { VehicleStatus, LocationType, LocationStatus } from '@/types';
 import type { Vehicle, Owner, Location, Source, VehicleFormData } from '@/types';
-import { VEHICLE_COLORS, VEHICLE_MAKES, VEHICLE_MODELS, TRANSMISSION_TYPES, TRANSMISSION_ENUM_MAP, getModelsForMake } from '@/lib/constants/vehicle';
-
 const AddVehicle: React.FC = () => {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -49,26 +47,40 @@ const AddVehicle: React.FC = () => {
   const [submissionStep, setSubmissionStep] = useState<'idle' | 'vehicle' | 'shipping' | 'complete'>('idle');
   const [savedVehicleId, setSavedVehicleId] = useState<string | null>(null);
   const [isSavingBasicInfo, setIsSavingBasicInfo] = useState(false);
+  
+  // Constants from API
+  const [makes, setMakes] = useState<Array<{ id: string; name: string }>>([]);
+  const [models, setModels] = useState<Array<{ id: string; name: string; makeId: string; make: { name: string } }>>([]);
+  const [colors, setColors] = useState<Array<{ id: string; name: string }>>([]);
+  const [transmissions, setTransmissions] = useState<Array<{ id: string; name: string; enumValue: string }>>([]);
 
-  // Fetch locations and owners on component mount
+  // Fetch locations, owners, sources, and constants on component mount
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [locationsResponse, ownersResponse, sourcesResponse] = await Promise.all([
+        const [locationsResponse, ownersResponse, sourcesResponse, makesResponse, modelsResponse, colorsResponse, transmissionsResponse] = await Promise.all([
           fetch('/api/locations?limit=1000'),
           fetch('/api/owners?limit=1000'),
           fetch('/api/sources?limit=1000'),
+          fetch('/api/settings/makes'),
+          fetch('/api/settings/models'),
+          fetch('/api/settings/colors'),
+          fetch('/api/settings/transmissions'),
         ]);
         
         if (!locationsResponse.ok || !ownersResponse.ok || !sourcesResponse.ok) {
           throw new Error('Failed to fetch data');
         }
         
-        const [locationsResult, ownersResult, sourcesResult] = await Promise.all([
+        const [locationsResult, ownersResult, sourcesResult, makesResult, modelsResult, colorsResult, transmissionsResult] = await Promise.all([
           locationsResponse.json(),
           ownersResponse.json(),
           sourcesResponse.json(),
+          makesResponse.json(),
+          modelsResponse.json(),
+          colorsResponse.json(),
+          transmissionsResponse.json(),
         ]);
         
         // Locations API returns { locations: [...], total: ... }
@@ -81,9 +93,15 @@ const AddVehicle: React.FC = () => {
         } else {
           throw new Error('Failed to load data');
         }
+
+        // Settings API returns { success: true, data: [...] }
+        if (makesResult.success) setMakes(makesResult.data);
+        if (modelsResult.success) setModels(modelsResult.data);
+        if (colorsResult.success) setColors(colorsResult.data);
+        if (transmissionsResult.success) setTransmissions(transmissionsResult.data);
       } catch (error) {
         console.error('Error fetching data:', error);
-        setErrors({ fetch: 'Failed to load locations, owners, and sources' });
+        setErrors({ fetch: 'Failed to load data' });
       } finally {
         setLoading(false);
       }
@@ -91,6 +109,24 @@ const AddVehicle: React.FC = () => {
 
     fetchData();
   }, []);
+
+  // Get models for selected make
+  const getModelsForMake = (makeName: string) => {
+    const selectedMake = makes.find(m => m.name === makeName);
+    if (!selectedMake) return [];
+    return models
+      .filter(m => m.makeId === selectedMake.id)
+      .map(m => m.name);
+  };
+
+  // Get transmission enum map
+  const getTransmissionEnumMap = () => {
+    const map: Record<string, string> = {};
+    transmissions.forEach(t => {
+      map[t.name] = t.enumValue;
+    });
+    return map;
+  };
 
   // Set default dates after component mounts (client-side only)
   useEffect(() => {
@@ -535,8 +571,8 @@ const AddVehicle: React.FC = () => {
                             <SelectValue placeholder="Select make" />
                           </SelectTrigger>
                           <SelectContent>
-                            {VEHICLE_MAKES.map((make) => (
-                              <SelectItem key={make} value={make}>{make}</SelectItem>
+                            {makes.map((make) => (
+                              <SelectItem key={make.id} value={make.name}>{make.name}</SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
@@ -552,7 +588,7 @@ const AddVehicle: React.FC = () => {
                             <SelectValue placeholder={formData.make ? "Select model" : "Select make first"} />
                           </SelectTrigger>
                           <SelectContent>
-                            {formData.make && getModelsForMake(formData.make as any).map((model) => (
+                            {formData.make && getModelsForMake(formData.make).map((model) => (
                               <SelectItem key={model} value={model}>{model}</SelectItem>
                             ))}
                           </SelectContent>
@@ -622,8 +658,8 @@ const AddVehicle: React.FC = () => {
                             <SelectValue placeholder="Select transmission" />
                           </SelectTrigger>
                           <SelectContent>
-                            {TRANSMISSION_TYPES.map((transmission) => (
-                              <SelectItem key={transmission} value={transmission}>{transmission}</SelectItem>
+                            {transmissions.map((transmission) => (
+                              <SelectItem key={transmission.id} value={transmission.name}>{transmission.name}</SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
