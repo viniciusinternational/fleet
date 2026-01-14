@@ -125,6 +125,13 @@ const AddVehicle: React.FC = () => {
     setErrors({});
 
     try {
+      // Validate required fields including images
+      if (!formData.images || formData.images.length === 0) {
+        setErrors({ images: 'Vehicle images are required. Please upload at least one image.' });
+        setIsSavingBasicInfo(false);
+        return;
+      }
+
       // Create FormData for basic vehicle information only
       const vehicleFormData = new FormData();
 
@@ -186,12 +193,10 @@ const AddVehicle: React.FC = () => {
       vehicleFormData.append('customsNotes', formData.customsNotes || '');
       vehicleFormData.append('notes', formData.notes || '');
 
-      // Add images to FormData
-      if (formData.images && formData.images.length > 0) {
-        formData.images.forEach(file => {
-          vehicleFormData.append('images', file);
-        });
-      }
+      // Add images to FormData (required)
+      formData.images.forEach(file => {
+        vehicleFormData.append('images', file);
+      });
 
       // Create vehicle
       const vehicleResponse = await fetch('/api/vehicles', {
@@ -820,10 +825,18 @@ const AddVehicle: React.FC = () => {
                       <div className="p-2 rounded-lg bg-primary/10">
                         <Upload className="h-5 w-5 text-primary" />
                       </div>
-                      <CardTitle className="text-xl">Vehicle Images</CardTitle>
+                      <CardTitle className="text-xl">Vehicle Images *</CardTitle>
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-6">
+                    {errors.images && (
+                      <Alert className="border-red-200 bg-red-50">
+                        <AlertTriangle className="h-4 w-4 text-red-600" />
+                        <AlertDescription className="text-red-800 text-sm">
+                          {errors.images}
+                        </AlertDescription>
+                      </Alert>
+                    )}
                     <div 
                       className="border-2 border-dashed border-muted-foreground/25 rounded-2xl p-10 flex flex-col items-center justify-center bg-muted/10 hover:bg-muted/20 transition-all cursor-pointer group"
                       onClick={() => document.getElementById('image-upload')?.click()}
@@ -1118,7 +1131,7 @@ const AddVehicle: React.FC = () => {
             {currentStep === 0 ? (
               <Button 
                 onClick={saveBasicInfo}
-                disabled={isSavingBasicInfo || !formData.vin || !formData.make || !formData.model || !formData.currentLocationId || !formData.sourceId}
+                disabled={isSavingBasicInfo || !formData.vin || !formData.make || !formData.model || !formData.currentLocationId || !formData.sourceId || !formData.images || formData.images.length === 0}
                 className="h-11 px-8 shadow-lg shadow-primary/20 transition-all hover:translate-y-[-1px] active:translate-y-[0px]"
               >
                 {isSavingBasicInfo ? (

@@ -60,6 +60,7 @@ model Vehicle {
   trim                 String
   engineType           String
   fuelType             FuelType
+  transmission         String?          
   weightKg             Float
   lengthMm             Float?
   widthMm              Float?

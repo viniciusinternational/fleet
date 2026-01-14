@@ -354,7 +354,7 @@ const VehicleTable: React.FC<VehicleTableProps> = ({
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search vehicles by make, model, VIN, or owner..."
+                placeholder="Search vehicles by make, model, or VIN..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
@@ -520,11 +520,11 @@ const VehicleTable: React.FC<VehicleTableProps> = ({
                     </div>
                   </TableHead>
                   <TableHead 
-                    className="cursor-pointer hover:bg-muted/50 px-4 py-3 min-w-[220px]"
-                    onClick={() => handleSort('owner')}
+                    className="cursor-pointer hover:bg-muted/50 px-4 py-3 min-w-[140px]"
+                    onClick={() => handleSort('color')}
                   >
                     <div className="flex items-center gap-2">
-                      Owner
+                      Color
                       <ArrowUpDown className="h-4 w-4" />
                     </div>
                   </TableHead>
@@ -600,10 +600,19 @@ const VehicleTable: React.FC<VehicleTableProps> = ({
                       className="px-4 py-4 cursor-pointer"
                       onClick={() => handleVehicleClick(vehicle.id)}
                     >
-                      <div>
-                        <div className="font-medium text-base">{vehicle.owner?.name || 'Unknown Owner'}</div>
-                        <div className="text-sm text-muted-foreground">{vehicle.owner?.email || 'No Email'}</div>
-                        <div className="text-xs text-muted-foreground">{vehicle.owner?.phone || 'No Phone'}</div>
+                      <div className="flex items-center gap-2">
+                        {vehicle.color ? (
+                          <>
+                            <div 
+                              className="w-6 h-6 rounded-full border-2 border-muted flex-shrink-0"
+                              style={{ backgroundColor: vehicle.color.toLowerCase() }}
+                              title={vehicle.color}
+                            />
+                            <span className="font-medium text-base capitalize">{vehicle.color}</span>
+                          </>
+                        ) : (
+                          <span className="text-muted-foreground text-sm">N/A</span>
+                        )}
                       </div>
                     </TableCell>
                     <TableCell 
@@ -700,9 +709,12 @@ const VehicleTable: React.FC<VehicleTableProps> = ({
                       
                       <div className="space-y-1.5 pt-2 border-t border-white/20">
                         <div className="flex items-center gap-2 text-sm">
-                          <Users className="h-3.5 w-3.5 text-white/80" />
-                          <span className="text-white/90 font-medium truncate">
-                            {vehicle.owner?.name || 'Unknown Owner'}
+                          <div 
+                            className="w-4 h-4 rounded-full border border-white/30 flex-shrink-0"
+                            style={{ backgroundColor: vehicle.color?.toLowerCase() || 'transparent' }}
+                          />
+                          <span className="text-white/90 font-medium truncate capitalize">
+                            {vehicle.color || 'N/A'}
                           </span>
                         </div>
                         <div className="flex items-center gap-2 text-sm">

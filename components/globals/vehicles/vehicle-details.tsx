@@ -580,24 +580,28 @@ const VehicleDetails: React.FC<VehicleDetailsProps> = ({
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-4 flex-1">
-                    <div className="space-y-3">
-                      <div>
-                        <label className="text-sm font-medium text-muted-foreground">Name</label>
+                    {vehicle.owner ? (
+                      <div className="space-y-3">
+                        <div>
+                          <label className="text-sm font-medium text-muted-foreground">Name</label>
                           <p className="text-sm">{vehicle.owner.name}</p>
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium text-muted-foreground">Email</label>
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium text-muted-foreground">Email</label>
                           <p className="text-sm">{vehicle.owner.email}</p>
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium text-muted-foreground">Phone</label>
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium text-muted-foreground">Phone</label>
                           <p className="text-sm">{vehicle.owner.phone}</p>
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium text-muted-foreground">Country</label>
+                          <p className="text-sm">{vehicle.owner.country}</p>
+                        </div>
                       </div>
-                      <div>
-                        <label className="text-sm font-medium text-muted-foreground">Country</label>
-                        <p className="text-sm">{vehicle.owner.country}</p>
-                      </div>
-                    </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">No owner assigned</p>
+                    )}
 
                     {/* Source Information Section */}
                     {vehicle.source && (
