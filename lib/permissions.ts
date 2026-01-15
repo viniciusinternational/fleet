@@ -20,26 +20,9 @@ export function getUserPermissions(user: User | null): UserPermissions {
  */
 export function hasPermission(user: User | null, permission: PermissionKey): boolean {
   if (!user || !user.permissions) {
-    console.log('hasPermission: No user or permissions', { user: !!user, hasPermissions: !!user?.permissions });
     return false;
   }
-  
-  const result = user.permissions[permission] === true;
-  
-  // DEBUG for view_settings
-  if (permission === 'view_settings') {
-    console.log('hasPermission DEBUG for view_settings:', {
-      permission,
-      permissionsObject: user.permissions,
-      permissionValue: user.permissions[permission],
-      permissionType: typeof user.permissions[permission],
-      result,
-      strictCheck: user.permissions[permission] === true,
-      looseCheck: user.permissions[permission] == true
-    });
-  }
-  
-  return result;
+  return user.permissions[permission] === true;
 }
 
 /**

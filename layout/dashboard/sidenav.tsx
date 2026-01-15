@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { 
@@ -109,34 +109,6 @@ interface DashboardSidebarProps {
 export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ user }) => {
   const pathname = usePathname();
   const router = useRouter();
-  
-  // DEBUG: Check user and permissions
-  useEffect(() => {
-    console.log('=== SIDEBAR DEBUG ===');
-    console.log('User:', user);
-    console.log('User permissions:', user?.permissions);
-    console.log('view_settings value:', user?.permissions?.view_settings);
-    console.log('Type of view_settings:', typeof user?.permissions?.view_settings);
-    
-    // Test permission check
-    const hasViewSettings = user?.permissions?.view_settings === true;
-    console.log('Has view_settings (direct check):', hasViewSettings);
-    
-    // Test with hasPermission function
-    if (user) {
-      const { hasPermission } = require('@/lib/permissions');
-      const hasPerm = hasPermission(user, 'view_settings');
-      console.log('Has view_settings (via function):', hasPerm);
-    }
-    
-    // Test navigation filtering
-    const { getNavigationForUser } = require('@/lib/navigation');
-    const navItems = getNavigationForUser(user);
-    console.log('Navigation items count:', navItems.length);
-    console.log('Settings item:', navItems.find(item => item.id === 'settings'));
-    console.log('All nav items:', navItems.map(item => item.id));
-    console.log('=== END SIDEBAR DEBUG ===');
-  }, [user]);
   
   // Get navigation items based on user permissions
   const navigationItems = getNavigationForUser(user);

@@ -190,7 +190,8 @@ const AddVehicle: React.FC = () => {
       
       vehicleFormData.append('fuelType', fuelTypeMap[formData.fuelType] || formData.fuelType.toUpperCase());
       if (formData.transmission) {
-        vehicleFormData.append('transmission', TRANSMISSION_ENUM_MAP[formData.transmission as keyof typeof TRANSMISSION_ENUM_MAP] || formData.transmission);
+        const transmissionEnumMap = getTransmissionEnumMap();
+        vehicleFormData.append('transmission', transmissionEnumMap[formData.transmission] || formData.transmission);
       }
       vehicleFormData.append('weightKg', (typeof formData.weightKg === 'string' && formData.weightKg === '' ? 0 : (typeof formData.weightKg === 'number' ? formData.weightKg : parseFloat(formData.weightKg) || 0)).toString());
       vehicleFormData.append('lengthMm', (typeof formData.lengthMm === 'string' && formData.lengthMm === '' ? 0 : (typeof formData.lengthMm === 'number' ? formData.lengthMm : parseInt(formData.lengthMm) || 0)).toString());
