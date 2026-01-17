@@ -40,7 +40,7 @@ async function main() {
   const locations = await Promise.all([
     prisma.location.create({
       data: {
-        name: 'Vinicius Int',
+        name: 'Vinicius International HQ',
         type: LocationType.WAREHOUSE,
         latitude: 33.7366,
         longitude: -118.2685,
@@ -58,40 +58,40 @@ async function main() {
     }),
   ]);
 
-  console.log(`✅ Created ${locations.length} locations`);
+  // console.log(`✅ Created ${locations.length} locations`);
 
-  // Create sources
-  const sources = await Promise.all([
-    prisma.source.create({
-      data: {
-        name: 'John Smith',
-        email: 'john.smith@example.com',
-        phone: '+1-555-0123',
-        address: '123 Maple Ave, New York, NY',
-        country: 'United States',
-      },
-    }),
-    prisma.source.create({
-      data: {
-        name: 'Maria Garcia',
-        email: 'maria.garcia@example.com',
-        phone: '+34-912-345-678',
-        address: 'Calle Mayor 1, Madrid, Spain',
-        country: 'Spain',
-      },
-    }),
-    prisma.source.create({
-      data: {
-        name: 'Yuki Tanaka',
-        email: 'yuki.tanaka@example.com',
-        phone: '+81-3-1234-5678',
-        address: '1-2-3 Shibuya, Tokyo, Japan',
-        country: 'Japan',
-      },
-    }),
-  ]);
+  // // Create sources
+  // const sources = await Promise.all([
+  //   prisma.source.create({
+  //     data: {
+  //       name: 'John Smith',
+  //       email: 'john.smith@example.com',
+  //       phone: '+1-555-0123',
+  //       address: '123 Maple Ave, New York, NY',
+  //       country: 'United States',
+  //     },
+  //   }),
+  //   prisma.source.create({
+  //     data: {
+  //       name: 'Maria Garcia',
+  //       email: 'maria.garcia@example.com',
+  //       phone: '+34-912-345-678',
+  //       address: 'Calle Mayor 1, Madrid, Spain',
+  //       country: 'Spain',
+  //     },
+  //   }),
+  //   prisma.source.create({
+  //     data: {
+  //       name: 'Yuki Tanaka',
+  //       email: 'yuki.tanaka@example.com',
+  //       phone: '+81-3-1234-5678',
+  //       address: '1-2-3 Shibuya, Tokyo, Japan',
+  //       country: 'Japan',
+  //     },
+  //   }),
+  // ]);
 
-  console.log(`✅ Created ${sources.length} sources`);
+  // console.log(`✅ Created ${sources.length} sources`);
 
   // Create admin users with all permissions
   const allPermissions = {
