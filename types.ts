@@ -43,7 +43,12 @@ export type PermissionKey =
   // Chatbot
   | 'view_chatbot'
   // Audit Logs
-  | 'view_audit_logs';
+  | 'view_audit_logs'
+  // Settings
+  | 'view_settings'
+  | 'add_settings'
+  | 'edit_settings'
+  | 'delete_settings';
 
 export interface UserPermissions extends Record<PermissionKey, boolean> {}
 

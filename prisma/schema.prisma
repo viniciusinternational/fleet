@@ -60,6 +60,7 @@ model Vehicle {
   trim                 String
   engineType           String
   fuelType             FuelType
+  transmission         String?          
   weightKg             Float
   lengthMm             Float?
   widthMm              Float?
@@ -257,4 +258,50 @@ enum AuditAction {
   CREATE
   UPDATE
   DELETE
+}
+
+model VehicleMake {
+  id        String         @id @default(cuid())
+  name      String         @unique
+  isActive  Boolean        @default(true)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  models    VehicleModel[]
+
+  @@map("vehicle_makes")
+}
+
+model VehicleModel {
+  id        String      @id @default(cuid())
+  name      String
+  makeId    String
+  isActive  Boolean     @default(true)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  make      VehicleMake @relation(fields: [makeId], references: [id], onDelete: Cascade)
+
+  @@unique([name, makeId])
+  @@map("vehicle_models")
+}
+
+model VehicleColor {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  hexCode   String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("vehicle_colors")
+}
+
+model TransmissionType {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  enumValue String   @unique
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("transmission_types")
 }

@@ -159,7 +159,7 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ user }) => {
       overview: items.filter(item => ['dashboard'].includes(item.id)),
       analytics: items.filter(item => ['analytics', 'reports'].includes(item.id)),
       operations: items.filter(item => ['vehicles', 'locations', 'owners', 'sources', 'delivery', 'tracking'].includes(item.id)),
-      management: items.filter(item => ['users', 'audit-logs'].includes(item.id)),
+      management: items.filter(item => ['users', 'audit-logs', 'settings'].includes(item.id)),
       tools: items.filter(item => ['chatbot'].includes(item.id))
     };
 

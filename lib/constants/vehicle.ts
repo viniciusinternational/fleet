@@ -1,511 +1,198 @@
 /**
  * Vehicle Constants Module
- * Centralized constants for vehicle-related dropdowns and validations
+ * Fetches vehicle-related constants from the database via API
+ * Falls back to empty arrays if API is unavailable
  */
 
-// Vehicle Colors
-export const VEHICLE_COLORS = [
-  'White',
-  'Black',
-  'Silver',
-  'Gray',
-  'Red',
-  'Blue',
-  'Green',
-  'Brown',
-  'Beige',
-  'Gold',
-  'Orange',
-  'Yellow',
-  'Purple',
-  'Pink',
-  'Maroon',
-  'Navy',
-  'Turquoise',
-  'Tan',
-  'Cream',
-  'Burgundy',
-] as const;
+// Cache for API responses
+let makesCache: any[] | null = null;
+let modelsCache: any[] | null = null;
+let colorsCache: any[] | null = null;
+let transmissionsCache: any[] | null = null;
+let cacheTimestamp: number = 0;
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
-export type VehicleColor = typeof VEHICLE_COLORS[number];
+// Helper function to fetch from API with caching
+async function fetchFromAPI(endpoint: string, cacheKey: string): Promise<any[]> {
+  const now = Date.now();
+  
+  // Return cached data if available and fresh
+  if (cacheKey === 'makes' && makesCache && (now - cacheTimestamp) < CACHE_DURATION) {
+    return makesCache;
+  }
+  if (cacheKey === 'models' && modelsCache && (now - cacheTimestamp) < CACHE_DURATION) {
+    return modelsCache;
+  }
+  if (cacheKey === 'colors' && colorsCache && (now - cacheTimestamp) < CACHE_DURATION) {
+    return colorsCache;
+  }
+  if (cacheKey === 'transmissions' && transmissionsCache && (now - cacheTimestamp) < CACHE_DURATION) {
+    return transmissionsCache;
+  }
 
-// Vehicle Makes/Brands
-export const VEHICLE_MAKES = [
-  'Toyota',
-  'Honda',
-  'Ford',
-  'Chevrolet',
-  'Nissan',
-  'BMW',
-  'Mercedes-Benz',
-  'Audi',
-  'Volkswagen',
-  'Hyundai',
-  'Kia',
-  'Mazda',
-  'Subaru',
-  'Jeep',
-  'Dodge',
-  'Ram',
-  'GMC',
-  'Cadillac',
-  'Lexus',
-  'Acura',
-  'Infiniti',
-  'Lincoln',
-  'Buick',
-  'Chrysler',
-  'Volvo',
-  'Porsche',
-  'Tesla',
-  'Land Rover',
-  'Jaguar',
-  'Mini',
-  'Mitsubishi',
-  'Genesis',
-  'Alfa Romeo',
-  'Fiat',
-  'Maserati',
-  'Bentley',
-  'Rolls-Royce',
-  'Ferrari',
-  'Lamborghini',
-  'McLaren',
-  'Aston Martin',
-  'Suzuki',
-  'Isuzu',
-  'Other',
-] as const;
+  try {
+    const response = await fetch(`${typeof window !== 'undefined' ? window.location.origin : ''}/api/settings/${endpoint}?includeInactive=false`);
+    if (response.ok) {
+      const result = await response.json();
+      if (result.success && Array.isArray(result.data)) {
+        // Update cache
+        if (cacheKey === 'makes') makesCache = result.data;
+        if (cacheKey === 'models') modelsCache = result.data;
+        if (cacheKey === 'colors') colorsCache = result.data;
+        if (cacheKey === 'transmissions') transmissionsCache = result.data;
+        cacheTimestamp = now;
+        return result.data;
+      }
+    }
+  } catch (error) {
+    console.warn(`Failed to fetch ${endpoint} from API:`, error);
+  }
 
-export type VehicleMake = typeof VEHICLE_MAKES[number];
+  // Return cached data even if stale, or empty array
+  if (cacheKey === 'makes' && makesCache) return makesCache;
+  if (cacheKey === 'models' && modelsCache) return modelsCache;
+  if (cacheKey === 'colors' && colorsCache) return colorsCache;
+  if (cacheKey === 'transmissions' && transmissionsCache) return transmissionsCache;
+  
+  return [];
+}
 
-// Vehicle Models - Linked to Makes
-export const VEHICLE_MODELS: Record<VehicleMake, readonly string[]> = {
-  Toyota: [
-    'Camry',
-    'Corolla',
-    'RAV4',
-    'Highlander',
-    'Prius',
-    'Sienna',
-    'Tacoma',
-    'Tundra',
-    '4Runner',
-    'Sequoia',
-    'Land Cruiser',
-    'Avalon',
-    'Venza',
-    'C-HR',
-    'Yaris',
-    'GR86',
-    'Supra',
-  ],
-  Honda: [
-    'Accord',
-    'Civic',
-    'CR-V',
-    'Pilot',
-    'Odyssey',
-    'Ridgeline',
-    'Passport',
-    'HR-V',
-    'Fit',
-    'Insight',
-    'Clarity',
-  ],
-  Ford: [
-    'F-150',
-    'F-250',
-    'F-350',
-    'Mustang',
-    'Explorer',
-    'Escape',
-    'Edge',
-    'Expedition',
-    'Ranger',
-    'Bronco',
-    'Bronco Sport',
-    'Mach-E',
-    'Transit',
-    'EcoSport',
-  ],
-  Chevrolet: [
-    'Silverado',
-    'Equinox',
-    'Tahoe',
-    'Suburban',
-    'Traverse',
-    'Malibu',
-    'Impala',
-    'Camaro',
-    'Corvette',
-    'Trax',
-    'Blazer',
-    'Colorado',
-    'Bolt',
-  ],
-  Nissan: [
-    'Altima',
-    'Sentra',
-    'Rogue',
-    'Pathfinder',
-    'Armada',
-    'Frontier',
-    'Titan',
-    'Murano',
-    'Maxima',
-    'Leaf',
-    'Kicks',
-    'Versa',
-  ],
-  BMW: [
-    '3 Series',
-    '5 Series',
-    '7 Series',
-    'X1',
-    'X3',
-    'X5',
-    'X7',
-    'X2',
-    'X4',
-    'X6',
-    'Z4',
-    'i4',
-    'iX',
-    'M3',
-    'M5',
-  ],
-  'Mercedes-Benz': [
-    'C-Class',
-    'E-Class',
-    'S-Class',
-    'GLC',
-    'GLE',
-    'GLS',
-    'A-Class',
-    'CLA',
-    'GLA',
-    'GLB',
-    'G-Class',
-    'AMG GT',
-    'EQC',
-    'EQS',
-  ],
-  Audi: [
-    'A3',
-    'A4',
-    'A5',
-    'A6',
-    'A7',
-    'A8',
-    'Q3',
-    'Q5',
-    'Q7',
-    'Q8',
-    'e-tron',
-    'TT',
-    'R8',
-  ],
-  Volkswagen: [
-    'Jetta',
-    'Passat',
-    'Atlas',
-    'Tiguan',
-    'Arteon',
-    'Golf',
-    'ID.4',
-    'Taos',
-    'Touareg',
-  ],
-  Hyundai: [
-    'Elantra',
-    'Sonata',
-    'Tucson',
-    'Santa Fe',
-    'Palisade',
-    'Kona',
-    'Venue',
-    'Ioniq',
-    'Nexo',
-  ],
-  Kia: [
-    'Forte',
-    'Optima',
-    'Sorento',
-    'Sportage',
-    'Telluride',
-    'Rio',
-    'Stinger',
-    'Soul',
-    'EV6',
-    'Niro',
-  ],
-  Mazda: [
-    'Mazda3',
-    'Mazda6',
-    'CX-3',
-    'CX-5',
-    'CX-9',
-    'CX-30',
-    'CX-50',
-    'MX-5 Miata',
-  ],
-  Subaru: [
-    'Outback',
-    'Forester',
-    'Crosstrek',
-    'Ascent',
-    'Impreza',
-    'Legacy',
-    'WRX',
-    'BRZ',
-  ],
-  Jeep: [
-    'Wrangler',
-    'Grand Cherokee',
-    'Cherokee',
-    'Compass',
-    'Renegade',
-    'Gladiator',
-    'Wagoneer',
-    'Grand Wagoneer',
-  ],
-  Dodge: [
-    'Challenger',
-    'Charger',
-    'Durango',
-    'Journey',
-    'Grand Caravan',
-  ],
-  Ram: [
-    '1500',
-    '2500',
-    '3500',
-    'ProMaster',
-    'ProMaster City',
-  ],
-  GMC: [
-    'Sierra',
-    'Yukon',
-    'Yukon XL',
-    'Acadia',
-    'Terrain',
-    'Canyon',
-  ],
-  Cadillac: [
-    'Escalade',
-    'XT4',
-    'XT5',
-    'XT6',
-    'CT4',
-    'CT5',
-    'CT6',
-    'Lyriq',
-  ],
-  Lexus: [
-    'ES',
-    'IS',
-    'GS',
-    'LS',
-    'NX',
-    'RX',
-    'GX',
-    'LX',
-    'UX',
-    'RC',
-    'LC',
-  ],
-  Acura: [
-    'ILX',
-    'TLX',
-    'RLX',
-    'RDX',
-    'MDX',
-    'NSX',
-  ],
-  Infiniti: [
-    'Q50',
-    'Q60',
-    'Q70',
-    'QX50',
-    'QX55',
-    'QX60',
-    'QX80',
-  ],
-  Lincoln: [
-    'Corsair',
-    'Nautilus',
-    'Aviator',
-    'Navigator',
-  ],
-  Buick: [
-    'Encore',
-    'Envision',
-    'Enclave',
-  ],
-  Chrysler: [
-    '300',
-    'Pacifica',
-    'Voyager',
-  ],
-  Volvo: [
-    'S60',
-    'S90',
-    'V60',
-    'V90',
-    'XC40',
-    'XC60',
-    'XC90',
-  ],
-  Porsche: [
-    '911',
-    'Cayenne',
-    'Macan',
-    'Panamera',
-    'Taycan',
-    'Boxster',
-    'Cayman',
-  ],
-  Tesla: [
-    'Model S',
-    'Model 3',
-    'Model X',
-    'Model Y',
-    'Cybertruck',
-  ],
-  'Land Rover': [
-    'Range Rover',
-    'Range Rover Sport',
-    'Range Rover Evoque',
-    'Range Rover Velar',
-    'Discovery',
-    'Discovery Sport',
-    'Defender',
-  ],
-  Jaguar: [
-    'XE',
-    'XF',
-    'F-Pace',
-    'E-Pace',
-    'I-Pace',
-    'F-Type',
-  ],
-  Mini: [
-    'Cooper',
-    'Countryman',
-    'Clubman',
-    'Paceman',
-  ],
-  Mitsubishi: [
-    'Outlander',
-    'Eclipse Cross',
-    'Mirage',
-    'Outlander Sport',
-  ],
-  Genesis: [
-    'G70',
-    'G80',
-    'G90',
-    'GV70',
-    'GV80',
-  ],
-  'Alfa Romeo': [
-    'Giulia',
-    'Stelvio',
-    '4C',
-  ],
-  Fiat: [
-    '500',
-    '500X',
-    '500L',
-    '124 Spider',
-  ],
-  Maserati: [
-    'Ghibli',
-    'Quattroporte',
-    'Levante',
-    'MC20',
-  ],
-  Bentley: [
-    'Continental',
-    'Bentayga',
-    'Flying Spur',
-  ],
-  'Rolls-Royce': [
-    'Ghost',
-    'Wraith',
-    'Dawn',
-    'Cullinan',
-    'Phantom',
-  ],
-  Ferrari: [
-    '488',
-    'F8',
-    'SF90',
-    'Roma',
-    'Portofino',
-    'GTC4Lusso',
-  ],
-  Lamborghini: [
-    'Huracán',
-    'Aventador',
-    'Urus',
-  ],
-  McLaren: [
-    '570S',
-    '720S',
-    'GT',
-    'Artura',
-  ],
-  'Aston Martin': [
-    'DB11',
-    'Vantage',
-    'DBS',
-    'DBX',
-  ],
-  Suzuki: [
-    'Swift',
-    'SX4',
-    'Grand Vitara',
-    'Kizashi',
-  ],
-  Isuzu: [
-    'D-Max',
-    'MU-X',
-  ],
-  Other: ['Other'],
-} as const;
+// Clear cache (useful after mutations)
+export function clearConstantsCache() {
+  makesCache = null;
+  modelsCache = null;
+  colorsCache = null;
+  transmissionsCache = null;
+  cacheTimestamp = 0;
+}
 
-// Transmission Types
-export const TRANSMISSION_TYPES = [
-  'Manual',
-  'Automatic',
-  'CVT',
-  'Dual-Clutch',
-  'Semi-Automatic',
-] as const;
+// Vehicle Makes - Fetch from API
+export async function getVehicleMakes(): Promise<string[]> {
+  const makes = await fetchFromAPI('makes', 'makes');
+  return makes.map((make: any) => make.name).filter(Boolean);
+}
 
-export type TransmissionType = typeof TRANSMISSION_TYPES[number];
+// For backward compatibility, export as array (will be populated on first use)
+export let VEHICLE_MAKES: readonly string[] = [] as any;
 
-// Transmission Type Mapping (Display Name -> Enum Value)
-export const TRANSMISSION_ENUM_MAP: Record<TransmissionType, string> = {
-  'Manual': 'MANUAL',
-  'Automatic': 'AUTOMATIC',
-  'CVT': 'CVT',
-  'Dual-Clutch': 'DUAL_CLUTCH',
-  'Semi-Automatic': 'SEMI_AUTOMATIC',
-} as const;
+// Initialize makes on module load (client-side only)
+if (typeof window !== 'undefined') {
+  getVehicleMakes().then(makes => {
+    VEHICLE_MAKES = makes as any;
+  });
+}
 
-// Transmission Enum to Display Name Mapping (Enum Value -> Display Name)
-export const TRANSMISSION_DISPLAY_MAP: Record<string, TransmissionType> = {
-  'MANUAL': 'Manual',
-  'AUTOMATIC': 'Automatic',
-  'CVT': 'CVT',
-  'DUAL_CLUTCH': 'Dual-Clutch',
-  'SEMI_AUTOMATIC': 'Semi-Automatic',
-} as const;
+export type VehicleMake = string;
 
-// Fuel Types (for consistency, matching existing enum)
+// Vehicle Models - Fetch from API
+export async function getVehicleModels(): Promise<Record<string, readonly string[]>> {
+  const models = await fetchFromAPI('models', 'models');
+  const modelsByMake: Record<string, string[]> = {};
+  
+  models.forEach((model: any) => {
+    const makeName = model.make?.name || '';
+    if (makeName && !modelsByMake[makeName]) {
+      modelsByMake[makeName] = [];
+    }
+    if (makeName && model.name) {
+      modelsByMake[makeName].push(model.name);
+    }
+  });
+
+  // Convert to readonly arrays
+  const result: Record<string, readonly string[]> = {};
+  Object.keys(modelsByMake).forEach(make => {
+    result[make] = modelsByMake[make] as readonly string[];
+  });
+
+  return result;
+}
+
+// For backward compatibility
+export let VEHICLE_MODELS: Record<VehicleMake, readonly string[]> = {} as any;
+
+// Initialize models on module load (client-side only)
+if (typeof window !== 'undefined') {
+  getVehicleModels().then(models => {
+    VEHICLE_MODELS = models as any;
+  });
+}
+
+// Vehicle Colors - Fetch from API
+export async function getVehicleColors(): Promise<string[]> {
+  const colors = await fetchFromAPI('colors', 'colors');
+  return colors.map((color: any) => color.name).filter(Boolean);
+}
+
+// For backward compatibility
+export let VEHICLE_COLORS: readonly string[] = [] as any;
+
+// Initialize colors on module load (client-side only)
+if (typeof window !== 'undefined') {
+  getVehicleColors().then(colors => {
+    VEHICLE_COLORS = colors as any;
+  });
+}
+
+export type VehicleColor = string;
+
+// Transmission Types - Fetch from API
+export async function getTransmissionTypes(): Promise<string[]> {
+  const transmissions = await fetchFromAPI('transmissions', 'transmissions');
+  return transmissions.map((t: any) => t.name).filter(Boolean);
+}
+
+// For backward compatibility
+export let TRANSMISSION_TYPES: readonly string[] = [] as any;
+
+// Initialize transmissions on module load (client-side only)
+if (typeof window !== 'undefined') {
+  getTransmissionTypes().then(types => {
+    TRANSMISSION_TYPES = types as any;
+  });
+}
+
+export type TransmissionType = string;
+
+// Transmission Type Mapping - Fetch from API
+export async function getTransmissionEnumMap(): Promise<Record<string, string>> {
+  const transmissions = await fetchFromAPI('transmissions', 'transmissions');
+  const map: Record<string, string> = {};
+  transmissions.forEach((t: any) => {
+    map[t.name] = t.enumValue;
+  });
+  return map;
+}
+
+export let TRANSMISSION_ENUM_MAP: Record<string, string> = {};
+
+// Initialize enum map on module load (client-side only)
+if (typeof window !== 'undefined') {
+  getTransmissionEnumMap().then(map => {
+    TRANSMISSION_ENUM_MAP = map;
+  });
+}
+
+// Transmission Enum to Display Name Mapping - Fetch from API
+export async function getTransmissionDisplayMap(): Promise<Record<string, string>> {
+  const transmissions = await fetchFromAPI('transmissions', 'transmissions');
+  const map: Record<string, string> = {};
+  transmissions.forEach((t: any) => {
+    map[t.enumValue] = t.name;
+  });
+  return map;
+}
+
+export let TRANSMISSION_DISPLAY_MAP: Record<string, string> = {};
+
+// Initialize display map on module load (client-side only)
+if (typeof window !== 'undefined') {
+  getTransmissionDisplayMap().then(map => {
+    TRANSMISSION_DISPLAY_MAP = map;
+  });
+}
+
+// Fuel Types (still using enum - not moved to database yet)
 export const FUEL_TYPES = [
   'Gasoline',
   'Diesel',
@@ -524,12 +211,24 @@ export const FUEL_TYPE_ENUM_MAP: Record<FuelType, string> = {
 } as const;
 
 // Helper function to get models for a specific make
-export function getModelsForMake(make: VehicleMake): readonly string[] {
+export async function getModelsForMake(make: VehicleMake): Promise<readonly string[]> {
+  const models = await getVehicleModels();
+  return models[make] || [];
+}
+
+// Synchronous version for backward compatibility (uses cached data)
+export function getModelsForMakeSync(make: VehicleMake): readonly string[] {
   return VEHICLE_MODELS[make] || [];
 }
 
 // Helper function to check if a model belongs to a make
-export function isModelValidForMake(make: VehicleMake, model: string): boolean {
-  const models = getModelsForMake(make);
+export async function isModelValidForMake(make: VehicleMake, model: string): Promise<boolean> {
+  const models = await getModelsForMake(make);
+  return models.includes(model as any);
+}
+
+// Synchronous version for backward compatibility
+export function isModelValidForMakeSync(make: VehicleMake, model: string): boolean {
+  const models = getModelsForMakeSync(make);
   return models.includes(model as any);
 }

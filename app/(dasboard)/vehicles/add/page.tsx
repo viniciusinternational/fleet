@@ -34,8 +34,6 @@ import {
 } from 'lucide-react';
 import { VehicleStatus, LocationType, LocationStatus } from '@/types';
 import type { Vehicle, Owner, Location, Source, VehicleFormData } from '@/types';
-import { VEHICLE_COLORS, VEHICLE_MAKES, VEHICLE_MODELS, TRANSMISSION_TYPES, TRANSMISSION_ENUM_MAP, getModelsForMake } from '@/lib/constants/vehicle';
-
 const AddVehicle: React.FC = () => {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -49,26 +47,40 @@ const AddVehicle: React.FC = () => {
   const [submissionStep, setSubmissionStep] = useState<'idle' | 'vehicle' | 'shipping' | 'complete'>('idle');
   const [savedVehicleId, setSavedVehicleId] = useState<string | null>(null);
   const [isSavingBasicInfo, setIsSavingBasicInfo] = useState(false);
+  
+  // Constants from API
+  const [makes, setMakes] = useState<Array<{ id: string; name: string }>>([]);
+  const [models, setModels] = useState<Array<{ id: string; name: string; makeId: string; make: { name: string } }>>([]);
+  const [colors, setColors] = useState<Array<{ id: string; name: string }>>([]);
+  const [transmissions, setTransmissions] = useState<Array<{ id: string; name: string; enumValue: string }>>([]);
 
-  // Fetch locations and owners on component mount
+  // Fetch locations, owners, sources, and constants on component mount
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [locationsResponse, ownersResponse, sourcesResponse] = await Promise.all([
+        const [locationsResponse, ownersResponse, sourcesResponse, makesResponse, modelsResponse, colorsResponse, transmissionsResponse] = await Promise.all([
           fetch('/api/locations?limit=1000'),
           fetch('/api/owners?limit=1000'),
           fetch('/api/sources?limit=1000'),
+          fetch('/api/settings/makes'),
+          fetch('/api/settings/models'),
+          fetch('/api/settings/colors'),
+          fetch('/api/settings/transmissions'),
         ]);
         
         if (!locationsResponse.ok || !ownersResponse.ok || !sourcesResponse.ok) {
           throw new Error('Failed to fetch data');
         }
         
-        const [locationsResult, ownersResult, sourcesResult] = await Promise.all([
+        const [locationsResult, ownersResult, sourcesResult, makesResult, modelsResult, colorsResult, transmissionsResult] = await Promise.all([
           locationsResponse.json(),
           ownersResponse.json(),
           sourcesResponse.json(),
+          makesResponse.json(),
+          modelsResponse.json(),
+          colorsResponse.json(),
+          transmissionsResponse.json(),
         ]);
         
         // Locations API returns { locations: [...], total: ... }
@@ -81,9 +93,15 @@ const AddVehicle: React.FC = () => {
         } else {
           throw new Error('Failed to load data');
         }
+
+        // Settings API returns { success: true, data: [...] }
+        if (makesResult.success) setMakes(makesResult.data);
+        if (modelsResult.success) setModels(modelsResult.data);
+        if (colorsResult.success) setColors(colorsResult.data);
+        if (transmissionsResult.success) setTransmissions(transmissionsResult.data);
       } catch (error) {
         console.error('Error fetching data:', error);
-        setErrors({ fetch: 'Failed to load locations, owners, and sources' });
+        setErrors({ fetch: 'Failed to load data' });
       } finally {
         setLoading(false);
       }
@@ -91,6 +109,24 @@ const AddVehicle: React.FC = () => {
 
     fetchData();
   }, []);
+
+  // Get models for selected make
+  const getModelsForMake = (makeName: string) => {
+    const selectedMake = makes.find(m => m.name === makeName);
+    if (!selectedMake) return [];
+    return models
+      .filter(m => m.makeId === selectedMake.id)
+      .map(m => m.name);
+  };
+
+  // Get transmission enum map
+  const getTransmissionEnumMap = () => {
+    const map: Record<string, string> = {};
+    transmissions.forEach(t => {
+      map[t.name] = t.enumValue;
+    });
+    return map;
+  };
 
   // Set default dates after component mounts (client-side only)
   useEffect(() => {
@@ -125,6 +161,13 @@ const AddVehicle: React.FC = () => {
     setErrors({});
 
     try {
+      // Validate required fields including images
+      if (!formData.images || formData.images.length === 0) {
+        setErrors({ images: 'Vehicle images are required. Please upload at least one image.' });
+        setIsSavingBasicInfo(false);
+        return;
+      }
+
       // Create FormData for basic vehicle information only
       const vehicleFormData = new FormData();
 
@@ -147,7 +190,8 @@ const AddVehicle: React.FC = () => {
       
       vehicleFormData.append('fuelType', fuelTypeMap[formData.fuelType] || formData.fuelType.toUpperCase());
       if (formData.transmission) {
-        vehicleFormData.append('transmission', TRANSMISSION_ENUM_MAP[formData.transmission as keyof typeof TRANSMISSION_ENUM_MAP] || formData.transmission);
+        const transmissionEnumMap = getTransmissionEnumMap();
+        vehicleFormData.append('transmission', transmissionEnumMap[formData.transmission] || formData.transmission);
       }
       vehicleFormData.append('weightKg', (typeof formData.weightKg === 'string' && formData.weightKg === '' ? 0 : (typeof formData.weightKg === 'number' ? formData.weightKg : parseFloat(formData.weightKg) || 0)).toString());
       vehicleFormData.append('lengthMm', (typeof formData.lengthMm === 'string' && formData.lengthMm === '' ? 0 : (typeof formData.lengthMm === 'number' ? formData.lengthMm : parseInt(formData.lengthMm) || 0)).toString());
@@ -186,12 +230,10 @@ const AddVehicle: React.FC = () => {
       vehicleFormData.append('customsNotes', formData.customsNotes || '');
       vehicleFormData.append('notes', formData.notes || '');
 
-      // Add images to FormData
-      if (formData.images && formData.images.length > 0) {
-        formData.images.forEach(file => {
-          vehicleFormData.append('images', file);
-        });
-      }
+      // Add images to FormData (required)
+      formData.images.forEach(file => {
+        vehicleFormData.append('images', file);
+      });
 
       // Create vehicle
       const vehicleResponse = await fetch('/api/vehicles', {
@@ -530,8 +572,8 @@ const AddVehicle: React.FC = () => {
                             <SelectValue placeholder="Select make" />
                           </SelectTrigger>
                           <SelectContent>
-                            {VEHICLE_MAKES.map((make) => (
-                              <SelectItem key={make} value={make}>{make}</SelectItem>
+                            {makes.map((make) => (
+                              <SelectItem key={make.id} value={make.name}>{make.name}</SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
@@ -547,7 +589,7 @@ const AddVehicle: React.FC = () => {
                             <SelectValue placeholder={formData.make ? "Select model" : "Select make first"} />
                           </SelectTrigger>
                           <SelectContent>
-                            {formData.make && getModelsForMake(formData.make as any).map((model) => (
+                            {formData.make && getModelsForMake(formData.make).map((model) => (
                               <SelectItem key={model} value={model}>{model}</SelectItem>
                             ))}
                           </SelectContent>
@@ -617,8 +659,8 @@ const AddVehicle: React.FC = () => {
                             <SelectValue placeholder="Select transmission" />
                           </SelectTrigger>
                           <SelectContent>
-                            {TRANSMISSION_TYPES.map((transmission) => (
-                              <SelectItem key={transmission} value={transmission}>{transmission}</SelectItem>
+                            {transmissions.map((transmission) => (
+                              <SelectItem key={transmission.id} value={transmission.name}>{transmission.name}</SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
@@ -820,10 +862,18 @@ const AddVehicle: React.FC = () => {
                       <div className="p-2 rounded-lg bg-primary/10">
                         <Upload className="h-5 w-5 text-primary" />
                       </div>
-                      <CardTitle className="text-xl">Vehicle Images</CardTitle>
+                      <CardTitle className="text-xl">Vehicle Images *</CardTitle>
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-6">
+                    {errors.images && (
+                      <Alert className="border-red-200 bg-red-50">
+                        <AlertTriangle className="h-4 w-4 text-red-600" />
+                        <AlertDescription className="text-red-800 text-sm">
+                          {errors.images}
+                        </AlertDescription>
+                      </Alert>
+                    )}
                     <div 
                       className="border-2 border-dashed border-muted-foreground/25 rounded-2xl p-10 flex flex-col items-center justify-center bg-muted/10 hover:bg-muted/20 transition-all cursor-pointer group"
                       onClick={() => document.getElementById('image-upload')?.click()}
@@ -1118,7 +1168,7 @@ const AddVehicle: React.FC = () => {
             {currentStep === 0 ? (
               <Button 
                 onClick={saveBasicInfo}
-                disabled={isSavingBasicInfo || !formData.vin || !formData.make || !formData.model || !formData.currentLocationId || !formData.sourceId}
+                disabled={isSavingBasicInfo || !formData.vin || !formData.make || !formData.model || !formData.currentLocationId || !formData.sourceId || !formData.images || formData.images.length === 0}
                 className="h-11 px-8 shadow-lg shadow-primary/20 transition-all hover:translate-y-[-1px] active:translate-y-[0px]"
               >
                 {isSavingBasicInfo ? (

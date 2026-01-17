@@ -111,6 +111,16 @@ export const navigationConfig: NavigationItem[] = [
     requiredPermission: 'view_chatbot',
     description: 'Chat with AI about vehicles, owners, and locations'
   },
+
+  // Settings
+  {
+    id: 'settings',
+    label: 'Settings',
+    icon: 'Settings',
+    href: '/settings',
+    requiredPermission: 'view_settings',
+    description: 'Manage vehicle makes, models, colors, and transmission types'
+  },
 ];
 
 /**
