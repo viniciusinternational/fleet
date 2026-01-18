@@ -4,6 +4,7 @@
 export type PermissionKey =
   // Dashboard
   | 'view_dashboard'
+  | 'view_executive_dashboard'
   // Vehicles
   | 'view_vehicles'
   | 'add_vehicles'

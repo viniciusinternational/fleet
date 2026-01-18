@@ -62,9 +62,8 @@ export default function RouteGuard({ children }: RouteGuardProps) {
       setIsAuthorized(hasAccess);
       
       if (!hasAccess) {
-        // Redirect to appropriate dashboard based on user permissions
-        const redirectPath = getRedirectPathForUser(user);
-        router.push(redirectPath);
+        // Don't redirect - let the Access Denied UI render
+        // The user can click the "Go to Dashboard" button if they want to navigate away
         return;
       }
     } else if (!isAuthRequired) {

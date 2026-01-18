@@ -23,6 +23,13 @@ export class VehicleService {
   static async getVehicles(params: {
       search?: string;
     status?: string;
+    sourceId?: string;
+    ownerId?: string;
+    make?: string;
+    model?: string;
+    year?: string;
+    color?: string;
+    locationId?: string;
     sortBy?: string;
       sortOrder?: 'asc' | 'desc';
       page?: number;
@@ -31,6 +38,13 @@ export class VehicleService {
     const {
       search = '',
       status = 'all',
+      sourceId,
+      ownerId,
+      make,
+      model,
+      year,
+      color,
+      locationId,
       sortBy = 'orderDate',
       sortOrder = 'desc',
       page = 1,
@@ -53,6 +67,34 @@ export class VehicleService {
     
     if (status && status !== 'all') {
       where.status = status;
+    }
+
+    if (sourceId && sourceId !== 'all') {
+      where.sourceId = sourceId;
+    }
+
+    if (ownerId && ownerId !== 'all') {
+      where.ownerId = ownerId;
+    }
+
+    if (make && make !== 'all') {
+      where.make = { contains: make, mode: 'insensitive' };
+    }
+
+    if (model && model !== 'all') {
+      where.model = { contains: model, mode: 'insensitive' };
+    }
+
+    if (year && year !== 'all') {
+      where.year = parseInt(year) || undefined;
+    }
+
+    if (color && color !== 'all') {
+      where.color = { contains: color, mode: 'insensitive' };
+    }
+
+    if (locationId && locationId !== 'all') {
+      where.currentLocationId = locationId;
     }
 
     // Build orderBy clause with fallback for consistent sorting

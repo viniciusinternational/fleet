@@ -15,7 +15,7 @@ interface PermissionManagerProps {
 const permissionGroups = [
   {
     label: 'Dashboard',
-    permissions: ['view_dashboard'] as PermissionKey[],
+    permissions: ['view_dashboard', 'view_executive_dashboard'] as PermissionKey[],
   },
   {
     label: 'Vehicles',

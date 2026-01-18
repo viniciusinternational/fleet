@@ -38,6 +38,13 @@ export async function GET(request: NextRequest) {
     const params = {
       search: searchParams.get('search') || '',
       status: searchParams.get('status') || 'all',
+      sourceId: searchParams.get('sourceId') || undefined,
+      ownerId: searchParams.get('ownerId') || searchParams.get('clientId') || undefined,
+      make: searchParams.get('make') || undefined,
+      model: searchParams.get('model') || undefined,
+      year: searchParams.get('year') || undefined,
+      color: searchParams.get('color') || undefined,
+      locationId: searchParams.get('locationId') || undefined,
       sortBy: searchParams.get('sortBy') || 'orderDate',
       sortOrder: (searchParams.get('sortOrder') as 'asc' | 'desc') || 'desc',
       page: parseInt(searchParams.get('page') || '1'),

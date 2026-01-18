@@ -38,6 +38,14 @@ export const ROUTE_CONFIGS: RouteConfig[] = [
     description: 'Dashboard page'
   },
 
+  // Executive Dashboard route
+  {
+    path: '/executive',
+    requiredPermissions: ['view_executive_dashboard'],
+    exact: true,
+    description: 'Executive dashboard page'
+  },
+
   // Vehicle routes
   {
     path: '/vehicles',

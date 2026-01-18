@@ -53,13 +53,14 @@ const AddVehicle: React.FC = () => {
   const [models, setModels] = useState<Array<{ id: string; name: string; makeId: string; make: { name: string } }>>([]);
   const [colors, setColors] = useState<Array<{ id: string; name: string }>>([]);
   const [transmissions, setTransmissions] = useState<Array<{ id: string; name: string; enumValue: string }>>([]);
+  const [engineTypes, setEngineTypes] = useState<Array<{ id: string; name: string }>>([]);
 
   // Fetch locations, owners, sources, and constants on component mount
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [locationsResponse, ownersResponse, sourcesResponse, makesResponse, modelsResponse, colorsResponse, transmissionsResponse] = await Promise.all([
+        const [locationsResponse, ownersResponse, sourcesResponse, makesResponse, modelsResponse, colorsResponse, transmissionsResponse, engineTypesResponse] = await Promise.all([
           fetch('/api/locations?limit=1000'),
           fetch('/api/owners?limit=1000'),
           fetch('/api/sources?limit=1000'),
@@ -67,13 +68,14 @@ const AddVehicle: React.FC = () => {
           fetch('/api/settings/models'),
           fetch('/api/settings/colors'),
           fetch('/api/settings/transmissions'),
+          fetch('/api/settings/engine-types'),
         ]);
         
         if (!locationsResponse.ok || !ownersResponse.ok || !sourcesResponse.ok) {
           throw new Error('Failed to fetch data');
         }
         
-        const [locationsResult, ownersResult, sourcesResult, makesResult, modelsResult, colorsResult, transmissionsResult] = await Promise.all([
+        const [locationsResult, ownersResult, sourcesResult, makesResult, modelsResult, colorsResult, transmissionsResult, engineTypesResult] = await Promise.all([
           locationsResponse.json(),
           ownersResponse.json(),
           sourcesResponse.json(),
@@ -81,6 +83,7 @@ const AddVehicle: React.FC = () => {
           modelsResponse.json(),
           colorsResponse.json(),
           transmissionsResponse.json(),
+          engineTypesResponse.json(),
         ]);
         
         // Locations API returns { locations: [...], total: ... }
@@ -99,6 +102,7 @@ const AddVehicle: React.FC = () => {
         if (modelsResult.success) setModels(modelsResult.data);
         if (colorsResult.success) setColors(colorsResult.data);
         if (transmissionsResult.success) setTransmissions(transmissionsResult.data);
+        if (engineTypesResult.success) setEngineTypes(engineTypesResult.data);
       } catch (error) {
         console.error('Error fetching data:', error);
         setErrors({ fetch: 'Failed to load data' });
@@ -638,19 +642,9 @@ const AddVehicle: React.FC = () => {
                             <SelectValue placeholder="Select engine type" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="I3">I3</SelectItem>
-                            <SelectItem value="I4">I4</SelectItem>
-                            <SelectItem value="I5">I5</SelectItem>
-                            <SelectItem value="I6">I6</SelectItem>
-                            <SelectItem value="V4">V4</SelectItem>
-                            <SelectItem value="V6">V6</SelectItem>
-                            <SelectItem value="V8">V8</SelectItem>
-                            <SelectItem value="V10">V10</SelectItem>
-                            <SelectItem value="V12">V12</SelectItem>
-                            <SelectItem value="Electric">Electric</SelectItem>
-                            <SelectItem value="Hybrid">Hybrid</SelectItem>
-                            <SelectItem value="Plug-in Hybrid">Plug-in Hybrid</SelectItem>
-                            <SelectItem value="Rotary">Rotary</SelectItem>
+                            {engineTypes.map((engineType) => (
+                              <SelectItem key={engineType.id} value={engineType.name}>{engineType.name}</SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                       </div>

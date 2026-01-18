@@ -12,6 +12,16 @@ export const navigationConfig: NavigationItem[] = [
     description: 'Main dashboard overview'
   },
 
+  // Executive Dashboard
+  {
+    id: 'executive',
+    label: 'Executive Dashboard',
+    icon: 'TrendingUp',
+    href: '/executive',
+    requiredPermission: 'view_executive_dashboard',
+    description: 'Executive overview with filter cards'
+  },
+
   // Vehicles
   {
     id: 'vehicles',

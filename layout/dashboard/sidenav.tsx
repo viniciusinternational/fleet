@@ -156,7 +156,7 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ user }) => {
   // Group navigation items by category
   const groupNavigationByCategory = (items: NavigationItem[]) => {
     const groups = {
-      overview: items.filter(item => ['dashboard'].includes(item.id)),
+      overview: items.filter(item => ['dashboard', 'executive'].includes(item.id)),
       analytics: items.filter(item => ['analytics', 'reports'].includes(item.id)),
       operations: items.filter(item => ['vehicles', 'locations', 'owners', 'sources', 'delivery', 'tracking'].includes(item.id)),
       management: items.filter(item => ['users', 'audit-logs', 'settings'].includes(item.id)),

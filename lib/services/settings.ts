@@ -303,5 +303,67 @@ export class SettingsService {
       throw error;
     }
   }
+
+  // Engine Types
+  static async getEngineTypes(includeInactive = false) {
+    try {
+      const where = includeInactive ? {} : { isActive: true };
+      return await db.engineType.findMany({
+        where,
+        orderBy: { name: 'asc' },
+      });
+    } catch (error) {
+      console.error('Error fetching engine types:', error);
+      throw error;
+    }
+  }
+
+  static async getEngineTypeById(id: string) {
+    try {
+      return await db.engineType.findUnique({
+        where: { id },
+      });
+    } catch (error) {
+      console.error('Error fetching engine type by ID:', error);
+      throw error;
+    }
+  }
+
+  static async createEngineType(data: { name: string; isActive?: boolean }) {
+    try {
+      return await db.engineType.create({
+        data: {
+          name: data.name,
+          isActive: data.isActive ?? true,
+        },
+      });
+    } catch (error) {
+      console.error('Error creating engine type:', error);
+      throw error;
+    }
+  }
+
+  static async updateEngineType(id: string, data: { name?: string; isActive?: boolean }) {
+    try {
+      return await db.engineType.update({
+        where: { id },
+        data,
+      });
+    } catch (error) {
+      console.error('Error updating engine type:', error);
+      throw error;
+    }
+  }
+
+  static async deleteEngineType(id: string) {
+    try {
+      return await db.engineType.delete({
+        where: { id },
+      });
+    } catch (error) {
+      console.error('Error deleting engine type:', error);
+      throw error;
+    }
+  }
 }
 
