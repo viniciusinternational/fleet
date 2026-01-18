@@ -568,7 +568,7 @@ const AddVehicle: React.FC = () => {
                       <div className="space-y-2">
                         <Label htmlFor="make" className="text-sm font-semibold">Make *</Label>
                         <Select value={formData.make} onValueChange={(value) => handleInputChange('make', value)}>
-                          <SelectTrigger className="bg-muted/30 focus:bg-background transition-colors">
+                          <SelectTrigger className="bg-muted/30 focus:bg-background transition-colors w-full">
                             <SelectValue placeholder="Select make" />
                           </SelectTrigger>
                           <SelectContent>
@@ -585,7 +585,7 @@ const AddVehicle: React.FC = () => {
                           onValueChange={(value) => handleInputChange('model', value)}
                           disabled={!formData.make}
                         >
-                          <SelectTrigger className="bg-muted/30 focus:bg-background transition-colors">
+                          <SelectTrigger className="bg-muted/30 focus:bg-background transition-colors w-full">
                             <SelectValue placeholder={formData.make ? "Select model" : "Select make first"} />
                           </SelectTrigger>
                           <SelectContent>
@@ -610,13 +610,16 @@ const AddVehicle: React.FC = () => {
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="color" className="text-sm font-semibold">Color</Label>
-                        <Input
-                          id="color"
-                          value={formData.color}
-                          onChange={(e) => handleInputChange('color', e.target.value)}
-                          placeholder="Vehicle color"
-                          className="bg-muted/30 focus-visible:bg-background transition-colors"
-                        />
+                        <Select value={formData.color} onValueChange={(value) => handleInputChange('color', value)}>
+                          <SelectTrigger className="bg-muted/30 focus:bg-background transition-colors w-full">
+                            <SelectValue placeholder="Select color" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {colors.map((color) => (
+                              <SelectItem key={color.id} value={color.name}>{color.name}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="trim" className="text-sm font-semibold">Trim</Label>
@@ -630,18 +633,31 @@ const AddVehicle: React.FC = () => {
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="engineType" className="text-sm font-semibold">Engine Type</Label>
-                        <Input
-                          id="engineType"
-                          value={formData.engineType}
-                          onChange={(e) => handleInputChange('engineType', e.target.value)}
-                          placeholder="Engine type"
-                          className="bg-muted/30 focus-visible:bg-background transition-colors"
-                        />
+                        <Select value={formData.engineType} onValueChange={(value) => handleInputChange('engineType', value)}>
+                          <SelectTrigger className="bg-muted/30 focus:bg-background transition-colors w-full">
+                            <SelectValue placeholder="Select engine type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="I3">I3</SelectItem>
+                            <SelectItem value="I4">I4</SelectItem>
+                            <SelectItem value="I5">I5</SelectItem>
+                            <SelectItem value="I6">I6</SelectItem>
+                            <SelectItem value="V4">V4</SelectItem>
+                            <SelectItem value="V6">V6</SelectItem>
+                            <SelectItem value="V8">V8</SelectItem>
+                            <SelectItem value="V10">V10</SelectItem>
+                            <SelectItem value="V12">V12</SelectItem>
+                            <SelectItem value="Electric">Electric</SelectItem>
+                            <SelectItem value="Hybrid">Hybrid</SelectItem>
+                            <SelectItem value="Plug-in Hybrid">Plug-in Hybrid</SelectItem>
+                            <SelectItem value="Rotary">Rotary</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="fuelType" className="text-sm font-semibold">Fuel Type</Label>
                         <Select value={formData.fuelType} onValueChange={(value) => handleInputChange('fuelType', value as VehicleFormData['fuelType'])}>
-                          <SelectTrigger className="bg-muted/30 focus:bg-background transition-colors">
+                          <SelectTrigger className="bg-muted/30 focus:bg-background transition-colors w-full">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -655,7 +671,7 @@ const AddVehicle: React.FC = () => {
                       <div className="space-y-2">
                         <Label htmlFor="transmission" className="text-sm font-semibold">Transmission</Label>
                         <Select value={formData.transmission || ''} onValueChange={(value) => handleInputChange('transmission', value || '')}>
-                          <SelectTrigger className="bg-muted/30 focus:bg-background transition-colors">
+                          <SelectTrigger className="bg-muted/30 focus:bg-background transition-colors w-full">
                             <SelectValue placeholder="Select transmission" />
                           </SelectTrigger>
                           <SelectContent>
