@@ -295,7 +295,7 @@ const AddLocation: React.FC = () => {
                     value={formData.type}
                     onValueChange={(value) => handleInputChange('type', value)}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select location type" />
                     </SelectTrigger>
                     <SelectContent>
@@ -333,7 +333,7 @@ const AddLocation: React.FC = () => {
                     value={formData.status}
                     onValueChange={(value) => handleInputChange('status', value)}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select status" />
                     </SelectTrigger>
                     <SelectContent>

@@ -1049,7 +1049,7 @@ const AddVehicle: React.FC = () => {
                       <div className="space-y-2">
                         <Label htmlFor="customsStatus" className="text-sm font-semibold">Customs Status</Label>
                         <Select value={formData.customsStatus} onValueChange={(value) => handleInputChange('customsStatus', value as VehicleFormData['customsStatus'])}>
-                          <SelectTrigger className="bg-muted/30 focus:bg-background transition-colors">
+                          <SelectTrigger className="bg-muted/30 focus:bg-background transition-colors w-full">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>

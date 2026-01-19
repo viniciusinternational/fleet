@@ -210,7 +210,7 @@ const AddSource: React.FC = () => {
                     value={formData.country}
                     onValueChange={(value) => handleInputChange('country', value)}
                   >
-                    <SelectTrigger id="country" className={errors.country ? 'border-red-500' : ''}>
+                    <SelectTrigger id="country" className={errors.country ? 'border-red-500 w-full' : 'w-full'}>
                       <SelectValue placeholder="Select country" />
                     </SelectTrigger>
                     <SelectContent>

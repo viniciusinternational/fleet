@@ -374,7 +374,7 @@ const EditShipping: React.FC = () => {
               <div className="space-y-2">
                 <Label htmlFor="customsStatus">Customs Status</Label>
                 <Select value={formData.customsStatus} onValueChange={(value) => handleInputChange('customsStatus', value)}>
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>

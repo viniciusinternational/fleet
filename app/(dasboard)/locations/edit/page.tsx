@@ -331,7 +331,7 @@ const EditLocation: React.FC = () => {
                 <div className="space-y-2">
                   <Label htmlFor="type">Location Type</Label>
                   <Select value={formData.type} onValueChange={(value) => handleInputChange('type', value)}>
-                    <SelectTrigger className={errors.type ? 'border-red-300 focus:border-red-500 focus:ring-red-200' : ''}>
+                    <SelectTrigger className={errors.type ? 'border-red-300 focus:border-red-500 focus:ring-red-200 w-full' : 'w-full'}>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -349,7 +349,7 @@ const EditLocation: React.FC = () => {
                 <div className="space-y-2">
                   <Label htmlFor="status">Status</Label>
                   <Select value={formData.status} onValueChange={(value) => handleInputChange('status', value)}>
-                    <SelectTrigger className={errors.status ? 'border-red-300 focus:border-red-500 focus:ring-red-200' : ''}>
+                    <SelectTrigger className={errors.status ? 'border-red-300 focus:border-red-500 focus:ring-red-200 w-full' : 'w-full'}>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -430,7 +430,7 @@ const EditLocation: React.FC = () => {
                 <div className="md:col-span-2 space-y-2">
                   <Label htmlFor="country">Country</Label>
                   <Select value={formData.country} onValueChange={(value) => handleInputChange('country', value)}>
-                    <SelectTrigger className={errors.country ? 'border-red-300 focus:border-red-500 focus:ring-red-200' : ''}>
+                    <SelectTrigger className={errors.country ? 'border-red-300 focus:border-red-500 focus:ring-red-200 w-full' : 'w-full'}>
                       <SelectValue placeholder="Select country" />
                     </SelectTrigger>
                     <SelectContent>

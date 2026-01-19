@@ -400,7 +400,7 @@ const EditBasicInfo: React.FC = () => {
               <div className="space-y-2">
                 <Label htmlFor="make">Make *</Label>
                 <Select value={formData.make} onValueChange={(value) => handleInputChange('make', value)}>
-                  <SelectTrigger className={errors.make ? 'border-red-500' : ''}>
+                  <SelectTrigger className={errors.make ? 'border-red-500 w-full' : 'w-full'}>
                     <SelectValue placeholder="Select make" />
                   </SelectTrigger>
                   <SelectContent>
@@ -422,7 +422,7 @@ const EditBasicInfo: React.FC = () => {
                   onValueChange={(value) => handleInputChange('model', value)}
                   disabled={!formData.make}
                 >
-                  <SelectTrigger className={errors.model ? 'border-red-500' : ''}>
+                  <SelectTrigger className={errors.model ? 'border-red-500 w-full' : 'w-full'}>
                     <SelectValue placeholder={formData.make ? "Select model" : "Select make first"} />
                   </SelectTrigger>
                   <SelectContent>
@@ -456,7 +456,7 @@ const EditBasicInfo: React.FC = () => {
               <div className="space-y-2">
                 <Label htmlFor="color">Color *</Label>
                 <Select value={formData.color} onValueChange={(value) => handleInputChange('color', value)}>
-                  <SelectTrigger className={errors.color ? 'border-red-500' : ''}>
+                  <SelectTrigger className={errors.color ? 'border-red-500 w-full' : 'w-full'}>
                     <SelectValue placeholder="Select color" />
                   </SelectTrigger>
                   <SelectContent>
@@ -496,7 +496,7 @@ const EditBasicInfo: React.FC = () => {
               <div className="space-y-2">
                 <Label htmlFor="fuelType">Fuel Type *</Label>
                 <Select value={formData.fuelType} onValueChange={(value) => handleInputChange('fuelType', value)}>
-                  <SelectTrigger className={errors.fuelType ? 'border-red-500' : ''}>
+                  <SelectTrigger className={errors.fuelType ? 'border-red-500 w-full' : 'w-full'}>
                     <SelectValue placeholder="Select fuel type" />
                   </SelectTrigger>
                   <SelectContent>
@@ -513,7 +513,7 @@ const EditBasicInfo: React.FC = () => {
               <div className="space-y-2">
                 <Label htmlFor="transmission">Transmission</Label>
                 <Select value={formData.transmission || ''} onValueChange={(value) => handleInputChange('transmission', value || undefined)}>
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select transmission" />
                   </SelectTrigger>
                   <SelectContent>
@@ -627,7 +627,7 @@ const EditBasicInfo: React.FC = () => {
               <div className="space-y-2">
                 <Label htmlFor="status">Status *</Label>
                 <Select value={formData.status} onValueChange={(value) => handleInputChange('status', value)}>
-                  <SelectTrigger className={errors.status ? 'border-red-500' : ''}>
+                  <SelectTrigger className={errors.status ? 'border-red-500 w-full' : 'w-full'}>
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                   <SelectContent>
@@ -659,7 +659,7 @@ const EditBasicInfo: React.FC = () => {
               <div className="space-y-2">
                 <Label htmlFor="currentLocationId">Current Location *</Label>
                 <Select value={formData.currentLocationId} onValueChange={(value) => handleInputChange('currentLocationId', value)}>
-                  <SelectTrigger className={errors.currentLocationId ? 'border-red-500' : ''}>
+                  <SelectTrigger className={errors.currentLocationId ? 'border-red-500 w-full' : 'w-full'}>
                     <SelectValue placeholder="Select location" />
                   </SelectTrigger>
                   <SelectContent>
@@ -677,7 +677,7 @@ const EditBasicInfo: React.FC = () => {
               <div className="space-y-2">
                 <Label htmlFor="ownerId">Owner</Label>
                 <Select value={formData.ownerId} onValueChange={(value) => handleInputChange('ownerId', value)}>
-                  <SelectTrigger className={errors.ownerId ? 'border-red-500' : ''}>
+                  <SelectTrigger className={errors.ownerId ? 'border-red-500 w-full' : 'w-full'}>
                     <SelectValue placeholder="Select owner" />
                   </SelectTrigger>
                   <SelectContent>
@@ -695,7 +695,7 @@ const EditBasicInfo: React.FC = () => {
               <div className="space-y-2">
                 <Label htmlFor="sourceId">Source *</Label>
                 <Select value={formData.sourceId || ''} onValueChange={(value) => handleInputChange('sourceId', value)}>
-                  <SelectTrigger className={errors.sourceId ? 'border-red-500' : ''}>
+                  <SelectTrigger className={errors.sourceId ? 'border-red-500 w-full' : 'w-full'}>
                     <SelectValue placeholder="Select source" />
                   </SelectTrigger>
                   <SelectContent>

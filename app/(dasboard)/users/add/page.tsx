@@ -432,7 +432,7 @@ const AddUser: React.FC = () => {
                 <div className="space-y-2">
                   <Label htmlFor="role">Role *</Label>
                   <Select value={formData.role} onValueChange={(value: Role) => handleInputChange('role', value)}>
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select role" />
                     </SelectTrigger>
                     <SelectContent>
@@ -461,7 +461,7 @@ const AddUser: React.FC = () => {
                 <div className="space-y-2">
                   <Label htmlFor="locationId">Assigned Location *</Label>
                   <Select value={formData.locationId} onValueChange={(value) => handleInputChange('locationId', value)}>
-                    <SelectTrigger className={errors.locationId ? 'border-red-500' : ''}>
+                    <SelectTrigger className={errors.locationId ? 'border-red-500 w-full' : 'w-full'}>
                       <SelectValue placeholder="Select a location" />
                     </SelectTrigger>
                     <SelectContent>

@@ -282,7 +282,7 @@ const EditOwnerPage: React.FC<EditOwnerPageProps> = ({ params }) => {
                       value={formData.country}
                       onValueChange={(value) => handleInputChange('country', value)}
                     >
-                      <SelectTrigger id="country" className="pl-10">
+                      <SelectTrigger id="country" className="pl-10 w-full">
                         <SelectValue placeholder="Select country" />
                       </SelectTrigger>
                       <SelectContent>
