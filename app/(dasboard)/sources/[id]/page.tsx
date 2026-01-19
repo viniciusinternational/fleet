@@ -4,9 +4,11 @@ import React, { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { ArrowLeft, Edit, Trash2, Package, Mail, Phone, MapPin, Globe, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Edit, Trash2, Package, Mail, Phone, MapPin, Globe, AlertCircle, Car, History } from 'lucide-react';
 import type { Source } from '@/types';
+import { EntityAuditLogs } from '@/components/audit/entity-audit-logs';
 
 const SourceDetailsPage: React.FC = () => {
   const router = useRouter();
@@ -189,6 +191,52 @@ const SourceDetailsPage: React.FC = () => {
                   </div>
                 </div>
               </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Car className="h-5 w-5" />
+                Associated Vehicles
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {(source as any).vehicles && (source as any).vehicles.length > 0 ? (
+                <div className="space-y-3">
+                  {(source as any).vehicles.map((vehicle: any) => (
+                    <div key={vehicle.id} className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg">
+                      <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                        <Car className="h-5 w-5 text-primary" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="font-medium text-sm">{vehicle.make} {vehicle.model}</div>
+                        <div className="text-xs text-muted-foreground">VIN: {vehicle.vin}</div>
+                      </div>
+                      <Badge variant="outline" className="text-xs">
+                        {vehicle.status}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Car className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>No vehicles associated with this source.</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <History className="h-5 w-5" />
+                Activity History
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <EntityAuditLogs entityType="Source" entityId={source.id} limit={20} />
             </CardContent>
           </Card>
         </div>

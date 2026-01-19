@@ -293,6 +293,7 @@ export class LocationService {
     try {
       // Get before state for audit log
       const beforeState = actorId ? await AuditService.getBeforeState('Location', id) : null;
+      const beforeStatus = beforeState?.status;
 
       // Transform nested Location data to flat structure for database
       const flatData: any = {};
@@ -324,15 +325,35 @@ export class LocationService {
         data: flatData,
       });
 
-      // Log audit event
+      // Log audit events
       if (actorId) {
+        const afterState = JSON.parse(JSON.stringify(updatedLocation));
+        const afterStatus = afterState?.status;
+
+        // Check if status changed
+        if (locationData.status && beforeStatus && beforeStatus !== afterStatus) {
+          // Log status change separately
+          await AuditService.logStatusChange(
+            actorId,
+            'Location',
+            updatedLocation.id,
+            beforeStatus,
+            afterStatus,
+            {
+              locationName: updatedLocation.name,
+              locationType: updatedLocation.type,
+            }
+          );
+        }
+
+        // Log general update
         await AuditService.logEvent({
           action: 'UPDATE',
           actorId,
           entityType: 'Location',
           entityId: updatedLocation.id,
           before: beforeState,
-          after: JSON.parse(JSON.stringify(updatedLocation)),
+          after: afterState,
         });
       }
 

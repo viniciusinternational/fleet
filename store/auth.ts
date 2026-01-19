@@ -2,6 +2,7 @@
 import { create } from "zustand"
 import { persist, createJSONStorage } from "zustand/middleware"
 import type { User } from "@/types"
+import { UserRefreshService } from "@/lib/services/auth-refresh"
 
 interface AuthState {
   user: User | null
@@ -16,6 +17,8 @@ interface AuthState {
   setAuthenticated: (authenticated: boolean | null) => void
   setHasHydrated: (hydrated: boolean) => void
   checkAuth: () => Promise<void>
+  startUserRefresh: () => void
+  stopUserRefresh: () => void
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -29,6 +32,8 @@ export const useAuthStore = create<AuthState>()(
       login: () => {
       },
       logout: () => {
+        // Stop user refresh service before logout
+        UserRefreshService.stop()
         alert("You are logged out")
         set({
           user: null,
@@ -40,13 +45,55 @@ export const useAuthStore = create<AuthState>()(
       },
       setToken: (token: string, refreshToken: string) =>
         set({ token, refreshToken }),
-      setUser: (user: User) => set({ user }),
-      setAuthenticated: (authenticated: boolean | null) =>
-        set({ isAuthenticated: authenticated }),
+      setUser: (user: User) => {
+        set({ user })
+        // Auto-start refresh service when user is set and authenticated
+        const state = get()
+        if (user.email && state.isAuthenticated) {
+          get().startUserRefresh()
+        }
+      },
+      setAuthenticated: (authenticated: boolean | null) => {
+        set({ isAuthenticated: authenticated })
+        // Auto-start refresh service if authenticated and user exists
+        const state = get()
+        if (authenticated && state.user?.email) {
+          get().startUserRefresh()
+        } else if (!authenticated) {
+          // Stop refresh service if not authenticated
+          get().stopUserRefresh()
+        }
+      },
       setHasHydrated: (hydrated: boolean) =>
         set({ hasHydrated: hydrated }),
       checkAuth: async () => {
-        set({ isAuthenticated: !!get().user })
+        const state = get()
+        const isAuth = !!state.user
+        set({ isAuthenticated: isAuth })
+        
+        // Auto-start refresh service if authenticated
+        if (isAuth && state.user?.email) {
+          get().startUserRefresh()
+        } else {
+          // Stop refresh service if not authenticated
+          get().stopUserRefresh()
+        }
+      },
+      startUserRefresh: () => {
+        const state = get()
+        if (state.user?.email && state.isAuthenticated) {
+          UserRefreshService.start(
+            (user: User) => {
+              // Update user in store with refreshed data
+              set({ user })
+            },
+            state.user.email,
+            60000 // 1 minute interval
+          )
+        }
+      },
+      stopUserRefresh: () => {
+        UserRefreshService.stop()
       },
     }),
     {

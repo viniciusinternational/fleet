@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { FileText, Download, Calendar, User, ArrowLeft, Edit, Trash2 } from 'lucide-react';
+import { FileText, Download, Calendar, User, ArrowLeft, Edit, Trash2, History } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -17,6 +17,7 @@ import {
 import { generateDeliveryNotePDF } from '@/lib/services/pdf-generator';
 import { useRouter } from 'next/navigation';
 import type { DeliveryNote } from '@/types';
+import { EntityAuditLogs } from '@/components/audit/entity-audit-logs';
 
 interface DeliveryNoteViewPageProps {
   params: Promise<{
@@ -91,7 +92,7 @@ export default function DeliveryNoteViewPage({ params }: DeliveryNoteViewPagePro
   };
 
   // Generate PDF handler
-  const handleGeneratePDF = () => {
+  const handleGeneratePDF = async () => {
     const pdfData: DeliveryNote = {
       id: deliveryNote.id,
       vehicles: deliveryNote.vehicles,
@@ -101,7 +102,7 @@ export default function DeliveryNoteViewPage({ params }: DeliveryNoteViewPagePro
       notes: deliveryNote.notes || undefined,
     };
 
-    generateDeliveryNotePDF(pdfData);
+    await generateDeliveryNotePDF(pdfData);
   };
 
   const handleBack = () => {
@@ -299,6 +300,19 @@ export default function DeliveryNoteViewPage({ params }: DeliveryNoteViewPagePro
               </TableBody>
             </Table>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Activity History */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <History className="h-5 w-5" />
+            Activity History
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <EntityAuditLogs entityType="DeliveryNote" entityId={deliveryNote.id} limit={20} />
         </CardContent>
       </Card>
     </div>

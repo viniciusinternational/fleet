@@ -51,16 +51,15 @@ export async function POST(
       },
     });
 
-    // Log the login event to audit log with metadata
-    await AuditService.logEvent({
-      action: 'UPDATE',
-      actorId: id, // The user logging in is the actor
-      entityType: 'User',
-      entityId: id,
-      before: beforeState,
-      after: JSON.parse(JSON.stringify(updatedUser)),
+    // Log the login event to audit log with metadata using LOGIN action
+    await AuditService.logSpecialAction(
+      'LOGIN',
+      id, // The user logging in is the actor
+      'User',
+      id,
       metadata,
-    });
+      JSON.parse(JSON.stringify(updatedUser))
+    );
 
     // Map to User type using the private method via UserService
     // We'll fetch the user using the service to get the properly mapped type

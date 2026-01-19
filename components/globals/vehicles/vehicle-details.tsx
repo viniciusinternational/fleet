@@ -34,7 +34,7 @@ import {
 } from 'lucide-react';
 import { VehicleStatus } from '@/types';
 import type { Vehicle, TrackingEvent } from '@/types';
-import { VehicleImageMiniGallery } from '@/components/ui/vehicle-image-mini-gallery';
+import { VehicleImageImmersiveGallery } from '@/components/ui/vehicle-image-immersive-gallery';
 import { useAuthStore } from '@/store/auth';
 import AddEventModal from './add-event-modal';
 import { EntityAuditLogs } from '@/components/audit/entity-audit-logs';
@@ -469,13 +469,15 @@ const VehicleDetails: React.FC<VehicleDetailsProps> = ({
                 <CardContent className="space-y-4 flex-1">
                   {/* Vehicle Images */}
                   <div>
-                    <label className="text-sm font-medium text-muted-foreground mb-2 block">Images</label>
                     {imagesLoading ? (
-                      <div className="w-full h-32 bg-muted/30 rounded-lg flex items-center justify-center text-sm text-muted-foreground">
-                        Loading images...
+                      <div className="w-full min-h-[400px] md:min-h-[500px] lg:min-h-[600px] bg-gradient-to-br from-muted/30 to-muted/50 rounded-xl flex items-center justify-center border border-border/50">
+                        <div className="text-center">
+                          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+                          <p className="text-sm text-muted-foreground">Loading images...</p>
+                        </div>
                       </div>
                     ) : (
-                      <VehicleImageMiniGallery 
+                      <VehicleImageImmersiveGallery 
                         images={vehicle.images || []} 
                         vehicleName={`${vehicle.make} ${vehicle.model}`}
                       />

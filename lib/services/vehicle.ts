@@ -409,6 +409,7 @@ export class VehicleService {
     try {
       // Get before state for audit log
       const beforeState = actorId ? await AuditService.getBeforeState('Vehicle', id) : null;
+      const beforeStatus = beforeState?.status;
 
       const updatedVehicle = await db.vehicle.update({
         where: { id },
@@ -420,15 +421,36 @@ export class VehicleService {
         },
       });
 
-      // Log audit event
+      // Log audit events
       if (actorId) {
+        const afterState = JSON.parse(JSON.stringify(updatedVehicle));
+        const afterStatus = afterState?.status;
+
+        // Check if status changed
+        if (vehicleData.status && beforeStatus && beforeStatus !== afterStatus) {
+          // Log status change separately
+          await AuditService.logStatusChange(
+            actorId,
+            'Vehicle',
+            updatedVehicle.id,
+            beforeStatus,
+            afterStatus,
+            {
+              vehicleVin: updatedVehicle.vin,
+              vehicleMake: updatedVehicle.make,
+              vehicleModel: updatedVehicle.model,
+            }
+          );
+        }
+
+        // Log general update
         await AuditService.logEvent({
           action: 'UPDATE',
           actorId,
           entityType: 'Vehicle',
           entityId: updatedVehicle.id,
           before: beforeState,
-          after: JSON.parse(JSON.stringify(updatedVehicle)),
+          after: afterState,
         });
       }
 

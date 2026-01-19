@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { UserService } from '@/lib/services/user';
 import { Role } from '@/types';
+import { getActorId } from '@/lib/utils/get-actor-id';
 
 // GET /api/users/[id] - Get user by ID
 export async function GET(
@@ -49,10 +50,14 @@ export async function PUT(
     
     const body = await request.json();
     
+    // Extract actorId from request
+    const actorId = await getActorId(request) || body.actorId || requestingUserId || undefined;
+    
     const user = await UserService.updateUser(
       { id, ...body },
       userRole,
-      requestingUserId
+      requestingUserId,
+      actorId
     );
     
     return NextResponse.json(user);
@@ -75,7 +80,10 @@ export async function DELETE(
     // TODO: Get user role from authentication/session
     const userRole = Role.ADMIN; // This should come from your auth system
     
-    await UserService.deleteUser(id, userRole);
+    // Extract actorId from request
+    const actorId = await getActorId(request) || undefined;
+    
+    await UserService.deleteUser(id, userRole, actorId);
     
     return NextResponse.json({ message: 'User deleted successfully' });
   } catch (error) {

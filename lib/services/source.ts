@@ -1,5 +1,6 @@
 import type { Source } from '@/types';
 import { db } from '@/lib/db';
+import { AuditService } from './audit';
 
 /**
  * Source Service
@@ -130,11 +131,26 @@ export class SourceService {
   /**
    * Create new source
    */
-  static async createSource(sourceData: Omit<Source, 'id' | 'createdAt' | 'updatedAt'>): Promise<Source> {
+  static async createSource(
+    sourceData: Omit<Source, 'id' | 'createdAt' | 'updatedAt'>,
+    actorId?: string
+  ): Promise<Source> {
     try {
       const newSource = await db.source.create({
         data: sourceData,
       });
+      
+      // Log audit event
+      if (actorId) {
+        await AuditService.logEvent({
+          action: 'CREATE',
+          actorId,
+          entityType: 'Source',
+          entityId: newSource.id,
+          after: JSON.parse(JSON.stringify(newSource)),
+        });
+      }
+      
       return newSource;
     } catch (error) {
       console.error('Error creating source:', error);
@@ -145,12 +161,32 @@ export class SourceService {
   /**
    * Update source
    */
-  static async updateSource(id: string, sourceData: Partial<Omit<Source, 'id' | 'createdAt' | 'updatedAt'>>): Promise<Source | null> {
+  static async updateSource(
+    id: string,
+    sourceData: Partial<Omit<Source, 'id' | 'createdAt' | 'updatedAt'>>,
+    actorId?: string
+  ): Promise<Source | null> {
     try {
+      // Get before state for audit logging
+      const beforeState = actorId ? await AuditService.getBeforeState('Source', id) : null;
+      
       const updatedSource = await db.source.update({
         where: { id },
         data: sourceData,
       });
+      
+      // Log audit event
+      if (actorId) {
+        await AuditService.logEvent({
+          action: 'UPDATE',
+          actorId,
+          entityType: 'Source',
+          entityId: id,
+          before: beforeState,
+          after: JSON.parse(JSON.stringify(updatedSource)),
+        });
+      }
+      
       return updatedSource;
     } catch (error) {
       console.error('Error updating source:', error);
@@ -161,11 +197,26 @@ export class SourceService {
   /**
    * Delete source
    */
-  static async deleteSource(id: string): Promise<boolean> {
+  static async deleteSource(id: string, actorId?: string): Promise<boolean> {
     try {
+      // Get before state for audit logging
+      const beforeState = actorId ? await AuditService.getBeforeState('Source', id) : null;
+      
       await db.source.delete({
         where: { id },
       });
+      
+      // Log audit event
+      if (actorId) {
+        await AuditService.logEvent({
+          action: 'DELETE',
+          actorId,
+          entityType: 'Source',
+          entityId: id,
+          before: beforeState,
+        });
+      }
+      
       return true;
     } catch (error) {
       console.error('Error deleting source:', error);

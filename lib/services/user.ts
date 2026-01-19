@@ -79,15 +79,16 @@ export class UserService {
         },
       });
 
-      // Log audit event
+      // Log audit event with USER_CREATED action
       if (actorId) {
-        await AuditService.logEvent({
-          action: 'CREATE',
+        await AuditService.logSpecialAction(
+          'USER_CREATED',
           actorId,
-          entityType: 'User',
-          entityId: user.id,
-          after: JSON.parse(JSON.stringify(user)),
-        });
+          'User',
+          user.id,
+          undefined,
+          JSON.parse(JSON.stringify(user))
+        );
       }
 
       return this.mapPrismaUserToType(user);
@@ -290,15 +291,43 @@ export class UserService {
         },
       });
 
-      // Log audit event
+      // Log audit events
       if (actorId) {
+        const afterState = JSON.parse(JSON.stringify(user));
+        
+        // Check if permissions changed
+        const beforePermissions = beforeState?.permissions;
+        const afterPermissions = afterState?.permissions;
+        
+        if (JSON.stringify(beforePermissions) !== JSON.stringify(afterPermissions)) {
+          // Log permission change separately
+          await AuditService.logSpecialAction(
+            'PERMISSION_CHANGE',
+            actorId,
+            'User',
+            user.id,
+            undefined,
+            {
+              before: beforePermissions,
+              after: afterPermissions,
+              user: {
+                id: user.id,
+                email: user.email,
+                firstName: user.firstName,
+                lastName: user.lastName,
+              },
+            }
+          );
+        }
+        
+        // Log general update
         await AuditService.logEvent({
           action: 'UPDATE',
           actorId,
           entityType: 'User',
           entityId: user.id,
           before: beforeState,
-          after: JSON.parse(JSON.stringify(user)),
+          after: afterState,
         });
       }
 

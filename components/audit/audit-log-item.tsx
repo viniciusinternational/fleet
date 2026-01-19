@@ -4,12 +4,12 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ChevronDown, ChevronUp, User, Calendar, FileText, Eye } from 'lucide-react';
+import { ChevronDown, ChevronUp, User, Calendar, FileText, Eye, LogIn, UserPlus, Shield, TrendingUp } from 'lucide-react';
 
 interface AuditLogItemProps {
   log: {
     id: string;
-    action: 'CREATE' | 'UPDATE' | 'DELETE';
+    action: 'CREATE' | 'UPDATE' | 'DELETE' | 'LOGIN' | 'USER_CREATED' | 'PERMISSION_CHANGE' | 'STATUS_CHANGE';
     entityType: string;
     entityId: string;
     before: any;
@@ -36,8 +36,46 @@ export function AuditLogItem({ log }: AuditLogItemProps) {
         return 'bg-primary/10 text-primary border-primary/20';
       case 'DELETE':
         return 'bg-red-100 text-red-800 border-red-200 dark:bg-red-950 dark:text-red-300 dark:border-red-700';
+      case 'LOGIN':
+        return 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-700';
+      case 'USER_CREATED':
+        return 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-700';
+      case 'PERMISSION_CHANGE':
+        return 'bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-950 dark:text-purple-300 dark:border-purple-700';
+      case 'STATUS_CHANGE':
+        return 'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-700';
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-900 dark:text-gray-300 dark:border-gray-800';
+    }
+  };
+
+  const getActionIcon = (action: string) => {
+    switch (action) {
+      case 'LOGIN':
+        return <LogIn className="h-3 w-3" />;
+      case 'USER_CREATED':
+        return <UserPlus className="h-3 w-3" />;
+      case 'PERMISSION_CHANGE':
+        return <Shield className="h-3 w-3" />;
+      case 'STATUS_CHANGE':
+        return <TrendingUp className="h-3 w-3" />;
+      default:
+        return null;
+    }
+  };
+
+  const getActionLabel = (action: string) => {
+    switch (action) {
+      case 'LOGIN':
+        return 'User Login';
+      case 'USER_CREATED':
+        return 'User Created';
+      case 'PERMISSION_CHANGE':
+        return 'Permission Change';
+      case 'STATUS_CHANGE':
+        return 'Status Change';
+      default:
+        return action;
     }
   };
 
@@ -80,6 +118,10 @@ export function AuditLogItem({ log }: AuditLogItemProps) {
         return `${basePath}/owners/${entityId}`;
       case 'Location':
         return `${basePath}/locations/${entityId}`;
+      case 'Source':
+        return `${basePath}/sources/${entityId}`;
+      case 'DeliveryNote':
+        return `${basePath}/delivery/${entityId}`;
       default:
         return null;
     }
@@ -94,7 +136,10 @@ export function AuditLogItem({ log }: AuditLogItemProps) {
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">
               <Badge className={getActionColor(log.action)}>
-                {log.action}
+                <div className="flex items-center gap-1">
+                  {getActionIcon(log.action)}
+                  <span>{getActionLabel(log.action)}</span>
+                </div>
               </Badge>
               <span className="text-sm font-medium text-muted-foreground">
                 {log.entityType}
@@ -186,6 +231,20 @@ export function AuditLogItem({ log }: AuditLogItemProps) {
           {log.metadata && (
             <div>
               <div className="text-sm font-medium mb-2">Metadata</div>
+              {log.action === 'LOGIN' && log.metadata.ipAddress && (
+                <div className="mb-2 text-sm">
+                  <span className="font-medium">IP Address: </span>
+                  <span className="text-muted-foreground">{log.metadata.ipAddress}</span>
+                </div>
+              )}
+              {log.action === 'STATUS_CHANGE' && log.metadata.statusChange && (
+                <div className="mb-2 text-sm">
+                  <span className="font-medium">Status: </span>
+                  <span className="text-muted-foreground">
+                    {log.metadata.statusChange.from} → {log.metadata.statusChange.to}
+                  </span>
+                </div>
+              )}
               <pre className="text-xs bg-muted p-2 rounded overflow-auto">
                 {JSON.stringify(log.metadata, null, 2)}
               </pre>

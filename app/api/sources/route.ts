@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { SourceService } from '@/lib/services/source';
+import { getActorId } from '@/lib/utils/get-actor-id';
 
 // Validation schema for creating a source
 const createSourceSchema = z.object({
@@ -78,8 +79,11 @@ export async function POST(request: NextRequest) {
       );
     }
     
+    // Extract actorId from request
+    const actorId = await getActorId(request) || undefined;
+    
     // Create new source using the service
-    const source = await SourceService.createSource(validatedData);
+    const source = await SourceService.createSource(validatedData, actorId);
     
     return NextResponse.json({
       success: true,

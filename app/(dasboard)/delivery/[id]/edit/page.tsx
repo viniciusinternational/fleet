@@ -209,7 +209,7 @@ export default function EditDeliveryNotePage({ params }: EditDeliveryNotePagePro
           notes: notes || undefined,
         };
 
-        generateDeliveryNotePDF(deliveryNote);
+        await generateDeliveryNotePDF(deliveryNote);
 
         // Navigate to view page
         router.push(`/admin/delivery/${id}`);

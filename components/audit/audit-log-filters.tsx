@@ -32,8 +32,32 @@ interface AuditLogFiltersProps {
   onReset: () => void;
 }
 
-const entityTypes = ['User', 'Vehicle', 'Owner', 'Location', 'Source', 'DeliveryNote'];
-const actions = ['CREATE', 'UPDATE', 'DELETE'];
+const entityTypes = [
+  'User', 
+  'Vehicle', 
+  'Owner', 
+  'Location', 
+  'Source', 
+  'DeliveryNote',
+  'ShippingDetails',
+  'VehicleDocument',
+  'TrackingEvent',
+  'VehicleImage',
+  'VehicleMake',
+  'VehicleModel',
+  'VehicleColor',
+  'TransmissionType',
+  'EngineType'
+];
+const actions = [
+  'CREATE', 
+  'UPDATE', 
+  'DELETE',
+  'LOGIN',
+  'USER_CREATED',
+  'PERMISSION_CHANGE',
+  'STATUS_CHANGE'
+];
 
 export function AuditLogFiltersComponent({
   filters,
@@ -96,11 +120,13 @@ export function AuditLogFiltersComponent({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All actions</SelectItem>
-                {actions.map((action) => (
-                  <SelectItem key={action} value={action}>
-                    {action}
-                  </SelectItem>
-                ))}
+                <SelectItem value="CREATE">Create</SelectItem>
+                <SelectItem value="UPDATE">Update</SelectItem>
+                <SelectItem value="DELETE">Delete</SelectItem>
+                <SelectItem value="LOGIN">User Login</SelectItem>
+                <SelectItem value="USER_CREATED">User Created</SelectItem>
+                <SelectItem value="PERMISSION_CHANGE">Permission Change</SelectItem>
+                <SelectItem value="STATUS_CHANGE">Status Change</SelectItem>
               </SelectContent>
             </Select>
           </div>

@@ -15,10 +15,12 @@ import {
   FileText,
   Car,
   Edit,
-  Trash2
+  Trash2,
+  History
 } from 'lucide-react';
 import type { Owner } from '@/types';
 import { DeleteOwnerDialog } from '@/components/owners/delete-owner-dialog';
+import { EntityAuditLogs } from '@/components/audit/entity-audit-logs';
 
 const OwnerDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -244,6 +246,19 @@ const OwnerDetailsPage: React.FC = () => {
                   <p>No vehicles associated with this owner.</p>
                 </div>
               )}
+            </CardContent>
+          </Card>
+
+          {/* Activity Log */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <History className="h-5 w-5" />
+                Activity History
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <EntityAuditLogs entityType="Owner" entityId={owner.id} limit={20} />
             </CardContent>
           </Card>
         </div>

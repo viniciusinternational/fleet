@@ -41,6 +41,7 @@ async function main() {
   await prisma.vehicleMake.deleteMany();
   await prisma.vehicleColor.deleteMany();
   await prisma.transmissionType.deleteMany();
+  await prisma.engineType.deleteMany();
   console.log('  ✓ Cleared settings data');
 
   console.log('✅ Database cleared successfully!\n');
@@ -246,6 +247,31 @@ async function main() {
     )
   );
   console.log(`✅ Created ${transmissions.length} transmission types`);
+
+  // Seed Engine Types
+  const engineTypesData = [
+    'Gasoline',
+    'Diesel',
+    'Electric',
+    'Hybrid',
+    'Plug-in Hybrid',
+    'Hydrogen Fuel Cell',
+    'Natural Gas',
+    'Flex Fuel',
+    'Turbocharged',
+    'Supercharged',
+    'Twin Turbo',
+    'Rotary'
+  ];
+
+  const engineTypes = await Promise.all(
+    engineTypesData.map(name => 
+      prisma.engineType.create({
+        data: { name, isActive: true }
+      })
+    )
+  );
+  console.log(`✅ Created ${engineTypes.length} engine types`);
 
   // Create admin users with all permissions
   const allPermissions = {

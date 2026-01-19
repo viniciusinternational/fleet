@@ -258,6 +258,10 @@ enum AuditAction {
   CREATE
   UPDATE
   DELETE
+  LOGIN
+  USER_CREATED
+  PERMISSION_CHANGE
+  STATUS_CHANGE
 }
 
 model VehicleMake {

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { SourceService } from '@/lib/services/source';
+import { getActorId } from '@/lib/utils/get-actor-id';
 
 // Validation schema for updating a source
 const updateSourceSchema = z.object({
@@ -77,8 +78,11 @@ export async function PUT(
       }
     }
     
+    // Extract actorId from request
+    const actorId = await getActorId(request) || undefined;
+    
     // Update source using the service
-    const updatedSource = await SourceService.updateSource(id, validatedData);
+    const updatedSource = await SourceService.updateSource(id, validatedData, actorId);
     
     if (!updatedSource) {
       return NextResponse.json(
@@ -130,8 +134,11 @@ export async function DELETE(
       );
     }
     
+    // Extract actorId from request
+    const actorId = await getActorId(request) || undefined;
+    
     // Delete source using the service
-    const deleted = await SourceService.deleteSource(id);
+    const deleted = await SourceService.deleteSource(id, actorId);
     
     if (!deleted) {
       return NextResponse.json(

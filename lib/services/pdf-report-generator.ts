@@ -2,19 +2,25 @@ import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { ReportService } from './report';
 import type { ReportFilters } from './report';
+import { generateQRCodeDataURL, getBaseUrl } from '@/lib/utils/qr-code';
+import { generateReportToken } from '@/lib/utils/report-token';
 
 export interface PDFGeneratorOptions {
   companyName?: string;
   companyAddress?: string;
   companyPhone?: string;
   companyEmail?: string;
+  logoUrl?: string;
+  baseUrl?: string;
 }
 
 const DEFAULT_OPTIONS: PDFGeneratorOptions = {
-  companyName: 'Fleet Management System',
-  companyAddress: '123 Business Ave, Lagos, Nigeria',
-  companyPhone: '+234 123 456 7890',
-  companyEmail: 'info@fleetmanagement.com',
+  companyName: 'Vinicius International',
+  companyAddress: '13B Shettima Mongonu Crescent, Utako, Abuja, Nigeria',
+  companyPhone: '',
+  companyEmail: 'info@viniciusint.com',
+  logoUrl: '/logo/vinicius-logo.png',
+  baseUrl: typeof window !== 'undefined' ? `${window.location.protocol}//${window.location.host}` : 'http://localhost:3000',
 };
 
 export type ReportType = 'inventory' | 'status-summary' | 'location-based';
@@ -22,10 +28,101 @@ export type ReportType = 'inventory' | 'status-summary' | 'location-based';
 export class VehicleReportPDFGenerator {
   private doc: jsPDF;
   private options: PDFGeneratorOptions;
+  private logoImage: string | null = null;
+  private watermarkImage: string | null = null;
 
   constructor(options: PDFGeneratorOptions = {}) {
     this.doc = new jsPDF();
     this.options = { ...DEFAULT_OPTIONS, ...options };
+  }
+
+  /**
+   * Load logo image as base64 data URL
+   */
+  private async loadLogoImage(): Promise<void> {
+    if (this.logoImage) return;
+
+    try {
+      const logoUrl = this.options.logoUrl || '/logo/vinicius-logo.png';
+      const baseUrl = this.options.baseUrl || getBaseUrl();
+      const fullUrl = logoUrl.startsWith('http') ? logoUrl : `${baseUrl}${logoUrl}`;
+
+      const response = await fetch(fullUrl);
+      if (!response.ok) {
+        console.warn('Could not load logo image, using text fallback');
+        return;
+      }
+
+      const blob = await response.blob();
+      return new Promise((resolve, reject) => {
+        // Server-side: convert buffer to base64
+        if (typeof window === 'undefined' || typeof FileReader === 'undefined') {
+          blob.arrayBuffer().then(buffer => {
+            const base64 = Buffer.from(buffer).toString('base64');
+            this.logoImage = `data:${blob.type || 'image/png'};base64,${base64}`;
+            resolve();
+          }).catch(reject);
+        } else {
+          // Client-side: use FileReader
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            this.logoImage = reader.result as string;
+            resolve();
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        }
+      });
+    } catch (error) {
+      console.warn('Error loading logo:', error);
+    }
+  }
+
+  /**
+   * Create watermark image from logo
+   */
+  private async loadWatermarkImage(): Promise<void> {
+    if (this.watermarkImage || !this.logoImage) return;
+
+    // Skip watermark creation on server-side (no DOM APIs)
+    if (typeof window === 'undefined' || typeof document === 'undefined') {
+      return;
+    }
+
+    try {
+      const img = new Image();
+      return new Promise((resolve, reject) => {
+        img.onload = () => {
+          try {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            if (!ctx) {
+              reject(new Error('Could not get canvas context'));
+              return;
+            }
+
+            const scale = 3;
+            canvas.width = img.width * scale;
+            canvas.height = img.height * scale;
+
+            ctx.globalAlpha = 0.1;
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            this.watermarkImage = canvas.toDataURL();
+            resolve();
+          } catch (error) {
+            console.warn('Error creating watermark:', error);
+            resolve(); // Continue without watermark
+          }
+        };
+        img.onerror = () => {
+          console.warn('Error loading image for watermark');
+          resolve(); // Continue without watermark
+        };
+        img.src = this.logoImage;
+      });
+    } catch (error) {
+      console.warn('Error creating watermark:', error);
+    }
   }
 
   /**
@@ -35,16 +132,30 @@ export class VehicleReportPDFGenerator {
     reportType: ReportType,
     filters: ReportFilters = {}
   ): Promise<ArrayBuffer> {
+    // Load logo and watermark images
+    await this.loadLogoImage();
+    await this.loadWatermarkImage();
+
+    let result: ArrayBuffer;
     switch (reportType) {
       case 'inventory':
-        return this.generateInventoryReport(filters);
+        result = await this.generateInventoryReport(filters);
+        break;
       case 'status-summary':
-        return this.generateStatusSummaryReport(filters);
+        result = await this.generateStatusSummaryReport(filters);
+        break;
       case 'location-based':
-        return this.generateLocationBasedReport(filters);
+        result = await this.generateLocationBasedReport(filters);
+        break;
       default:
         throw new Error(`Unknown report type: ${reportType}`);
     }
+
+    // Add QR code and watermark after content is generated
+    await this.addQRCode(reportType, filters);
+    this.addFooter(); // Footer includes watermark
+
+    return this.doc.output('arraybuffer') as ArrayBuffer;
   }
 
   /**
@@ -57,12 +168,18 @@ export class VehicleReportPDFGenerator {
     const { vehicles, totalCount, filteredCount } = data;
 
     // Add header
-    this.addHeader();
+    await this.addHeader();
 
     // Add title
-    this.doc.setFontSize(18);
+    this.doc.setFontSize(20);
     this.doc.setFont('helvetica', 'bold');
-    this.doc.text('VEHICLE INVENTORY REPORT', 105, 50, { align: 'center' });
+    this.doc.setTextColor(220, 38, 38);
+    this.doc.text('VEHICLE INVENTORY REPORT', 105, 52, { align: 'center' });
+    
+    // Add underline
+    this.doc.setDrawColor(220, 38, 38);
+    this.doc.setLineWidth(0.5);
+    this.doc.line(60, 54, 150, 54);
 
     // Add summary info
     this.addSummaryInfo(totalCount, filteredCount, new Date());
@@ -87,30 +204,37 @@ export class VehicleReportPDFGenerator {
       theme: 'striped',
       headStyles: {
         fillColor: [71, 85, 105],
+        textColor: [255, 255, 255],
         fontSize: 9,
         fontStyle: 'bold',
         halign: 'center',
       },
       bodyStyles: {
         fontSize: 8,
+        textColor: [31, 41, 55],
+      },
+      alternateRowStyles: {
+        fillColor: [249, 250, 251],
       },
       columnStyles: {
-        0: { cellWidth: 35 }, // VIN
-        1: { cellWidth: 25 }, // Make
-        2: { cellWidth: 25 }, // Model
-        3: { cellWidth: 15, halign: 'center' }, // Year
-        4: { cellWidth: 20 }, // Color
-        5: { cellWidth: 30 }, // Status
-        6: { cellWidth: 30 }, // Location
-        7: { cellWidth: 35 }, // Owner
-        8: { cellWidth: 25 }, // Fuel Type
+        0: { cellWidth: 35 },
+        1: { cellWidth: 25 },
+        2: { cellWidth: 25 },
+        3: { cellWidth: 15, halign: 'center' },
+        4: { cellWidth: 20 },
+        5: { cellWidth: 30 },
+        6: { cellWidth: 30 },
+        7: { cellWidth: 35 },
+        8: { cellWidth: 25 },
       },
       margin: { left: 14, right: 14 },
-      styles: { overflow: 'linebreak', cellWidth: 'wrap' },
+      styles: { 
+        overflow: 'linebreak', 
+        cellWidth: 'wrap',
+        lineColor: [229, 231, 235],
+        lineWidth: 0.3,
+      },
     });
-
-    // Add footer
-    this.addFooter();
 
     return this.doc.output('arraybuffer') as Uint8Array;
   }
@@ -125,12 +249,18 @@ export class VehicleReportPDFGenerator {
     const { summary, vehiclesByStatus, totalCount } = data;
 
     // Add header
-    this.addHeader();
+    await this.addHeader();
 
     // Add title
-    this.doc.setFontSize(18);
+    this.doc.setFontSize(20);
     this.doc.setFont('helvetica', 'bold');
-    this.doc.text('VEHICLE STATUS SUMMARY REPORT', 105, 50, { align: 'center' });
+    this.doc.setTextColor(220, 38, 38);
+    this.doc.text('VEHICLE STATUS SUMMARY REPORT', 105, 52, { align: 'center' });
+    
+    // Add underline
+    this.doc.setDrawColor(220, 38, 38);
+    this.doc.setLineWidth(0.5);
+    this.doc.line(50, 54, 160, 54);
 
     // Add summary info
     this.addSummaryInfo(totalCount, totalCount, new Date());
@@ -149,12 +279,17 @@ export class VehicleReportPDFGenerator {
       theme: 'striped',
       headStyles: {
         fillColor: [71, 85, 105],
+        textColor: [255, 255, 255],
         fontSize: 10,
         fontStyle: 'bold',
         halign: 'center',
       },
       bodyStyles: {
         fontSize: 9,
+        textColor: [31, 41, 55],
+      },
+      alternateRowStyles: {
+        fillColor: [249, 250, 251],
       },
       columnStyles: {
         0: { cellWidth: 60 },
@@ -162,6 +297,10 @@ export class VehicleReportPDFGenerator {
         2: { cellWidth: 40, halign: 'center' },
       },
       margin: { left: 14, right: 14 },
+      styles: {
+        lineColor: [229, 231, 235],
+        lineWidth: 0.3,
+      },
     });
 
     // Add detailed breakdown by status
@@ -182,6 +321,7 @@ export class VehicleReportPDFGenerator {
       // Add status section header
       this.doc.setFontSize(14);
       this.doc.setFont('helvetica', 'bold');
+      this.doc.setTextColor(29, 41, 55);
       this.doc.text(`${this.formatStatus(status)} (${vehicles.length} vehicles)`, 14, currentY + 15);
 
       // Create table data for this status
@@ -202,22 +342,29 @@ export class VehicleReportPDFGenerator {
         theme: 'striped',
         headStyles: {
           fillColor: [71, 85, 105],
+          textColor: [255, 255, 255],
           fontSize: 9,
           fontStyle: 'bold',
           halign: 'center',
         },
         bodyStyles: {
           fontSize: 8,
+          textColor: [31, 41, 55],
+        },
+        alternateRowStyles: {
+          fillColor: [249, 250, 251],
         },
         margin: { left: 14, right: 14 },
-        styles: { overflow: 'linebreak', cellWidth: 'wrap' },
+        styles: { 
+          overflow: 'linebreak', 
+          cellWidth: 'wrap',
+          lineColor: [229, 231, 235],
+          lineWidth: 0.3,
+        },
       });
 
       currentY = (this.doc as any).lastAutoTable?.finalY || currentY + 50;
     }
-
-    // Add footer
-    this.addFooter();
 
     return this.doc.output('arraybuffer') as ArrayBuffer;
   }
@@ -232,12 +379,18 @@ export class VehicleReportPDFGenerator {
     const { locationSummary, vehiclesByLocation, totalCount } = data;
 
     // Add header
-    this.addHeader();
+    await this.addHeader();
 
     // Add title
-    this.doc.setFontSize(18);
+    this.doc.setFontSize(20);
     this.doc.setFont('helvetica', 'bold');
-    this.doc.text('VEHICLE LOCATION-BASED REPORT', 105, 50, { align: 'center' });
+    this.doc.setTextColor(220, 38, 38);
+    this.doc.text('VEHICLE LOCATION-BASED REPORT', 105, 52, { align: 'center' });
+    
+    // Add underline
+    this.doc.setDrawColor(220, 38, 38);
+    this.doc.setLineWidth(0.5);
+    this.doc.line(45, 54, 165, 54);
 
     // Add summary info
     this.addSummaryInfo(totalCount, totalCount, new Date());
@@ -256,12 +409,17 @@ export class VehicleReportPDFGenerator {
       theme: 'striped',
       headStyles: {
         fillColor: [71, 85, 105],
+        textColor: [255, 255, 255],
         fontSize: 10,
         fontStyle: 'bold',
         halign: 'center',
       },
       bodyStyles: {
         fontSize: 9,
+        textColor: [31, 41, 55],
+      },
+      alternateRowStyles: {
+        fillColor: [249, 250, 251],
       },
       columnStyles: {
         0: { cellWidth: 70 },
@@ -269,6 +427,10 @@ export class VehicleReportPDFGenerator {
         2: { cellWidth: 40, halign: 'center' },
       },
       margin: { left: 14, right: 14 },
+      styles: {
+        lineColor: [229, 231, 235],
+        lineWidth: 0.3,
+      },
     });
 
     // Add detailed breakdown by location
@@ -289,6 +451,7 @@ export class VehicleReportPDFGenerator {
       // Add location section header
       this.doc.setFontSize(14);
       this.doc.setFont('helvetica', 'bold');
+      this.doc.setTextColor(29, 41, 55);
       this.doc.text(`${locationInfo.locationName} (${vehicles.length} vehicles)`, 14, currentY + 15);
 
       // Create table data for this location
@@ -309,43 +472,66 @@ export class VehicleReportPDFGenerator {
         theme: 'striped',
         headStyles: {
           fillColor: [71, 85, 105],
+          textColor: [255, 255, 255],
           fontSize: 9,
           fontStyle: 'bold',
           halign: 'center',
         },
         bodyStyles: {
           fontSize: 8,
+          textColor: [31, 41, 55],
+        },
+        alternateRowStyles: {
+          fillColor: [249, 250, 251],
         },
         margin: { left: 14, right: 14 },
-        styles: { overflow: 'linebreak', cellWidth: 'wrap' },
+        styles: { 
+          overflow: 'linebreak', 
+          cellWidth: 'wrap',
+          lineColor: [229, 231, 235],
+          lineWidth: 0.3,
+        },
       });
 
       currentY = (this.doc as any).lastAutoTable?.finalY || currentY + 50;
     }
 
-    // Add footer
-    this.addFooter();
-
     return this.doc.output('arraybuffer') as ArrayBuffer;
   }
 
-  private addHeader(): void {
-    const { companyName, companyAddress, companyPhone, companyEmail } = this.options;
+  private async addHeader(): Promise<void> {
+    const { companyName, companyAddress, companyEmail } = this.options;
 
-    // Company name
-    this.doc.setFontSize(20);
+    const logoWidth = 45;
+    const logoHeight = 18;
+    const logoX = 14;
+    const logoY = 10;
+
+    if (this.logoImage) {
+      try {
+        this.doc.addImage(this.logoImage, 'PNG', logoX, logoY, logoWidth, logoHeight);
+      } catch (error) {
+        console.warn('Error adding logo image:', error);
+      }
+    }
+
+    const textX = this.logoImage ? logoX + logoWidth + 8 : 14;
+    const textY = logoY + 6;
+
+    this.doc.setFontSize(18);
     this.doc.setFont('helvetica', 'bold');
-    this.doc.text(companyName || '', 14, 20);
+    this.doc.setTextColor(29, 41, 55);
+    this.doc.text(companyName || 'Vinicius International', textX, textY);
 
-    // Company details
     this.doc.setFontSize(9);
     this.doc.setFont('helvetica', 'normal');
-    this.doc.text(companyAddress || '', 14, 27);
-    this.doc.text(`Phone: ${companyPhone} | Email: ${companyEmail}`, 14, 32);
+    this.doc.setTextColor(55, 65, 81);
+    this.doc.text(companyAddress || '', textX, textY + 5);
+    this.doc.text(`Email: ${companyEmail}`, textX, textY + 9);
 
-    // Horizontal line
-    this.doc.setLineWidth(0.5);
-    this.doc.line(14, 36, 196, 36);
+    this.doc.setDrawColor(220, 38, 38);
+    this.doc.setLineWidth(0.8);
+    this.doc.line(14, logoY + logoHeight + 4, 196, logoY + logoHeight + 4);
   }
 
   private addSummaryInfo(
@@ -357,23 +543,27 @@ export class VehicleReportPDFGenerator {
 
     this.doc.setFontSize(10);
     this.doc.setFont('helvetica', 'normal');
+    this.doc.setTextColor(55, 65, 81);
 
-    // Total Count
     this.doc.setFont('helvetica', 'bold');
+    this.doc.setTextColor(29, 41, 55);
     this.doc.text('Total Vehicles:', 14, yPos);
     this.doc.setFont('helvetica', 'normal');
+    this.doc.setTextColor(55, 65, 81);
     this.doc.text(totalCount.toString(), 60, yPos);
 
-    // Filtered Count
     this.doc.setFont('helvetica', 'bold');
+    this.doc.setTextColor(29, 41, 55);
     this.doc.text('Filtered Count:', 100, yPos);
     this.doc.setFont('helvetica', 'normal');
+    this.doc.setTextColor(55, 65, 81);
     this.doc.text(filteredCount.toString(), 155, yPos);
 
-    // Generated Date
     this.doc.setFont('helvetica', 'bold');
+    this.doc.setTextColor(29, 41, 55);
     this.doc.text('Generated:', 14, yPos + 6);
     this.doc.setFont('helvetica', 'normal');
+    this.doc.setTextColor(55, 65, 81);
     this.doc.text(
       generatedAt.toLocaleDateString('en-US', {
         year: 'numeric',
@@ -387,15 +577,84 @@ export class VehicleReportPDFGenerator {
     );
   }
 
+  private async addQRCode(
+    reportType: ReportType,
+    filters: ReportFilters
+  ): Promise<void> {
+    try {
+      // Generate token for report
+      const token = generateReportToken({
+        reportType,
+        filters,
+        timestamp: Date.now(),
+      });
+
+      const baseUrl = this.options.baseUrl || getBaseUrl();
+      const viewUrl = `${baseUrl}/view/report?token=${token}`;
+
+      const qrDataURL = await generateQRCodeDataURL(viewUrl, {
+        size: 150,
+        margin: 2,
+        errorCorrectionLevel: 'M',
+      });
+
+      // Position QR code on first page
+      this.doc.setPage(1);
+      const qrSize = 35;
+      const qrX = 196 - qrSize - 14;
+      const qrY = 280 - qrSize;
+
+      this.doc.addImage(qrDataURL, 'PNG', qrX, qrY, qrSize, qrSize);
+
+      this.doc.setFontSize(7);
+      this.doc.setFont('helvetica', 'normal');
+      this.doc.setTextColor(107, 114, 128);
+      const textWidth = this.doc.getTextWidth('Scan for online view');
+      this.doc.text(
+        'Scan for online view',
+        qrX + (qrSize - textWidth) / 2,
+        qrY + qrSize + 4
+      );
+    } catch (error) {
+      console.warn('Error adding QR code:', error);
+    }
+  }
+
   private addFooter(): void {
     const pageCount = this.doc.getNumberOfPages();
 
     for (let i = 1; i <= pageCount; i++) {
       this.doc.setPage(i);
 
+      // Add watermark
+      if (this.watermarkImage) {
+        try {
+          const pageWidth = this.doc.internal.pageSize.getWidth();
+          const pageHeight = this.doc.internal.pageSize.getHeight();
+          const watermarkWidth = 120;
+          const watermarkHeight = 60;
+          const watermarkX = (pageWidth - watermarkWidth) / 2;
+          const watermarkY = (pageHeight - watermarkHeight) / 2;
+
+          this.doc.addImage(
+            this.watermarkImage,
+            'PNG',
+            watermarkX,
+            watermarkY,
+            watermarkWidth,
+            watermarkHeight,
+            undefined,
+            'FAST'
+          );
+        } catch (error) {
+          console.warn('Error adding watermark:', error);
+        }
+      }
+
       // Page number
       this.doc.setFontSize(8);
       this.doc.setFont('helvetica', 'italic');
+      this.doc.setTextColor(107, 114, 128);
       this.doc.text(
         `Page ${i} of ${pageCount}`,
         105,
@@ -404,6 +663,7 @@ export class VehicleReportPDFGenerator {
       );
 
       // Footer line
+      this.doc.setDrawColor(229, 231, 235);
       this.doc.setLineWidth(0.3);
       this.doc.line(14, 287, 196, 287);
     }

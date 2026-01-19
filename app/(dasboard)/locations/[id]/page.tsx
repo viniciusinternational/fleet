@@ -45,6 +45,7 @@ import {
 import { LocationType, LocationStatus } from '@/types';
 import type { User, Vehicle } from '@/types';
 import { MetricCard } from '@/components/dashboard/metric-card';
+import { EntityAuditLogs } from '@/components/audit/entity-audit-logs';
 
 const LocationDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -390,7 +391,7 @@ const LocationDetail: React.FC = () => {
 
         {/* Main Content Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <Info className="h-4 w-4" />
               Overview
@@ -406,6 +407,10 @@ const LocationDetail: React.FC = () => {
             <TabsTrigger value="details" className="flex items-center gap-2">
               <FileText className="h-4 w-4" />
               Details
+            </TabsTrigger>
+            <TabsTrigger value="activity" className="flex items-center gap-2">
+              <Activity className="h-4 w-4" />
+              Activity
             </TabsTrigger>
             <TabsTrigger value="settings" className="flex items-center gap-2">
               <Settings className="h-4 w-4" />
@@ -670,6 +675,13 @@ const LocationDetail: React.FC = () => {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          {/* Activity Tab */}
+          <TabsContent value="activity" className="space-y-6">
+            {location && (
+              <EntityAuditLogs entityType="Location" entityId={location.id} limit={20} />
+            )}
           </TabsContent>
 
           {/* Settings Tab */}

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { UserService } from '@/lib/services/user';
 import { Role } from '@/types';
+import { getActorId } from '@/lib/utils/get-actor-id';
 
 // GET /api/users - Get all users with filtering and pagination
 export async function GET(request: NextRequest) {
@@ -52,7 +53,10 @@ export async function POST(request: NextRequest) {
     
     const body = await request.json();
     
-    const user = await UserService.createUser(body, userRole);
+    // Extract actorId from request
+    const actorId = await getActorId(request) || body.actorId || undefined;
+    
+    const user = await UserService.createUser(body, userRole, actorId);
     
     return NextResponse.json(user, { status: 201 });
   } catch (error) {

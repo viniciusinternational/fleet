@@ -1,8 +1,23 @@
 import { db } from '@/lib/db';
 import { Prisma } from '@prisma/client';
 
-export type AuditAction = 'CREATE' | 'UPDATE' | 'DELETE';
-export type EntityType = 'User' | 'Vehicle' | 'Owner' | 'Location' | 'Source' | 'DeliveryNote';
+export type AuditAction = 'CREATE' | 'UPDATE' | 'DELETE' | 'LOGIN' | 'USER_CREATED' | 'PERMISSION_CHANGE' | 'STATUS_CHANGE';
+export type EntityType = 
+  | 'User' 
+  | 'Vehicle' 
+  | 'Owner' 
+  | 'Location' 
+  | 'Source' 
+  | 'DeliveryNote'
+  | 'ShippingDetails'
+  | 'VehicleDocument'
+  | 'TrackingEvent'
+  | 'VehicleImage'
+  | 'VehicleMake'
+  | 'VehicleModel'
+  | 'VehicleColor'
+  | 'TransmissionType'
+  | 'EngineType';
 
 export interface AuditLogInput {
   action: AuditAction;
@@ -290,6 +305,73 @@ export class AuditService {
           });
           return source ? JSON.parse(JSON.stringify(source)) : null;
         
+        case 'DeliveryNote':
+          const deliveryNote = await db.deliveryNote.findUnique({
+            where: { id: entityId },
+            include: { owner: true },
+          });
+          return deliveryNote ? JSON.parse(JSON.stringify(deliveryNote)) : null;
+        
+        case 'ShippingDetails':
+          const shippingDetails = await db.shippingDetails.findUnique({
+            where: { id: entityId },
+            include: { vehicle: true },
+          });
+          return shippingDetails ? JSON.parse(JSON.stringify(shippingDetails)) : null;
+        
+        case 'VehicleDocument':
+          const vehicleDocument = await db.vehicleDocument.findUnique({
+            where: { id: entityId },
+            include: { vehicle: true },
+          });
+          return vehicleDocument ? JSON.parse(JSON.stringify(vehicleDocument)) : null;
+        
+        case 'TrackingEvent':
+          const trackingEvent = await db.trackingEvent.findUnique({
+            where: { id: entityId },
+            include: { vehicle: true },
+          });
+          return trackingEvent ? JSON.parse(JSON.stringify(trackingEvent)) : null;
+        
+        case 'VehicleImage':
+          const vehicleImage = await db.vehicleImage.findUnique({
+            where: { id: entityId },
+            include: { vehicle: true },
+          });
+          return vehicleImage ? JSON.parse(JSON.stringify(vehicleImage)) : null;
+        
+        case 'VehicleMake':
+          const vehicleMake = await db.vehicleMake.findUnique({
+            where: { id: entityId },
+            include: { models: true },
+          });
+          return vehicleMake ? JSON.parse(JSON.stringify(vehicleMake)) : null;
+        
+        case 'VehicleModel':
+          const vehicleModel = await db.vehicleModel.findUnique({
+            where: { id: entityId },
+            include: { make: true },
+          });
+          return vehicleModel ? JSON.parse(JSON.stringify(vehicleModel)) : null;
+        
+        case 'VehicleColor':
+          const vehicleColor = await db.vehicleColor.findUnique({
+            where: { id: entityId },
+          });
+          return vehicleColor ? JSON.parse(JSON.stringify(vehicleColor)) : null;
+        
+        case 'TransmissionType':
+          const transmissionType = await db.transmissionType.findUnique({
+            where: { id: entityId },
+          });
+          return transmissionType ? JSON.parse(JSON.stringify(transmissionType)) : null;
+        
+        case 'EngineType':
+          const engineType = await db.engineType.findUnique({
+            where: { id: entityId },
+          });
+          return engineType ? JSON.parse(JSON.stringify(engineType)) : null;
+        
         default:
           return null;
       }
@@ -297,5 +379,89 @@ export class AuditService {
       console.error(`Error fetching before state for ${entityType}:${entityId}:`, error);
       return null;
     }
+  }
+
+  /**
+   * Log a special action (LOGIN, USER_CREATED, PERMISSION_CHANGE)
+   */
+  static async logSpecialAction(
+    action: 'LOGIN' | 'USER_CREATED' | 'PERMISSION_CHANGE',
+    actorId: string,
+    entityType: EntityType,
+    entityId: string,
+    metadata?: {
+      ipAddress?: string;
+      userAgent?: string;
+      [key: string]: any;
+    },
+    after?: any
+  ): Promise<void> {
+    await this.logEvent({
+      action,
+      actorId,
+      entityType,
+      entityId,
+      after: after ? this.sanitizeData(after) : null,
+      metadata,
+    });
+  }
+
+  /**
+   * Log a status change for an entity
+   */
+  static async logStatusChange(
+    actorId: string,
+    entityType: EntityType,
+    entityId: string,
+    beforeStatus: any,
+    afterStatus: any,
+    metadata?: {
+      [key: string]: any;
+    }
+  ): Promise<void> {
+    const beforeState = await this.getBeforeState(entityType, entityId);
+    const afterState = beforeState ? { ...beforeState, status: afterStatus } : { status: afterStatus };
+
+    await this.logEvent({
+      action: 'STATUS_CHANGE',
+      actorId,
+      entityType,
+      entityId,
+      before: beforeState ? { ...beforeState, status: beforeStatus } : { status: beforeStatus },
+      after: afterState,
+      metadata: {
+        ...metadata,
+        statusChange: {
+          from: beforeStatus,
+          to: afterStatus,
+        },
+      },
+    });
+  }
+
+  /**
+   * Configuration for logging limitations
+   */
+  private static readonly LOGGING_CONFIG = {
+    // Exclude read operations (GET requests)
+    excludeReadOperations: true,
+    // Entity types to exclude from logging (if any)
+    excludedEntityTypes: [] as EntityType[],
+    // Actions to exclude from logging (if any)
+    excludedActions: [] as AuditAction[],
+  };
+
+  /**
+   * Check if an operation should be logged based on configuration
+   */
+  static shouldLog(entityType: EntityType, action: AuditAction): boolean {
+    if (this.LOGGING_CONFIG.excludedEntityTypes.includes(entityType)) {
+      return false;
+    }
+    if (this.LOGGING_CONFIG.excludedActions.includes(action)) {
+      return false;
+    }
+    // Read operations are excluded by default (no GET logging)
+    return true;
   }
 }
