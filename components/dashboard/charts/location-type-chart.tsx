@@ -8,9 +8,8 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 
 interface LocationTypeChartProps {
   data: Array<{
     type: string;
-    operational: number;
-    temporarilyClosed: number;
-    underMaintenance: number;
+    active: number;
+    inactive: number;
   }>;
   title?: string;
 }
@@ -21,9 +20,8 @@ export function LocationTypeChart({
 }: LocationTypeChartProps) {
   const chartData = data.map(item => ({
     type: item.type.replace(/_/g, ' '),
-    Operational: item.operational,
-    'Temporarily Closed': item.temporarilyClosed,
-    'Under Maintenance': item.underMaintenance,
+    Active: item.active,
+    Inactive: item.inactive,
   }));
 
   return (
@@ -34,17 +32,13 @@ export function LocationTypeChart({
       <CardContent>
         <ChartContainer
           config={{
-            Operational: {
-              label: 'Operational',
+            Active: {
+              label: 'Active',
               color: 'hsl(var(--chart-2))',
             },
-            'Temporarily Closed': {
-              label: 'Temporarily Closed',
+            Inactive: {
+              label: 'Inactive',
               color: 'hsl(var(--chart-3))',
-            },
-            'Under Maintenance': {
-              label: 'Under Maintenance',
-              color: 'hsl(var(--chart-5))',
             },
           }}
           className="h-[300px]"
@@ -86,9 +80,8 @@ export function LocationTypeChart({
                 }}
               />
               <ChartLegend content={<ChartLegendContent />} />
-              <Bar dataKey="Operational" stackId="a" fill="hsl(var(--chart-2))" />
-              <Bar dataKey="Temporarily Closed" stackId="a" fill="hsl(var(--chart-3))" />
-              <Bar dataKey="Under Maintenance" stackId="a" fill="hsl(var(--chart-5))" />
+              <Bar dataKey="Active" stackId="a" fill="hsl(var(--chart-2))" />
+              <Bar dataKey="Inactive" stackId="a" fill="hsl(var(--chart-3))" />
             </BarChart>
           </ResponsiveContainer>
         </ChartContainer>

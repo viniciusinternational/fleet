@@ -13,6 +13,8 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle } from 'lucide-react';
 import { DataTable, TableColumn, TableAction } from '@/components/ui/data-table';
 import { Pagination } from '@/components/ui/pagination';
+import { useAuthStore } from '@/store/auth';
+import { hasPermission } from '@/lib/permissions';
 
 interface VehicleModel {
   id: string;
@@ -35,6 +37,7 @@ interface VehicleMake {
 const ITEMS_PER_PAGE = 10;
 
 export function ModelsTable() {
+  const { user } = useAuthStore();
   const [models, setModels] = useState<VehicleModel[]>([]);
   const [makes, setMakes] = useState<VehicleMake[]>([]);
   const [loading, setLoading] = useState(true);
@@ -208,22 +211,22 @@ export function ModelsTable() {
     }
   ];
 
-  // Table actions
+  // Table actions - Permission based
   const actions: TableAction<VehicleModel>[] = [
-    {
+    ...(user && hasPermission(user, 'edit_settings') ? [{
       key: 'edit',
       label: 'Edit Model',
       icon: <Edit className="h-4 w-4" />,
       onClick: handleEdit
-    },
-    {
+    }] : []),
+    ...(user && hasPermission(user, 'delete_settings') ? [{
       key: 'delete',
       label: 'Delete Model',
       icon: <Trash2 className="h-4 w-4" />,
-      variant: 'ghost',
+      variant: 'ghost' as const,
       className: 'text-destructive hover:text-destructive',
-      onClick: (model) => handleDelete(model.id)
-    }
+      onClick: (model: VehicleModel) => handleDelete(model.id)
+    }] : [])
   ];
 
   return (
@@ -233,13 +236,14 @@ export function ModelsTable() {
           <h2 className="text-2xl font-bold">Vehicle Models</h2>
           <p className="text-muted-foreground text-sm">Manage vehicle models by make</p>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={handleAdd} disabled={makes.length === 0}>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Model
-            </Button>
-          </DialogTrigger>
+        {user && hasPermission(user, 'add_settings') && (
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button onClick={handleAdd} disabled={makes.length === 0}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add Model
+              </Button>
+            </DialogTrigger>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>{editingModel ? 'Edit Model' : 'Add New Model'}</DialogTitle>
@@ -295,6 +299,7 @@ export function ModelsTable() {
             </form>
           </DialogContent>
         </Dialog>
+        )}
       </div>
 
       <div className="flex items-center gap-4">

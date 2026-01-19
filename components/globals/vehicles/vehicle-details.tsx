@@ -36,8 +36,11 @@ import { VehicleStatus } from '@/types';
 import type { Vehicle, TrackingEvent } from '@/types';
 import { VehicleImageImmersiveGallery } from '@/components/ui/vehicle-image-immersive-gallery';
 import { useAuthStore } from '@/store/auth';
+import { hasPermission } from '@/lib/permissions';
 import AddEventModal from './add-event-modal';
 import { EntityAuditLogs } from '@/components/audit/entity-audit-logs';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Image as ImageIcon } from 'lucide-react';
 
 interface VehicleDetailsProps {
   vehicleId: string;
@@ -58,6 +61,7 @@ const VehicleDetails: React.FC<VehicleDetailsProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('overview');
   const [imagesLoading, setImagesLoading] = useState(false);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   
   // Track Events state
   const [showAddEventModal, setShowAddEventModal] = useState(false);
@@ -65,12 +69,8 @@ const VehicleDetails: React.FC<VehicleDetailsProps> = ({
 
   // Admin editing state (removed inline editing)
   
-  // Check if user is admin - Force admin mode for testing
-  const user = useMemo(() => authUser || { 
-    role: 'Admin',
-    location: { id: 'test-location', name: 'Test Location', type: 'Port' }
-  }, [authUser]); // Use auth user or mock for testing
-  const isAdmin = true; // Force admin mode for testing
+  // Get current user
+  const user = authUser;
 
   // Helper function to safely get location address
   const getLocationAddress = (location: any) => {
@@ -453,8 +453,8 @@ const VehicleDetails: React.FC<VehicleDetailsProps> = ({
                       <Car className="h-5 w-5" />
                       Vehicle Information
                     </CardTitle>
-                    {/* Admin Edit Button - Only for Admin users */}
-                    {user && isAdmin && showEditButton && (
+                    {/* Edit Button - Permission based */}
+                    {user && hasPermission(user, 'edit_vehicles') && showEditButton && (
                       <Button 
                         variant="outline" 
                         size="sm" 
@@ -467,20 +467,44 @@ const VehicleDetails: React.FC<VehicleDetailsProps> = ({
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4 flex-1">
-                  {/* Vehicle Images */}
+                  {/* Vehicle Images Preview Button */}
                   <div>
                     {imagesLoading ? (
-                      <div className="w-full min-h-[400px] md:min-h-[500px] lg:min-h-[600px] bg-gradient-to-br from-muted/30 to-muted/50 rounded-xl flex items-center justify-center border border-border/50">
+                      <div className="w-full h-32 bg-gradient-to-br from-muted/30 to-muted/50 rounded-lg flex items-center justify-center border border-border/50">
                         <div className="text-center">
-                          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-                          <p className="text-sm text-muted-foreground">Loading images...</p>
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
+                          <p className="text-xs text-muted-foreground">Loading images...</p>
                         </div>
                       </div>
+                    ) : vehicle.images && vehicle.images.length > 0 ? (
+                      <Button
+                        variant="outline"
+                        className="w-full h-32 p-0 relative group overflow-hidden rounded-lg border-2 border-dashed hover:border-primary transition-colors"
+                        onClick={() => setIsImageModalOpen(true)}
+                      >
+                        <div className="absolute inset-0 flex items-center justify-center bg-muted/30 group-hover:bg-muted/50 transition-colors">
+                          <div className="text-center">
+                            <ImageIcon className="h-8 w-8 mx-auto mb-2 text-muted-foreground group-hover:text-primary transition-colors" />
+                            <p className="text-sm font-medium text-muted-foreground group-hover:text-primary transition-colors">
+                              View {vehicle.images.length} {vehicle.images.length === 1 ? 'Image' : 'Images'}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">Click to open gallery</p>
+                          </div>
+                        </div>
+                        {/* Thumbnail preview */}
+                        <img
+                          src={vehicle.images[0]?.data || vehicle.images[0]?.url || ''}
+                          alt="Vehicle preview"
+                          className="absolute inset-0 w-full h-full object-cover opacity-20 group-hover:opacity-30 transition-opacity"
+                        />
+                      </Button>
                     ) : (
-                      <VehicleImageImmersiveGallery 
-                        images={vehicle.images || []} 
-                        vehicleName={`${vehicle.make} ${vehicle.model}`}
-                      />
+                      <div className="w-full h-32 bg-gradient-to-br from-muted/30 to-muted/50 rounded-lg flex items-center justify-center border border-border/50">
+                        <div className="text-center text-muted-foreground">
+                          <ImageIcon className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                          <p className="text-sm">No images available</p>
+                        </div>
+                      </div>
                     )}
                   </div>
                   
@@ -526,23 +550,23 @@ const VehicleDetails: React.FC<VehicleDetailsProps> = ({
                       {/* Owner editing is handled in separate edit pages */}
                     </div>
                   </CardHeader>
-                  <CardContent className="space-y-4 flex-1">
+                  <CardContent className="space-y-1 flex-1">
                     {vehicle.owner ? (
-                      <div className="space-y-3">
+                      <div className="space-y-1">
                         <div>
-                          <label className="text-sm font-medium text-muted-foreground">Name</label>
+                          <label className="text-xs font-medium text-muted-foreground">Name</label>
                           <p className="text-sm">{vehicle.owner.name}</p>
                         </div>
                         <div>
-                          <label className="text-sm font-medium text-muted-foreground">Email</label>
+                          <label className="text-xs font-medium text-muted-foreground">Email</label>
                           <p className="text-sm">{vehicle.owner.email}</p>
                         </div>
                         <div>
-                          <label className="text-sm font-medium text-muted-foreground">Phone</label>
+                          <label className="text-xs font-medium text-muted-foreground">Phone</label>
                           <p className="text-sm">{vehicle.owner.phone}</p>
                         </div>
                         <div>
-                          <label className="text-sm font-medium text-muted-foreground">Country</label>
+                          <label className="text-xs font-medium text-muted-foreground">Country</label>
                           <p className="text-sm">{vehicle.owner.country}</p>
                         </div>
                       </div>
@@ -553,30 +577,30 @@ const VehicleDetails: React.FC<VehicleDetailsProps> = ({
                     {/* Source Information Section */}
                     {vehicle.source && (
                       <>
-                        <div className="border-t pt-4 mt-4">
-                          <div className="flex items-center gap-2 mb-3">
-                            <Package className="h-4 w-4 text-muted-foreground" />
-                            <label className="text-sm font-medium text-muted-foreground">Source Information</label>
+                        <div className="border-t pt-1 mt-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <Package className="h-3 w-3 text-muted-foreground" />
+                            <label className="text-xs font-medium text-muted-foreground">Source Information</label>
                           </div>
-                          <div className="space-y-3">
+                          <div className="space-y-1">
                             <div>
-                              <label className="text-sm font-medium text-muted-foreground">Name</label>
+                              <label className="text-xs font-medium text-muted-foreground">Name</label>
                               <p className="text-sm">{vehicle.source.name}</p>
                             </div>
                             <div>
-                              <label className="text-sm font-medium text-muted-foreground">Email</label>
+                              <label className="text-xs font-medium text-muted-foreground">Email</label>
                               <p className="text-sm">{vehicle.source.email}</p>
                             </div>
                             <div>
-                              <label className="text-sm font-medium text-muted-foreground">Phone</label>
+                              <label className="text-xs font-medium text-muted-foreground">Phone</label>
                               <p className="text-sm">{vehicle.source.phone}</p>
                             </div>
                             <div>
-                              <label className="text-sm font-medium text-muted-foreground">Country</label>
+                              <label className="text-xs font-medium text-muted-foreground">Country</label>
                               <p className="text-sm">{vehicle.source.country}</p>
                             </div>
                             <div>
-                              <label className="text-sm font-medium text-muted-foreground">Address</label>
+                              <label className="text-xs font-medium text-muted-foreground">Address</label>
                               <p className="text-sm">{vehicle.source.address}</p>
                             </div>
                           </div>
@@ -634,8 +658,8 @@ const VehicleDetails: React.FC<VehicleDetailsProps> = ({
                       <Ship className="h-5 w-5" />
                       Shipping Details
                   </CardTitle>
-                  {/* Admin Edit Button - Only for Admin users */}
-                  {user && isAdmin && showEditButton && (
+                  {/* Edit Button - Permission based */}
+                  {user && hasPermission(user, 'edit_vehicles') && showEditButton && (
                     <Button 
                       variant="outline" 
                       size="sm" 
@@ -831,8 +855,8 @@ const VehicleDetails: React.FC<VehicleDetailsProps> = ({
                     <History className="h-5 w-5" />
                     Tracking History
                   </CardTitle>
-                  {/* Show Add Event button for Normal users only, Admin users have view-only access */}
-                  {user && !isAdmin && showEditButton && (
+                  {/* Add Event button - Permission based */}
+                  {user && hasPermission(user, 'edit_vehicles') && showEditButton && (
                     <Button 
                       onClick={() => {
                         setEditingEvent(null);
@@ -893,8 +917,8 @@ const VehicleDetails: React.FC<VehicleDetailsProps> = ({
                                     )}
                                   </div>
                                   
-                                  {/* Event Actions - For Normal users only, Admin users have view-only access */}
-                                  {user && !isAdmin && showEditButton && (
+                                  {/* Event Actions - Permission based */}
+                                  {user && hasPermission(user, 'edit_vehicles') && showEditButton && (
                                     <div className="flex items-center gap-2 ml-4">
                                       <Button
                                         variant="ghost"
@@ -929,11 +953,11 @@ const VehicleDetails: React.FC<VehicleDetailsProps> = ({
                     <div className="text-center py-8 text-muted-foreground">
                       <History className="h-12 w-12 mx-auto mb-4 opacity-50" />
                       <p>No tracking events recorded yet.</p>
-                      {user && !isAdmin && showEditButton && (
+                      {user && hasPermission(user, 'edit_vehicles') && showEditButton && (
                         <p className="text-sm">Add the first event to start tracking this vehicle's journey.</p>
                       )}
-                      {user && isAdmin && (
-                        <p className="text-sm">Track events are view-only for administrators.</p>
+                      {user && !hasPermission(user, 'edit_vehicles') && (
+                        <p className="text-sm">Track events are view-only.</p>
                       )}
                     </div>
                   )}
@@ -960,6 +984,18 @@ const VehicleDetails: React.FC<VehicleDetailsProps> = ({
         onSubmit={handleEventSubmit}
         editingEvent={editingEvent}
       />
+
+      {/* Image Gallery Modal */}
+      <Dialog open={isImageModalOpen} onOpenChange={setIsImageModalOpen}>
+        <DialogContent className="max-w-[100vw] w-full h-full max-h-[100vh] p-0 gap-0 border-0 bg-black/95 backdrop-blur-md">
+          <div className="relative w-full h-full">
+            <VehicleImageImmersiveGallery 
+              images={vehicle?.images || []} 
+              vehicleName={`${vehicle?.make} ${vehicle?.model}`}
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

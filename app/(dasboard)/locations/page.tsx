@@ -11,11 +11,7 @@ import { StatusFilter } from '@/components/locations/status-filter';
 import { LocationTable } from '@/components/locations/location-table';
 import { LocationPagination } from '@/components/locations/location-pagination';
 import { Location } from '@/types';
-
-async function redirectToAddLocation() {
-  'use server';
-  redirect('/locations/add');
-}
+import { AddLocationButton } from '@/components/locations/add-location-button';
 
 interface LocationPageProps {
   searchParams: {
@@ -145,12 +141,7 @@ export default async function LocationManagement({ searchParams }: LocationPageP
               <h1 className="text-3xl lg:text-4xl font-bold tracking-tight">Location Management</h1>
               <p className="text-muted-foreground mt-2 text-lg">Manage and monitor all locations in the system</p>
                         </div>
-            <form action={redirectToAddLocation}>
-              <Button type="submit" className="flex items-center gap-2">
-                <Plus className="h-4 w-4" />
-                Add Location
-              </Button>
-            </form>
+            <AddLocationButton />
                       </div>
                     </div>
 
@@ -165,8 +156,8 @@ export default async function LocationManagement({ searchParams }: LocationPageP
           />
 
           <MetricCard
-            title="Operational"
-            value={stats.status?.breakdown?.find((item: any) => item.status === 'OPERATIONAL')?.count || 0}
+            title="Active"
+            value={stats.status?.breakdown?.find((item: any) => item.status === 'ACTIVE')?.count || 0}
             icon={MapPin}
             variant="green"
             description="Currently active"

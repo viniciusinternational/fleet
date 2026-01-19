@@ -9,10 +9,13 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ArrowLeft, Edit, Trash2, Package, Mail, Phone, MapPin, Globe, AlertCircle, Car, History } from 'lucide-react';
 import type { Source } from '@/types';
 import { EntityAuditLogs } from '@/components/audit/entity-audit-logs';
+import { useAuthStore } from '@/store/auth';
+import { hasPermission } from '@/lib/permissions';
 
 const SourceDetailsPage: React.FC = () => {
   const router = useRouter();
   const { id } = useParams<{ id: string }>();
+  const { user } = useAuthStore();
   const [source, setSource] = useState<Source | null>(null);
   const [loading, setLoading] = useState(true);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -122,21 +125,25 @@ const SourceDetailsPage: React.FC = () => {
               <p className="text-muted-foreground mt-2">Source Details</p>
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" onClick={handleEdit}>
-                <Edit className="mr-2 h-4 w-4" />
-                Edit
-              </Button>
-              <Button
-                variant="destructive"
-                onClick={() => {
-                  if (confirm('Are you sure you want to delete this source?')) {
-                    handleDelete(source.id);
-                  }
-                }}
-              >
-                <Trash2 className="mr-2 h-4 w-4" />
-                Delete
-              </Button>
+              {user && hasPermission(user, 'edit_sources') && (
+                <Button variant="outline" onClick={handleEdit}>
+                  <Edit className="mr-2 h-4 w-4" />
+                  Edit
+                </Button>
+              )}
+              {user && hasPermission(user, 'delete_sources') && (
+                <Button
+                  variant="destructive"
+                  onClick={() => {
+                    if (confirm('Are you sure you want to delete this source?')) {
+                      handleDelete(source.id);
+                    }
+                  }}
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete
+                </Button>
+              )}
             </div>
           </div>
         </div>

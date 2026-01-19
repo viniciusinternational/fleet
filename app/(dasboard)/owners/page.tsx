@@ -10,11 +10,7 @@ import { OwnerTableV2 } from '@/components/owners/owner-table-v2';
 import { OwnerPagination } from '@/components/owners/owner-pagination';
 import { OwnerService } from '@/lib/services/owner';
 import { MetricCard } from '@/components/dashboard/metric-card';
-
-async function redirectToAddOwner() {
-  'use server';
-  redirect('/owners/add');
-}
+import { AddOwnerButton } from '@/components/owners/add-owner-button';
 
 interface OwnerPageProps {
   searchParams: {
@@ -59,12 +55,7 @@ export default async function OwnerManagement({ searchParams }: OwnerPageProps) 
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight">Clients Management</h1>
               <p className="text-muted-foreground mt-2 text-sm sm:text-base lg:text-lg">Manage and monitor all vehicle Clients in the system</p>
             </div>
-            <form action={redirectToAddOwner}>
-              <Button type="submit" className="flex items-center gap-2 w-full sm:w-auto">
-                <Plus className="h-4 w-4" />
-                Add Clients
-              </Button>
-            </form>
+            <AddOwnerButton />
           </div>
         </div>
 

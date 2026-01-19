@@ -62,7 +62,7 @@ const EditLocation: React.FC = () => {
   const [formData, setFormData] = useState<FormData>({
     name: '',
     type: 'Port',
-    status: 'Operational',
+    status: 'Active',
     street: '',
     city: '',
     state: '',
@@ -129,9 +129,8 @@ const EditLocation: React.FC = () => {
   ];
 
   const locationStatuses = [
-    { value: 'Operational', label: 'Operational' },
-    { value: 'Temporarily Closed', label: 'Temporarily Closed' },
-    { value: 'Under Maintenance', label: 'Under Maintenance' }
+    { value: 'Active', label: 'Active' },
+    { value: 'Inactive', label: 'Inactive' }
   ];
 
   const countries = [

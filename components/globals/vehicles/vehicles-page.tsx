@@ -6,6 +6,7 @@ import { MapPin, Plus } from 'lucide-react';
 import type { Role } from '@/types';
 import VehicleTable from '@/components/globals/vehicles/vehicle-table';
 import { useAuthStore } from '@/store/auth';
+import { hasPermission } from '@/lib/permissions';
 import { Button } from '@/components/ui/button';
 
 interface VehiclesPageProps {
@@ -26,11 +27,11 @@ const VehiclesPage: React.FC<VehiclesPageProps> = ({ userRole, basePath }) => {
   };
 
   const handleAddVehicle = () => {
-    if (userRole === 'Admin') {
+    if (user && hasPermission(user, 'add_vehicles')) {
       router.push(`${basePath}/vehicles/add`);
     } else {
-      // For non-admin users, show a message that they need admin access
-      alert('Vehicle addition is restricted to administrators only. Please contact your system administrator.');
+      // For users without permission, show a message
+      alert('You do not have permission to add vehicles. Please contact your system administrator.');
     }
   };
 
@@ -94,8 +95,8 @@ const VehiclesPage: React.FC<VehiclesPageProps> = ({ userRole, basePath }) => {
           showViewToggle={true}
           showPagination={true}
           itemsPerPage={5}
-          showAddButton={userRole === 'Admin'}
-          showSelection={userRole === 'Admin'}
+          showAddButton={user ? hasPermission(user, 'add_vehicles') : false}
+          showSelection={user ? hasPermission(user, 'edit_vehicles') : false}
           onVehicleClick={handleVehicleClick}
           onAddVehicle={handleAddVehicle}
           title={getPageTitle()}

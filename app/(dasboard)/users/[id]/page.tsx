@@ -442,8 +442,8 @@ const UserDetail: React.FC = () => {
                     </div>
                     <div>
                       <label className="text-sm font-medium text-muted-foreground">Status</label>
-                      <Badge variant="outline" className={`text-sm px-2 py-1 ${user.location.status === 'Operational' ? 'bg-primary/10 text-primary border-primary/20' : 'bg-destructive/10 text-destructive border-destructive/20'}`}>
-                        {user.location.status === 'Operational' ? (
+                      <Badge variant="outline" className={`text-sm px-2 py-1 ${user.location.status === 'Active' ? 'bg-primary/10 text-primary border-primary/20' : 'bg-destructive/10 text-destructive border-destructive/20'}`}>
+                        {user.location.status === 'Active' ? (
                           <CheckCircle className="h-3 w-3 mr-1" />
                         ) : (
                           <AlertTriangle className="h-3 w-3 mr-1" />

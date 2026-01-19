@@ -35,6 +35,7 @@ import { Pagination } from '@/components/ui/pagination';
 import { VehicleStatus } from '@/types';
 import type { Vehicle } from '@/types';
 import { useAuthStore } from '@/store/auth';
+import { hasPermission } from '@/lib/permissions';
 
 interface VehicleTableProps {
   showFilters?: boolean;
@@ -472,8 +473,8 @@ const VehicleTable: React.FC<VehicleTableProps> = ({
               </div>
             )}
             
-            {/* Add Vehicle Button */}
-            {showAddButton && (
+            {/* Add Vehicle Button - Permission based */}
+            {showAddButton && user && hasPermission(user, 'add_vehicles') && (
               <Button onClick={onAddVehicle || (() => router.push('/admin/vehicles/add'))}>
                 <Plus className="h-4 w-4 mr-2" />
                 <span className="hidden sm:inline">Add Vehicle</span>

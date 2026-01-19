@@ -18,6 +18,8 @@ import {
 } from 'lucide-react';
 import type { Owner } from '@/types';
 import { DeleteOwnerDialog } from './delete-owner-dialog';
+import { useAuthStore } from '@/store/auth';
+import { hasPermission } from '@/lib/permissions';
 
 interface OwnerTableProps {
   owners: Owner[];
@@ -35,6 +37,7 @@ export function OwnerTable({
   onDelete 
 }: OwnerTableProps) {
   const router = useRouter();
+  const { user } = useAuthStore();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [ownerToDelete, setOwnerToDelete] = useState<Owner | null>(null);
 
@@ -162,30 +165,36 @@ export function OwnerTable({
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end gap-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleViewOwner(owner.id)}
-                      className="h-8 w-8 p-0"
-                    >
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleEditOwner(owner.id)}
-                      className="h-8 w-8 p-0"
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDeleteClick(owner)}
-                      className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    {user && hasPermission(user, 'view_owners') && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleViewOwner(owner.id)}
+                        className="h-8 w-8 p-0"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                    )}
+                    {user && hasPermission(user, 'edit_owners') && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleEditOwner(owner.id)}
+                        className="h-8 w-8 p-0"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                    )}
+                    {user && hasPermission(user, 'delete_owners') && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeleteClick(owner)}
+                        className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
                   </div>
                 </TableCell>
               </TableRow>

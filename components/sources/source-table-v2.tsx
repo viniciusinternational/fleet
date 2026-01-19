@@ -13,6 +13,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { ArrowUpDown, Eye } from 'lucide-react';
 import type { Source } from '@/types';
+import { useAuthStore } from '@/store/auth';
+import { hasPermission } from '@/lib/permissions';
 
 interface SourceTableProps {
   sources: Source[];
@@ -28,6 +30,7 @@ export function SourceTableV2({
   onSort
 }: SourceTableProps) {
   const router = useRouter();
+  const { user } = useAuthStore();
 
   const handleSort = (field: string) => {
     if (onSort) {
@@ -94,13 +97,15 @@ export function SourceTableV2({
               <TableCell>{source.phone}</TableCell>
               <TableCell>{source.country}</TableCell>
               <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleRowClick(source.id)}
-                >
-                  <Eye className="h-4 w-4" />
-                </Button>
+                {user && hasPermission(user, 'view_sources') && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleRowClick(source.id)}
+                  >
+                    <Eye className="h-4 w-4" />
+                  </Button>
+                )}
               </TableCell>
             </TableRow>
           ))}

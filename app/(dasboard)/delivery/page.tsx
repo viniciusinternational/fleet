@@ -16,6 +16,8 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useRouter } from 'next/navigation';
+import { useAuthStore } from '@/store/auth';
+import { hasPermission } from '@/lib/permissions';
 
 interface DeliveryNote {
   id: string;
@@ -37,6 +39,7 @@ interface DeliveryNote {
 
 export default function DeliveryNotesListPage() {
   const router = useRouter();
+  const { user } = useAuthStore();
   const [deliveryNotes, setDeliveryNotes] = useState<DeliveryNote[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -108,10 +111,12 @@ export default function DeliveryNotesListPage() {
               View and manage all delivery notes
             </p>
           </div>
-          <Button onClick={() => router.push('/delivery/new')}>
-            <Plus className="h-4 w-4 mr-2" />
-            New Delivery Note
-          </Button>
+          {user && hasPermission(user, 'add_delivery') && (
+            <Button onClick={() => router.push('/delivery/new')}>
+              <Plus className="h-4 w-4 mr-2" />
+              New Delivery Note
+            </Button>
+          )}
         </div>
 
       <Separator />
@@ -125,10 +130,12 @@ export default function DeliveryNotesListPage() {
             <p className="text-muted-foreground text-center mb-4">
               Get started by creating your first delivery note.
             </p>
-            <Button onClick={() => router.push('/delivery/new')}>
-              <Plus className="h-4 w-4 mr-2" />
-              Create Delivery Note
-            </Button>
+            {user && hasPermission(user, 'add_delivery') && (
+              <Button onClick={() => router.push('/delivery/new')}>
+                <Plus className="h-4 w-4 mr-2" />
+                Create Delivery Note
+              </Button>
+            )}
           </CardContent>
         </Card>
       ) : (

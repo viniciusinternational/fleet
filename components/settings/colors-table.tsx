@@ -12,6 +12,8 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle } from 'lucide-react';
 import { DataTable, TableColumn, TableAction } from '@/components/ui/data-table';
 import { Pagination } from '@/components/ui/pagination';
+import { useAuthStore } from '@/store/auth';
+import { hasPermission } from '@/lib/permissions';
 
 interface VehicleColor {
   id: string;
@@ -25,6 +27,7 @@ interface VehicleColor {
 const ITEMS_PER_PAGE = 10;
 
 export function ColorsTable() {
+  const { user } = useAuthStore();
   const [colors, setColors] = useState<VehicleColor[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -183,22 +186,22 @@ export function ColorsTable() {
     }
   ];
 
-  // Table actions
+  // Table actions - Permission based
   const actions: TableAction<VehicleColor>[] = [
-    {
+    ...(user && hasPermission(user, 'edit_settings') ? [{
       key: 'edit',
       label: 'Edit Color',
       icon: <Edit className="h-4 w-4" />,
       onClick: handleEdit
-    },
-    {
+    }] : []),
+    ...(user && hasPermission(user, 'delete_settings') ? [{
       key: 'delete',
       label: 'Delete Color',
       icon: <Trash2 className="h-4 w-4" />,
-      variant: 'ghost',
+      variant: 'ghost' as const,
       className: 'text-destructive hover:text-destructive',
-      onClick: (color) => handleDelete(color.id)
-    }
+      onClick: (color: VehicleColor) => handleDelete(color.id)
+    }] : [])
   ];
 
   return (
@@ -208,13 +211,14 @@ export function ColorsTable() {
           <h2 className="text-2xl font-bold">Vehicle Colors</h2>
           <p className="text-muted-foreground text-sm">Manage vehicle colors</p>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={handleAdd}>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Color
-            </Button>
-          </DialogTrigger>
+        {user && hasPermission(user, 'add_settings') && (
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button onClick={handleAdd}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add Color
+              </Button>
+            </DialogTrigger>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>{editingColor ? 'Edit Color' : 'Add New Color'}</DialogTitle>
@@ -269,6 +273,7 @@ export function ColorsTable() {
             </form>
           </DialogContent>
         </Dialog>
+        )}
       </div>
 
       {error && (

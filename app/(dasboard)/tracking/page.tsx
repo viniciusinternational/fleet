@@ -34,6 +34,7 @@ import {
 import { VehicleStatus } from '@/types';
 import type { Vehicle, TrackingEvent, Location } from '@/types';
 import { useAuthStore } from '@/store/auth';
+import { hasPermission } from '@/lib/permissions';
 
 const TrackingView: React.FC = () => {
   const router = useRouter();
@@ -519,23 +520,25 @@ const TrackingView: React.FC = () => {
                           </div>
 
                           <div className="flex gap-2">
-                            <Button 
-                              onClick={editingEvent ? handleUpdateEvent : handleAddEvent}
-                              disabled={!newEvent.location || !newEvent.status}
-                              className="flex items-center gap-2"
-                            >
-                              {editingEvent ? (
-                                <>
-                                  <Edit className="h-4 w-4" />
-                                  Update Event
-                  </>
-                ) : (
-                  <>
-                                  <Plus className="h-4 w-4" />
-                                  Add Event
-                  </>
-                )}
-                            </Button>
+                            {currentUser && hasPermission(currentUser, 'edit_vehicles') && (
+                              <Button 
+                                onClick={editingEvent ? handleUpdateEvent : handleAddEvent}
+                                disabled={!newEvent.location || !newEvent.status}
+                                className="flex items-center gap-2"
+                              >
+                                {editingEvent ? (
+                                  <>
+                                    <Edit className="h-4 w-4" />
+                                    Update Event
+                                  </>
+                                ) : (
+                                  <>
+                                    <Plus className="h-4 w-4" />
+                                    Add Event
+                                  </>
+                                )}
+                              </Button>
+                            )}
                             <Button 
                               variant="outline" 
                               onClick={() => {
@@ -671,25 +674,27 @@ const TrackingView: React.FC = () => {
                                           )}
                                         </div>
                                         
-                                        {/* Event Actions */}
-                                        <div className="flex items-center gap-2 ml-4">
-                                          <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={() => handleEditEvent(event.id)}
-                                            className="h-8 w-8 p-0"
-                                          >
-                                            <Edit className="h-4 w-4" />
-                                          </Button>
-                                          <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={() => handleDeleteEvent(event.id)}
-                                            className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-                                          >
-                                            <Trash2 className="h-4 w-4" />
-                                          </Button>
-                                        </div>
+                                        {/* Event Actions - Permission based */}
+                                        {currentUser && hasPermission(currentUser, 'edit_vehicles') && (
+                                          <div className="flex items-center gap-2 ml-4">
+                                            <Button
+                                              variant="ghost"
+                                              size="sm"
+                                              onClick={() => handleEditEvent(event.id)}
+                                              className="h-8 w-8 p-0"
+                                            >
+                                              <Edit className="h-4 w-4" />
+                                            </Button>
+                                            <Button
+                                              variant="ghost"
+                                              size="sm"
+                                              onClick={() => handleDeleteEvent(event.id)}
+                                              className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                                            >
+                                              <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                          </div>
+                                        )}
                                       </div>
                                     </div>
                                   </div>

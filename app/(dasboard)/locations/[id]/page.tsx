@@ -46,10 +46,13 @@ import { LocationType, LocationStatus } from '@/types';
 import type { User, Vehicle } from '@/types';
 import { MetricCard } from '@/components/dashboard/metric-card';
 import { EntityAuditLogs } from '@/components/audit/entity-audit-logs';
+import { useAuthStore } from '@/store/auth';
+import { hasPermission } from '@/lib/permissions';
 
 const LocationDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const { user } = useAuthStore();
   const [activeTab, setActiveTab] = useState('overview');
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [location, setLocation] = useState<any>(null);
@@ -244,12 +247,10 @@ const LocationDetail: React.FC = () => {
 
   const getStatusColor = (status: LocationStatus) => {
     switch (status) {
-      case 'Operational':
+      case 'Active':
         return 'bg-green-100 text-green-700 border-green-200 dark:bg-green-950 dark:text-green-300 dark:border-green-700';
-      case 'Temporarily Closed':
-        return 'bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-950 dark:text-yellow-300 dark:border-yellow-700';
-      case 'Under Maintenance':
-        return 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-700';
+      case 'Inactive':
+        return 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-950 dark:text-gray-300 dark:border-gray-700';
       default:
         return 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-950 dark:text-gray-300 dark:border-gray-700';
     }
@@ -257,12 +258,10 @@ const LocationDetail: React.FC = () => {
 
   const getStatusIcon = (status: LocationStatus) => {
     switch (status) {
-      case 'Operational':
+      case 'Active':
         return <CheckCircle className="h-4 w-4" />;
-      case 'Temporarily Closed':
+      case 'Inactive':
         return <AlertTriangle className="h-4 w-4" />;
-      case 'Under Maintenance':
-        return <Wrench className="h-4 w-4" />;
       default:
         return <Clock className="h-4 w-4" />;
     }
@@ -328,22 +327,26 @@ const LocationDetail: React.FC = () => {
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <Button
-                variant="outline"
-                onClick={() => router.push(`/locations/edit?id=${location.id}`)}
-                className="flex items-center gap-2"
-              >
-                <Edit className="h-4 w-4" />
-                Edit Location
-              </Button>
-              <Button
-                variant="destructive"
-                onClick={openDeleteDialog}
-                className="flex items-center gap-2"
-              >
-                <Trash2 className="h-4 w-4" />
-                Delete
-              </Button>
+              {user && hasPermission(user, 'edit_locations') && (
+                <Button
+                  variant="outline"
+                  onClick={() => router.push(`/locations/edit?id=${location.id}`)}
+                  className="flex items-center gap-2"
+                >
+                  <Edit className="h-4 w-4" />
+                  Edit Location
+                </Button>
+              )}
+              {user && hasPermission(user, 'delete_locations') && (
+                <Button
+                  variant="destructive"
+                  onClick={openDeleteDialog}
+                  className="flex items-center gap-2"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Delete
+                </Button>
+              )}
             </div>
           </div>
         </div>
@@ -476,8 +479,8 @@ const LocationDetail: React.FC = () => {
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <MetricCard
-                    title="Operational"
-                    value={location.status === 'Operational' ? 'Yes' : 'No'}
+                    title="Active"
+                    value={location.status === 'Active' ? 'Yes' : 'No'}
                     icon={CheckCircle}
                     variant="purple"
                   />

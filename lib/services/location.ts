@@ -91,7 +91,7 @@ export class LocationService {
           phone: loc.contactPhone || undefined,
           email: loc.contactEmail || undefined,
         },
-        status: loc.status.toLowerCase() as any,
+        status: (loc.status.charAt(0) + loc.status.slice(1).toLowerCase()) as any,
         lastUpdated: loc.lastUpdated.toISOString(),
         notes: loc.notes || undefined,
       }));
@@ -276,7 +276,7 @@ export class LocationService {
           phone: newLocation.contactPhone || undefined,
           email: newLocation.contactEmail || undefined,
         },
-        status: newLocation.status.toLowerCase() as any,
+        status: (newLocation.status.charAt(0) + newLocation.status.slice(1).toLowerCase()) as any,
         lastUpdated: newLocation.lastUpdated.toISOString(),
         notes: newLocation.notes || undefined,
       };
@@ -378,7 +378,7 @@ export class LocationService {
           phone: updatedLocation.contactPhone || undefined,
           email: updatedLocation.contactEmail || undefined,
         },
-        status: updatedLocation.status.toLowerCase() as any,
+        status: (updatedLocation.status.charAt(0) + updatedLocation.status.slice(1).toLowerCase()) as any,
         lastUpdated: updatedLocation.lastUpdated.toISOString(),
         notes: updatedLocation.notes || undefined,
       };

@@ -21,10 +21,13 @@ import {
 import type { Owner } from '@/types';
 import { DeleteOwnerDialog } from '@/components/owners/delete-owner-dialog';
 import { EntityAuditLogs } from '@/components/audit/entity-audit-logs';
+import { useAuthStore } from '@/store/auth';
+import { hasPermission } from '@/lib/permissions';
 
 const OwnerDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const { user } = useAuthStore();
   const [owner, setOwner] = useState<Owner | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -154,22 +157,26 @@ const OwnerDetailsPage: React.FC = () => {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <Button 
-                variant="outline"
-                onClick={handleEdit}
-                className="flex items-center gap-2"
-              >
-                <Edit className="h-4 w-4 mr-2" />
-                Edit Owner
-              </Button>
-              <Button 
-                variant="destructive" 
-                onClick={() => setDeleteDialogOpen(true)}
-                className="flex items-center gap-2"
-              >
-                <Trash2 className="h-4 w-4 mr-2" />
-                Delete Owner
-              </Button>
+              {user && hasPermission(user, 'edit_owners') && (
+                <Button 
+                  variant="outline"
+                  onClick={handleEdit}
+                  className="flex items-center gap-2"
+                >
+                  <Edit className="h-4 w-4 mr-2" />
+                  Edit Owner
+                </Button>
+              )}
+              {user && hasPermission(user, 'delete_owners') && (
+                <Button 
+                  variant="destructive" 
+                  onClick={() => setDeleteDialogOpen(true)}
+                  className="flex items-center gap-2"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete Owner
+                </Button>
+              )}
             </div>
           </div>
         </div>

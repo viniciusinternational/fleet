@@ -10,11 +10,7 @@ import { SourceTableV2 } from '@/components/sources/source-table-v2';
 import { SourcePagination } from '@/components/sources/source-pagination';
 import { SourceService } from '@/lib/services/source';
 import { MetricCard } from '@/components/dashboard/metric-card';
-
-async function redirectToAddSource() {
-  'use server';
-  redirect('/sources/add');
-}
+import { AddSourceButton } from '@/components/sources/add-source-button';
 
 interface SourcePageProps {
   searchParams: {
@@ -60,12 +56,7 @@ export default async function SourceManagement({ searchParams }: SourcePageProps
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight">Source Management</h1>
               <p className="text-muted-foreground mt-2 text-sm sm:text-base lg:text-lg">Manage and monitor all vehicle sources (original owners) in the system</p>
             </div>
-            <form action={redirectToAddSource}>
-              <Button type="submit" className="flex items-center gap-2 w-full sm:w-auto">
-                <Plus className="h-4 w-4" />
-                Add Source
-              </Button>
-            </form>
+            <AddSourceButton />
           </div>
         </div>
 

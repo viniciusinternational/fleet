@@ -12,6 +12,8 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle } from 'lucide-react';
 import { DataTable, TableColumn, TableAction } from '@/components/ui/data-table';
 import { Pagination } from '@/components/ui/pagination';
+import { useAuthStore } from '@/store/auth';
+import { hasPermission } from '@/lib/permissions';
 
 interface VehicleMake {
   id: string;
@@ -27,6 +29,7 @@ interface VehicleMake {
 const ITEMS_PER_PAGE = 10;
 
 export function MakesTable() {
+  const { user } = useAuthStore();
   const [makes, setMakes] = useState<VehicleMake[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -173,28 +176,28 @@ export function MakesTable() {
     }
   ];
 
-  // Table actions
+  // Table actions - Permission based
   const actions: TableAction<VehicleMake>[] = [
-    {
+    ...(user && hasPermission(user, 'edit_settings') ? [{
       key: 'edit',
       label: 'Edit Make',
       icon: <Edit className="h-4 w-4" />,
       onClick: handleEdit
-    },
-    {
+    }] : []),
+    ...(user && hasPermission(user, 'delete_settings') ? [{
       key: 'delete',
       label: 'Delete Make',
       icon: <Trash2 className="h-4 w-4" />,
-      variant: 'ghost',
+      variant: 'ghost' as const,
       className: 'text-destructive hover:text-destructive',
-      onClick: (make) => {
+      onClick: (make: VehicleMake) => {
         if (make._count && make._count.models > 0) {
           alert('Cannot delete make that has associated models. Please delete or reassign models first.');
           return;
         }
         handleDelete(make.id);
       }
-    }
+    }] : [])
   ];
 
   return (
@@ -204,13 +207,14 @@ export function MakesTable() {
           <h2 className="text-2xl font-bold">Vehicle Makes</h2>
           <p className="text-muted-foreground text-sm">Manage vehicle makes/brands</p>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={handleAdd}>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Make
-            </Button>
-          </DialogTrigger>
+        {user && hasPermission(user, 'add_settings') && (
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button onClick={handleAdd}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add Make
+              </Button>
+            </DialogTrigger>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>{editingMake ? 'Edit Make' : 'Add New Make'}</DialogTitle>
@@ -247,6 +251,7 @@ export function MakesTable() {
             </form>
           </DialogContent>
         </Dialog>
+        )}
       </div>
 
       {error && (

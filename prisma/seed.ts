@@ -62,7 +62,7 @@ async function main() {
         contactName: 'Umar Jere',
         contactPhone: '+234-7055793353',
         contactEmail: 'umar.jere@viniciusint.com',
-        status: 'OPERATIONAL',
+        status: 'ACTIVE',
         notes: 'Major container port facility',
       },
     }),

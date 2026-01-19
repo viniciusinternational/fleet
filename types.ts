@@ -238,9 +238,8 @@ export const LocationType = {
 export type LocationType = typeof LocationType[keyof typeof LocationType];
 
 export const LocationStatus = {
-  OPERATIONAL: 'Operational',
-  TEMPORARILY_CLOSED: 'Temporarily Closed',
-  UNDER_MAINTENANCE: 'Under Maintenance'
+  ACTIVE: 'Active',
+  INACTIVE: 'Inactive'
 } as const;
 
 export type LocationStatus = typeof LocationStatus[keyof typeof LocationStatus];

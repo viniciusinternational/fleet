@@ -30,9 +30,8 @@ export function StatusFilter({ initialValue = 'all' }: StatusFilterProps) {
       </SelectTrigger>
       <SelectContent>
         <SelectItem value="all">All Status</SelectItem>
-        <SelectItem value="Operational">Operational</SelectItem>
-        <SelectItem value="Temporarily Closed">Temporarily Closed</SelectItem>
-        <SelectItem value="Under Maintenance">Under Maintenance</SelectItem>
+        <SelectItem value="Active">Active</SelectItem>
+        <SelectItem value="Inactive">Inactive</SelectItem>
       </SelectContent>
     </Select>
   );

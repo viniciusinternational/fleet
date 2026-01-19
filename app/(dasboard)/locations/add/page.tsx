@@ -60,7 +60,7 @@ const AddLocation: React.FC = () => {
   const [formData, setFormData] = useState<FormData>({
     name: '',
     type: 'Port',
-    status: 'Operational',
+    status: 'Active',
     street: '',
     city: '',
     state: '',
@@ -202,12 +202,10 @@ const AddLocation: React.FC = () => {
 
   const getStatusColor = (status: LocationStatus) => {
     switch (status) {
-      case 'Operational':
+      case 'Active':
         return 'bg-green-100 text-green-700 border-green-200';
-      case 'Under Maintenance':
-        return 'bg-yellow-100 text-yellow-700 border-yellow-200';
-      case 'Temporarily Closed':
-        return 'bg-red-100 text-red-700 border-red-200';
+      case 'Inactive':
+        return 'bg-gray-100 text-gray-700 border-gray-200';
       default:
         return 'bg-gray-100 text-gray-700 border-gray-200';
     }
@@ -339,21 +337,16 @@ const AddLocation: React.FC = () => {
                       <SelectValue placeholder="Select status" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Operational">
-                        <Badge variant="secondary" className={getStatusColor('Operational')}>
-                          Operational
+                      <SelectItem value="Active">
+                        <Badge variant="secondary" className={getStatusColor('Active')}>
+                          Active
                         </Badge>
                       </SelectItem>
-                          <SelectItem value="Under Maintenance">
-                            <Badge variant="secondary" className={getStatusColor('Under Maintenance')}>
-                              Under Maintenance
-                            </Badge>
-                          </SelectItem>
-                          <SelectItem value="Temporarily Closed">
-                            <Badge variant="secondary" className={getStatusColor('Temporarily Closed')}>
-                              Temporarily Closed
-                            </Badge>
-                          </SelectItem>
+                      <SelectItem value="Inactive">
+                        <Badge variant="secondary" className={getStatusColor('Inactive')}>
+                          Inactive
+                        </Badge>
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

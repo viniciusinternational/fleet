@@ -110,12 +110,10 @@ export function LocationTable({
 
   const getStatusColor = (status: LocationStatus) => {
     switch (status) {
-      case 'Operational':
+      case 'Active':
         return 'bg-green-100 text-green-700 border-green-200 dark:bg-green-950 dark:text-green-300 dark:border-green-700';
-      case 'Temporarily Closed':
-        return 'bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-950 dark:text-yellow-300 dark:border-yellow-700';
-      case 'Under Maintenance':
-        return 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-700';
+      case 'Inactive':
+        return 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-950 dark:text-gray-300 dark:border-gray-700';
       default:
         return 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-950 dark:text-gray-300 dark:border-gray-700';
     }
@@ -123,12 +121,10 @@ export function LocationTable({
 
   const getStatusIcon = (status: LocationStatus) => {
     switch (status) {
-      case 'Operational':
+      case 'Active':
         return <CheckCircle className="h-3 w-3" />;
-      case 'Temporarily Closed':
+      case 'Inactive':
         return <AlertTriangle className="h-3 w-3" />;
-      case 'Under Maintenance':
-        return <Wrench className="h-3 w-3" />;
       default:
         return <Clock className="h-3 w-3" />;
     }

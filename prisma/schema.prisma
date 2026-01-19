@@ -41,7 +41,7 @@ model Location {
   contactName  String?
   contactPhone String?
   contactEmail String?
-  status       LocationStatus @default(OPERATIONAL)
+  status       LocationStatus @default(ACTIVE)
   lastUpdated  DateTime       @default(now())
   notes        String?
   users        User[]
@@ -218,9 +218,8 @@ enum LocationType {
 }
 
 enum LocationStatus {
-  OPERATIONAL
-  TEMPORARILY_CLOSED
-  UNDER_MAINTENANCE
+  ACTIVE
+  INACTIVE
 }
 
 enum VehicleStatus {

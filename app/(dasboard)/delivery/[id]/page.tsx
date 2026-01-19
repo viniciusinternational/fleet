@@ -16,6 +16,8 @@ import {
 } from '@/components/ui/table';
 import { generateDeliveryNotePDF } from '@/lib/services/pdf-generator';
 import { useRouter } from 'next/navigation';
+import { useAuthStore } from '@/store/auth';
+import { hasPermission } from '@/lib/permissions';
 import type { DeliveryNote } from '@/types';
 import { EntityAuditLogs } from '@/components/audit/entity-audit-logs';
 
@@ -27,6 +29,7 @@ interface DeliveryNoteViewPageProps {
 
 export default function DeliveryNoteViewPage({ params }: DeliveryNoteViewPageProps) {
   const router = useRouter();
+  const { user } = useAuthStore();
   const [deliveryNote, setDeliveryNote] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -161,24 +164,28 @@ export default function DeliveryNoteViewPage({ params }: DeliveryNoteViewPagePro
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            onClick={handleEdit}
-          >
-            <Edit className="h-4 w-4 mr-2" />
-            Edit
-          </Button>
+          {user && hasPermission(user, 'edit_delivery') && (
+            <Button
+              variant="outline"
+              onClick={handleEdit}
+            >
+              <Edit className="h-4 w-4 mr-2" />
+              Edit
+            </Button>
+          )}
           <Button onClick={handleGeneratePDF}>
             <Download className="h-4 w-4 mr-2" />
             Generate PDF
           </Button>
-          <Button
-            variant="destructive"
-            onClick={handleDelete}
-          >
-            <Trash2 className="h-4 w-4 mr-2" />
-            Delete
-          </Button>
+          {user && hasPermission(user, 'edit_delivery') && (
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete
+            </Button>
+          )}
         </div>
       </div>
 
