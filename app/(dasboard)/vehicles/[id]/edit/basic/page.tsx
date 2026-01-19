@@ -122,16 +122,41 @@ const EditBasicInfo: React.FC = () => {
           throw new Error('Failed to fetch data');
         }
         
-        const [vehicleResult, locationsResult, ownersResult, sourcesResult] = await Promise.all([
+        const [vehicleResult, locationsResult, ownersResult, sourcesResult, makesResult, modelsResult, colorsResult, transmissionsResult] = await Promise.all([
           vehicleResponse.json(),
           locationsResponse.json(),
           ownersResponse.json(),
           sourcesResponse.json(),
+          makesResponse.json(),
+          modelsResponse.json(),
+          colorsResponse.json(),
+          transmissionsResponse.json(),
         ]);
+        
+        // Set makes, models, colors, and transmissions
+        if (makesResult.success && Array.isArray(makesResult.data)) {
+          setMakes(makesResult.data);
+        }
+        if (modelsResult.success && Array.isArray(modelsResult.data)) {
+          setModels(modelsResult.data);
+        }
+        if (colorsResult.success && Array.isArray(colorsResult.data)) {
+          setColors(colorsResult.data);
+        }
+        if (transmissionsResult.success && Array.isArray(transmissionsResult.data)) {
+          setTransmissions(transmissionsResult.data);
+        }
         
         // Set vehicle data
         if (vehicleResult) {
           setVehicle(vehicleResult);
+          // Get transmission display map after transmissions are loaded
+          const displayMap: Record<string, string> = {};
+          if (transmissionsResult.success && Array.isArray(transmissionsResult.data)) {
+            transmissionsResult.data.forEach((t: any) => {
+              displayMap[t.enumValue] = t.name;
+            });
+          }
           setFormData({
             vin: vehicleResult.vin || '',
             make: vehicleResult.make || '',
@@ -141,10 +166,7 @@ const EditBasicInfo: React.FC = () => {
             trim: vehicleResult.trim || '',
             engineType: vehicleResult.engineType || '',
             fuelType: vehicleResult.fuelType || 'Gasoline',
-            transmission: vehicleResult.transmission ? (() => {
-              const displayMap = getTransmissionDisplayMap();
-              return displayMap[vehicleResult.transmission] || vehicleResult.transmission;
-            })() : undefined,
+            transmission: vehicleResult.transmission ? (displayMap[vehicleResult.transmission] || vehicleResult.transmission) : undefined,
             weightKg: vehicleResult.weightKg && vehicleResult.weightKg !== 0 ? vehicleResult.weightKg : '',
             lengthMm: vehicleResult.lengthMm && vehicleResult.lengthMm !== 0 ? vehicleResult.lengthMm : '',
             widthMm: vehicleResult.widthMm && vehicleResult.widthMm !== 0 ? vehicleResult.widthMm : '',
@@ -244,7 +266,8 @@ const EditBasicInfo: React.FC = () => {
       formDataToSubmit.append('engineType', formData.engineType);
       formDataToSubmit.append('fuelType', formData.fuelType);
       if (formData.transmission) {
-        formDataToSubmit.append('transmission', TRANSMISSION_ENUM_MAP[formData.transmission as keyof typeof TRANSMISSION_ENUM_MAP] || formData.transmission);
+        const enumMap = getTransmissionEnumMap();
+        formDataToSubmit.append('transmission', enumMap[formData.transmission] || formData.transmission);
       }
       formDataToSubmit.append('weightKg', (typeof formData.weightKg === 'string' && formData.weightKg === '' ? 0 : (typeof formData.weightKg === 'number' ? formData.weightKg : parseFloat(formData.weightKg) || 0)).toString());
       formDataToSubmit.append('lengthMm', (typeof formData.lengthMm === 'string' && formData.lengthMm === '' ? 0 : (typeof formData.lengthMm === 'number' ? formData.lengthMm : parseInt(formData.lengthMm) || 0)).toString());
@@ -381,9 +404,9 @@ const EditBasicInfo: React.FC = () => {
                     <SelectValue placeholder="Select make" />
                   </SelectTrigger>
                   <SelectContent>
-                    {VEHICLE_MAKES.map((make) => (
-                      <SelectItem key={make} value={make}>
-                        {make}
+                    {makes.map((make) => (
+                      <SelectItem key={make.id} value={make.name}>
+                        {make.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
