@@ -94,7 +94,7 @@ const VehiclesPage: React.FC<VehiclesPageProps> = ({ userRole, basePath }) => {
           showFilters={true}
           showViewToggle={true}
           showPagination={true}
-          itemsPerPage={5}
+          itemsPerPage={8}
           showAddButton={user ? hasPermission(user, 'add_vehicles') : false}
           showSelection={user ? hasPermission(user, 'edit_vehicles') : false}
           onVehicleClick={handleVehicleClick}
