@@ -72,6 +72,9 @@ const VehicleDetails: React.FC<VehicleDetailsProps> = ({
   // Get current user
   const user = authUser;
 
+  // Determine if user is admin
+  const isAdmin = user?.role === 'Admin';
+
   // Helper function to safely get location address
   const getLocationAddress = (location: any) => {
     return {
@@ -179,7 +182,7 @@ const VehicleDetails: React.FC<VehicleDetailsProps> = ({
     };
 
     fetchVehicle();
-  }, [vehicleId]); // Only depend on vehicleId to prevent infinite loop
+  }, [vehicleId, isAdmin, user]); // Depend on vehicleId, isAdmin, and user for access control
 
   const fetchVehicleImages = async (targetVehicleId: string) => {
     setImagesLoading(true);
