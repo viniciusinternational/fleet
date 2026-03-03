@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import Image from 'next/image';
 import { 
   LayoutDashboard,
@@ -108,7 +109,6 @@ interface DashboardSidebarProps {
 
 export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ user }) => {
   const pathname = usePathname();
-  const router = useRouter();
   
   // Get navigation items based on user permissions
   const navigationItems = getNavigationForUser(user);
@@ -166,14 +166,6 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ user }) => {
     return groups;
   };
   
-  // Handle keyboard navigation for menu items
-  const handleKeyDown = (event: React.KeyboardEvent, action: () => void) => {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      action();
-    }
-  };
-
   // Render navigation item
   const renderNavigationItem = (item: NavigationItem) => {
     const hasChildren = item.children && item.children.length > 0;
@@ -214,23 +206,21 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ user }) => {
                 const isChildActive = isActive(child.href);
                 return (
                   <SidebarMenuSubItem key={child.id}>
-                    <SidebarMenuSubButton
-                      onClick={() => child.href && router.push(child.href)}
-                      onKeyDown={(e) => handleKeyDown(e, () => child.href && router.push(child.href))}
-                      isActive={isChildActive}
-                      role="link"
-                      aria-current={isChildActive ? "page" : undefined}
-                      aria-label={child.label}
-                      tabIndex={0}
-                    >
-                      <Dot className="h-3.5 w-3.5" aria-hidden="true" />
-                      {renderIcon(child.icon, "h-3.5 w-3.5")}
-                      <span className="font-normal text-sm">{child.label}</span>
-                      {child.badge && (
-                        <Badge variant="secondary" className="ml-auto h-5 px-2 text-xs">
-                          {child.badge}
-                        </Badge>
-                      )}
+                    <SidebarMenuSubButton asChild isActive={isChildActive}>
+                      <Link
+                        href={child.href}
+                        aria-current={isChildActive ? "page" : undefined}
+                        aria-label={child.label}
+                      >
+                        <Dot className="h-3.5 w-3.5" aria-hidden="true" />
+                        {renderIcon(child.icon, "h-3.5 w-3.5")}
+                        <span className="font-normal text-sm">{child.label}</span>
+                        {child.badge && (
+                          <Badge variant="secondary" className="ml-auto h-5 px-2 text-xs">
+                            {child.badge}
+                          </Badge>
+                        )}
+                      </Link>
                     </SidebarMenuSubButton>
                   </SidebarMenuSubItem>
                 );
@@ -243,23 +233,20 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ user }) => {
     
     return (
       <SidebarMenuItem key={item.id}>
-        <SidebarMenuButton
-          onClick={() => item.href && router.push(item.href)}
-          onKeyDown={(e) => handleKeyDown(e, () => item.href && router.push(item.href))}
-          isActive={isItemActive}
-          tooltip={item.label}
-          role="link"
-          aria-current={isItemActive ? "page" : undefined}
-          aria-label={item.label}
-          tabIndex={0}
-        >
-          {renderIcon(item.icon, "h-4 w-4")}
-          <span>{item.label}</span>
-          {item.badge && (
-            <Badge variant="secondary" className="ml-auto h-5 px-2 text-xs">
-              {item.badge}
-            </Badge>
-          )}
+        <SidebarMenuButton asChild isActive={isItemActive} tooltip={item.label}>
+          <Link
+            href={item.href}
+            aria-current={isItemActive ? "page" : undefined}
+            aria-label={item.label}
+          >
+            {renderIcon(item.icon, "h-4 w-4")}
+            <span>{item.label}</span>
+            {item.badge && (
+              <Badge variant="secondary" className="ml-auto h-5 px-2 text-xs">
+                {item.badge}
+              </Badge>
+            )}
+          </Link>
         </SidebarMenuButton>
       </SidebarMenuItem>
     );
