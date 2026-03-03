@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { SettingsService } from '@/lib/services/settings';
+import { AuditService } from '@/lib/services/audit';
+import { getActorId } from '@/lib/utils/get-actor-id';
 import { hasPermission } from '@/lib/permissions';
 
 // Helper to get user from request (placeholder - should be replaced with actual auth)
@@ -47,6 +49,9 @@ export async function POST(request: NextRequest) {
     //   return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
     // }
 
+    // Extract actorId for audit logging
+    const actorId = await getActorId(request) || undefined;
+
     const body = await request.json();
     const { name, hexCode, isActive } = body;
 
@@ -62,6 +67,17 @@ export async function POST(request: NextRequest) {
       hexCode: hexCode || undefined,
       isActive: isActive ?? true,
     });
+
+    // Log audit event
+    if (actorId) {
+      await AuditService.logEvent({
+        action: 'CREATE',
+        actorId,
+        entityType: 'VehicleColor',
+        entityId: color.id,
+        after: JSON.parse(JSON.stringify(color)),
+      });
+    }
 
     return NextResponse.json({
       success: true,

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import type { ZitadelUser } from '@/types';
 import { Role } from '@/types';
 import { UserService } from '@/lib/services/user';
+import { getActorId } from '@/lib/utils/get-actor-id';
 
 // API Response Types
 interface AuthAPIUser {
@@ -103,6 +104,9 @@ export async function POST(request: NextRequest) {
     // TODO: Get user role from authentication/session
     const userRole = Role.ADMIN; // This should come from your auth system
     
+    // Extract actorId for audit logging
+    const actorId = await getActorId(request) || undefined;
+    
     const body = await request.json();
     const { zitadelUserId, phone, locationId, role, permissions } = body;
 
@@ -162,7 +166,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create user using UserService
-    const user = await UserService.createUser(userData, userRole);
+    const user = await UserService.createUser(userData, userRole, actorId);
 
     return NextResponse.json({
       ok: true,

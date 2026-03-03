@@ -51,6 +51,8 @@ import { useAuthStore } from '@/store/auth';
 import { hasPermission } from '@/lib/permissions';
 import { getRoleBadgeClass, getStatusBadgeClass } from '@/lib/utils/user-colors';
 import { EntityAuditLogs } from '@/components/audit/entity-audit-logs';
+import { PERMISSION_GROUPS } from '@/lib/permissions-constants';
+import { getPermissionActionLabel } from '@/components/users/permission-manager';
 
 const UserDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -530,33 +532,22 @@ const UserDetail: React.FC = () => {
               </CardHeader>
               <CardContent>
                 {user.permissions ? (() => {
-                  // Group permissions by module
-                  const grouped: Record<string, Array<{ key: PermissionKey; action: string }>> = {};
-                  
-                  Object.entries(user.permissions).forEach(([key, value]) => {
-                    if (value === true) {
-                      const [, module] = key.split('_');
-                      const action = key.split('_')[0];
-                      
-                      if (!grouped[module]) {
-                        grouped[module] = [];
-                      }
-                      grouped[module].push({ key: key as PermissionKey, action });
-                    }
-                  });
+                  // Use shared permission groups so labels match create/edit (Dashboard, Audit Logs, Settings, etc.)
+                  const groupsWithEnabled = PERMISSION_GROUPS.map((group) => ({
+                    label: group.label,
+                    enabled: group.permissions.filter((perm) => user.permissions![perm] === true),
+                  })).filter((g) => g.enabled.length > 0);
 
-                  const moduleNames = Object.keys(grouped);
-                  
-                  if (moduleNames.length > 0) {
+                  if (groupsWithEnabled.length > 0) {
                     return (
                       <div className="space-y-6">
-                        {moduleNames.map((module) => (
-                          <div key={module} className="space-y-3">
-                            <h4 className="font-semibold text-foreground capitalize">{module}</h4>
+                        {groupsWithEnabled.map(({ label, enabled }) => (
+                          <div key={label} className="space-y-3">
+                            <h4 className="font-semibold text-foreground">{label}</h4>
                             <div className="flex flex-wrap gap-2">
-                              {grouped[module].map(({ key, action }) => (
-                                <Badge key={key} variant="outline" className="bg-primary/10 text-primary border-primary/20 capitalize">
-                                  {action}
+                              {enabled.map((perm) => (
+                                <Badge key={perm} variant="outline" className="bg-primary/10 text-primary border-primary/20 capitalize">
+                                  {getPermissionActionLabel(perm)}
                                 </Badge>
                               ))}
                             </div>
@@ -564,13 +555,12 @@ const UserDetail: React.FC = () => {
                         ))}
                       </div>
                     );
-                  } else {
-                    return (
-                      <p className="text-muted-foreground text-center py-8">
-                        No permissions assigned to this user.
-                      </p>
-                    );
                   }
+                  return (
+                    <p className="text-muted-foreground text-center py-8">
+                      No permissions assigned to this user.
+                    </p>
+                  );
                 })() : (
                   <p className="text-muted-foreground text-center py-8">
                     No permissions assigned to this user.

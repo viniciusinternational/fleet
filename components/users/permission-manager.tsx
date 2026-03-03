@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import type { PermissionKey, UserPermissions } from '@/types';
+import { PERMISSION_GROUPS } from '@/lib/permissions-constants';
 
 interface PermissionManagerProps {
   permissions: UserPermissions;
@@ -12,64 +13,14 @@ interface PermissionManagerProps {
   disabled?: boolean;
 }
 
-const permissionGroups = [
-  {
-    label: 'Dashboard',
-    permissions: ['view_dashboard', 'view_executive_dashboard'] as PermissionKey[],
-  },
-  {
-    label: 'Vehicles',
-    permissions: ['view_vehicles', 'add_vehicles', 'edit_vehicles', 'delete_vehicles'] as PermissionKey[],
-  },
-  {
-    label: 'Users',
-    permissions: ['view_users', 'add_users', 'edit_users', 'delete_users'] as PermissionKey[],
-  },
-  {
-    label: 'Owners',
-    permissions: ['view_owners', 'add_owners', 'edit_owners', 'delete_owners'] as PermissionKey[],
-  },
-  {
-    label: 'Sources',
-    permissions: ['view_sources', 'add_sources', 'edit_sources', 'delete_sources'] as PermissionKey[],
-  },
-  {
-    label: 'Locations',
-    permissions: ['view_locations', 'add_locations', 'edit_locations', 'delete_locations'] as PermissionKey[],
-  },
-  {
-    label: 'Delivery',
-    permissions: ['view_delivery', 'add_delivery', 'edit_delivery'] as PermissionKey[],
-  },
-  {
-    label: 'Tracking',
-    permissions: ['view_tracking'] as PermissionKey[],
-  },
-  {
-    label: 'Analytics',
-    permissions: ['view_analytics'] as PermissionKey[],
-  },
-  {
-    label: 'Reports',
-    permissions: ['view_reports'] as PermissionKey[],
-  },
-  {
-    label: 'Chatbot',
-    permissions: ['view_chatbot'] as PermissionKey[],
-  },
-  {
-    label: 'Audit Logs',
-    permissions: ['view_audit_logs'] as PermissionKey[],
-  },
-];
-
-const getActionLabel = (permission: PermissionKey): string => {
+export function getPermissionActionLabel(permission: PermissionKey): string {
   if (permission.startsWith('view_')) return 'View';
   if (permission.startsWith('add_')) return 'Add';
   if (permission.startsWith('edit_')) return 'Edit';
   if (permission.startsWith('delete_')) return 'Delete';
+  if (permission.startsWith('generate_')) return 'Generate';
   return permission;
-};
+}
 
 export const PermissionManager: React.FC<PermissionManagerProps> = ({
   permissions,
@@ -100,7 +51,7 @@ export const PermissionManager: React.FC<PermissionManagerProps> = ({
       </CardHeader>
       <CardContent className="pt-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {permissionGroups.map((group) => {
+          {PERMISSION_GROUPS.map((group) => {
             const allEnabled = group.permissions.every((perm) => permissions[perm] === true);
 
             return (
@@ -114,7 +65,7 @@ export const PermissionManager: React.FC<PermissionManagerProps> = ({
                     <Label className="text-xs text-muted-foreground">All</Label>
                     <Switch
                       checked={allEnabled}
-                      onCheckedChange={(checked) => handleModuleToggle(group.permissions, checked)}
+                      onCheckedChange={(checked) => handleModuleToggle([...group.permissions], checked)}
                       disabled={disabled}
                     />
                   </div>
@@ -129,7 +80,7 @@ export const PermissionManager: React.FC<PermissionManagerProps> = ({
                         htmlFor={permission}
                         className="text-xs font-normal cursor-pointer text-foreground"
                       >
-                        {getActionLabel(permission)}
+                        {getPermissionActionLabel(permission)}
                       </Label>
                       <Switch
                         id={permission}

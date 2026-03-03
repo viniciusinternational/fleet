@@ -26,6 +26,7 @@ import type { Location, ZitadelUser, UserPermissions } from '@/types';
 import { PermissionManager } from '@/components/users/permission-manager';
 import { useAuthStore } from '@/store/auth';
 import { hasPermission } from '@/lib/permissions';
+import { getDefaultUserPermissions } from '@/lib/permissions-constants';
 
 const AddUser: React.FC = () => {
   const router = useRouter();
@@ -51,38 +52,8 @@ const AddUser: React.FC = () => {
     isActive: true,
   });
 
-  // Permissions state - initialize all to false
-  const [permissions, setPermissions] = useState<UserPermissions>({
-    view_dashboard: false,
-    view_vehicles: false,
-    add_vehicles: false,
-    edit_vehicles: false,
-    delete_vehicles: false,
-    view_users: false,
-    add_users: false,
-    edit_users: false,
-    delete_users: false,
-    view_owners: false,
-    add_owners: false,
-    edit_owners: false,
-    delete_owners: false,
-    view_sources: false,
-    add_sources: false,
-    edit_sources: false,
-    delete_sources: false,
-    view_locations: false,
-    add_locations: false,
-    edit_locations: false,
-    delete_locations: false,
-    view_delivery: false,
-    add_delivery: false,
-    edit_delivery: false,
-    view_tracking: false,
-    view_analytics: false,
-    view_reports: false,
-    view_chatbot: false,
-    view_audit_logs: false,
-  });
+  // Permissions state - full default (all keys from PermissionKey, all false)
+  const [permissions, setPermissions] = useState<UserPermissions>(() => getDefaultUserPermissions());
 
   // Check if current user has permission to add users
   if (!currentUser || !hasPermission(currentUser, 'add_users')) {

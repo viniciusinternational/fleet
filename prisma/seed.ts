@@ -277,6 +277,7 @@ async function main() {
   const allPermissions = {
     // Dashboard
     view_dashboard: true,
+    view_executive_dashboard: true,
     // Vehicles
     view_vehicles: true,
     add_vehicles: true,
@@ -312,6 +313,7 @@ async function main() {
     view_analytics: true,
     // Reports
     view_reports: true,
+    generate_reports: true,
     // Chatbot
     view_chatbot: true,
     // Audit Logs

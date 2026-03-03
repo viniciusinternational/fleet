@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { OwnerService } from '@/lib/services/owner';
+import { getActorId } from '@/lib/utils/get-actor-id';
 
 // Validation schema for updating an owner
 const updateOwnerSchema = z.object({
@@ -45,6 +46,10 @@ export async function PUT(
 ) {
   try {
     const { id } = await params;
+    
+    // Extract actorId for audit logging
+    const actorId = await getActorId(request) || undefined;
+    
     const body = await request.json();
     
     // Validate input
@@ -73,7 +78,7 @@ export async function PUT(
     }
     
     // Update owner using the service
-    const updatedOwner = await OwnerService.updateOwner(id, validatedData);
+    const updatedOwner = await OwnerService.updateOwner(id, validatedData, actorId);
     
     if (!updatedOwner) {
       return NextResponse.json(
@@ -110,6 +115,9 @@ export async function DELETE(
   try {
     const { id } = await params;
     
+    // Extract actorId for audit logging
+    const actorId = await getActorId(request) || undefined;
+    
     // Check if owner exists and has vehicles
     const existingOwner = await OwnerService.getOwnerById(id);
     
@@ -129,7 +137,7 @@ export async function DELETE(
     }
     
     // Delete owner using the service
-    const success = await OwnerService.deleteOwner(id);
+    const success = await OwnerService.deleteOwner(id, actorId);
     
     if (!success) {
       return NextResponse.json(

@@ -39,7 +39,7 @@ import { useAuthStore } from '@/store/auth';
 import { hasPermission } from '@/lib/permissions';
 import AddEventModal from './add-event-modal';
 import { EntityAuditLogs } from '@/components/audit/entity-audit-logs';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Image as ImageIcon } from 'lucide-react';
 
 interface VehicleDetailsProps {
@@ -991,10 +991,15 @@ const VehicleDetails: React.FC<VehicleDetailsProps> = ({
       {/* Image Gallery Modal */}
       <Dialog open={isImageModalOpen} onOpenChange={setIsImageModalOpen}>
         <DialogContent className="max-w-[100vw] w-full h-full max-h-[100vh] p-0 gap-0 border-0 bg-black/95 backdrop-blur-md">
+          <DialogTitle className="sr-only">
+            {vehicle?.make} {vehicle?.model} - Image Gallery
+          </DialogTitle>
           <div className="relative w-full h-full">
             <VehicleImageImmersiveGallery 
               images={vehicle?.images || []} 
               vehicleName={`${vehicle?.make} ${vehicle?.model}`}
+              autoOpenFullscreen={true}
+              onFullscreenOpen={() => setIsImageModalOpen(false)}
             />
           </div>
         </DialogContent>

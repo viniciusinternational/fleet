@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { AuditService } from '@/lib/services/audit';
+import { getActorId } from '@/lib/utils/get-actor-id';
 
 export async function GET(
   request: NextRequest,
@@ -74,6 +76,13 @@ export async function PUT(
 ) {
   try {
     const { id } = await params;
+    
+    // Extract actorId for audit logging
+    const actorId = await getActorId(request) || undefined;
+    
+    // Get before state for audit log
+    const beforeState = actorId ? await AuditService.getBeforeState('DeliveryNote', id) : null;
+    
     const body = await request.json();
     const { ownerId, deliveryDate, notes, vehicleIds } = body;
 
@@ -147,6 +156,18 @@ export async function PUT(
       },
     });
 
+    // Log audit event
+    if (actorId) {
+      await AuditService.logEvent({
+        action: 'UPDATE',
+        actorId,
+        entityType: 'DeliveryNote',
+        entityId: deliveryNote.id,
+        before: beforeState,
+        after: JSON.parse(JSON.stringify(deliveryNote)),
+      });
+    }
+
     return NextResponse.json({
       success: true,
       data: deliveryNote,
@@ -170,6 +191,12 @@ export async function DELETE(
   try {
     const { id } = await params;
 
+    // Extract actorId for audit logging
+    const actorId = await getActorId(request) || undefined;
+    
+    // Get before state for audit log
+    const beforeState = actorId ? await AuditService.getBeforeState('DeliveryNote', id) : null;
+
     // Check if delivery note exists
     const existingNote = await db.deliveryNote.findUnique({
       where: { id },
@@ -189,6 +216,17 @@ export async function DELETE(
     await db.deliveryNote.delete({
       where: { id },
     });
+
+    // Log audit event
+    if (actorId) {
+      await AuditService.logEvent({
+        action: 'DELETE',
+        actorId,
+        entityType: 'DeliveryNote',
+        entityId: id,
+        before: beforeState,
+      });
+    }
 
     return NextResponse.json({
       success: true,

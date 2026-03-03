@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { LocationService } from '@/lib/services/location';
+import { getActorId } from '@/lib/utils/get-actor-id';
 import { Role } from '@/types';
 
 // GET /api/locations - Get all locations with filtering, sorting, pagination and filter options
@@ -50,9 +51,12 @@ export async function POST(request: NextRequest) {
     // TODO: Get user role from authentication/session
     const userRole = Role.ADMIN; // This should come from your auth system
     
+    // Extract actorId for audit logging
+    const actorId = await getActorId(request) || undefined;
+    
     const body = await request.json();
     
-    const location = await LocationService.createLocation(body);
+    const location = await LocationService.createLocation(body, actorId);
     
     return NextResponse.json(location, { status: 201 });
   } catch (error) {

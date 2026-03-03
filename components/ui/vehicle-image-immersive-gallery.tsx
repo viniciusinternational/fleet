@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
@@ -18,11 +18,15 @@ import { isHeicImage, convertHeicToJpeg } from '@/lib/utils/heic-converter';
 interface VehicleImageImmersiveGalleryProps {
   images: VehicleImage[];
   vehicleName: string;
+  autoOpenFullscreen?: boolean;
+  onFullscreenOpen?: () => void;
 }
 
 export const VehicleImageImmersiveGallery: React.FC<VehicleImageImmersiveGalleryProps> = ({ 
   images, 
-  vehicleName 
+  vehicleName,
+  autoOpenFullscreen = false,
+  onFullscreenOpen
 }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isFullscreenOpen, setIsFullscreenOpen] = useState(false);
@@ -79,7 +83,11 @@ export const VehicleImageImmersiveGallery: React.FC<VehicleImageImmersiveGallery
     setIsFullscreenOpen(true);
     setShowNavOverlay(true);
     resetIdleTimer();
-  }, []);
+    // Notify parent that fullscreen is opening (to close outer dialog if needed)
+    if (onFullscreenOpen) {
+      onFullscreenOpen();
+    }
+  }, [onFullscreenOpen]);
 
   const closeFullscreen = useCallback(() => {
     setIsFullscreenOpen(false);
@@ -251,6 +259,13 @@ export const VehicleImageImmersiveGallery: React.FC<VehicleImageImmersiveGallery
       }
     };
   }, []);
+
+  // Auto-open fullscreen if prop is set
+  useEffect(() => {
+    if (autoOpenFullscreen && images.length > 0 && !isFullscreenOpen) {
+      openFullscreen(0);
+    }
+  }, [autoOpenFullscreen, images.length, openFullscreen, isFullscreenOpen]);
 
   const getImageSrc = useCallback((image: VehicleImage): string => {
     const originalUrl = image.data || image.url || '';
@@ -432,6 +447,9 @@ export const VehicleImageImmersiveGallery: React.FC<VehicleImageImmersiveGallery
           className="max-w-[100vw] w-full h-full max-h-[100vh] p-0 gap-0 border-0 bg-black/95 backdrop-blur-md"
           onPointerMove={resetIdleTimer}
         >
+          <DialogTitle className="sr-only">
+            {vehicleName} - Fullscreen Image Gallery
+          </DialogTitle>
           <div 
             ref={fullscreenRef}
             className="relative w-full h-full flex flex-col"

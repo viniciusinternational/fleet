@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { LocationService } from '@/lib/services/location';
+import { getActorId } from '@/lib/utils/get-actor-id';
 import { Role } from '@/types';
 
 // GET /api/locations/[id] - Get location by ID
@@ -46,11 +47,15 @@ export async function PUT(
     // TODO: Get user role from authentication/session
     const userRole = Role.ADMIN; // This should come from your auth system
     
+    // Extract actorId for audit logging
+    const actorId = await getActorId(request) || undefined;
+    
     const body = await request.json();
     
     const location = await LocationService.updateLocation(
       id,
-      body
+      body,
+      actorId
     );
     
     return NextResponse.json(location);
@@ -75,7 +80,10 @@ export async function DELETE(
     // TODO: Get user role from authentication/session
     const userRole = Role.ADMIN; // This should come from your auth system
     
-    await LocationService.deleteLocation(id);
+    // Extract actorId for audit logging
+    const actorId = await getActorId(request) || undefined;
+    
+    await LocationService.deleteLocation(id, actorId);
     
     return NextResponse.json({ message: 'Location deleted successfully' });
   } catch (error) {

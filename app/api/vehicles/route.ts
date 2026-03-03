@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { VehicleService } from '@/lib/services/vehicle';
 import { uploadVehicleImage, uploadVehicleThumbnail } from '@/lib/s3';
 import { generateThumbnail, validateImageType } from '@/lib/utils/image-processor';
+import { getActorId } from '@/lib/utils/get-actor-id';
 import { z } from 'zod';
 import { TRANSMISSION_ENUM_MAP } from '@/lib/constants/vehicle';
 
@@ -73,6 +74,9 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    // Extract actorId for audit logging
+    const actorId = await getActorId(request) || undefined;
+    
     // Handle FormData
     const formData = await request.formData();
 
@@ -139,7 +143,7 @@ export async function POST(request: NextRequest) {
       };
     }
     
-    const newVehicle = await VehicleService.createVehicle(vehicleCreateData);
+    const newVehicle = await VehicleService.createVehicle(vehicleCreateData, actorId);
 
     // Process and upload vehicle images to S3
     const imageFiles = formData.getAll('images') as File[];
@@ -213,7 +217,7 @@ export async function POST(request: NextRequest) {
 
         // Rollback: Delete the vehicle
         try {
-          await VehicleService.deleteVehicle(newVehicle.id);
+          await VehicleService.deleteVehicle(newVehicle.id, actorId);
         } catch (deleteError) {
           console.error('Failed to delete vehicle after image upload failure:', deleteError);
         }

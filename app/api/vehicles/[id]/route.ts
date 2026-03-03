@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { VehicleService } from '@/lib/services/vehicle';
 import { uploadVehicleImage, uploadVehicleThumbnail } from '@/lib/s3';
 import { generateThumbnail, validateImageType } from '@/lib/utils/image-processor';
+import { getActorId } from '@/lib/utils/get-actor-id';
 import { Role } from '@/types';
 import { createVehicleSchema } from '../route';
 import { TRANSMISSION_ENUM_MAP } from '@/lib/constants/vehicle';
@@ -47,6 +48,9 @@ export async function PUT(
     // TODO: Get user role and location from authentication/session
     const userRole = Role.ADMIN; // This should come from your auth system
     const userLocationId = undefined; // This should come from your auth system
+    
+    // Extract actorId for audit logging
+    const actorId = await getActorId(request) || undefined;
     
     // Handle FormData (since images are included)
     const formData = await request.formData();
@@ -134,7 +138,7 @@ export async function PUT(
       }),
     };
 
-    await VehicleService.updateVehicle(id, vehicleUpdateData);
+    await VehicleService.updateVehicle(id, vehicleUpdateData, actorId);
 
     // Process and upload vehicle images to S3
     const imageFiles = formData.getAll('images') as File[];
@@ -234,7 +238,10 @@ export async function DELETE(
     // TODO: Get user role from authentication/session
     const userRole = Role.ADMIN; // This should come from your auth system
     
-    await VehicleService.deleteVehicle(id);
+    // Extract actorId for audit logging
+    const actorId = await getActorId(request) || undefined;
+    
+    await VehicleService.deleteVehicle(id, actorId);
     
     return NextResponse.json({ message: 'Vehicle deleted successfully' });
   } catch (error) {

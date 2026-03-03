@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { OwnerService } from '@/lib/services/owner';
+import { getActorId } from '@/lib/utils/get-actor-id';
 
 // Validation schema for creating an owner
 const createOwnerSchema = z.object({
@@ -60,6 +61,9 @@ export async function GET(request: NextRequest) {
 // POST /api/owners - Create a new owner
 export async function POST(request: NextRequest) {
   try {
+    // Extract actorId for audit logging
+    const actorId = await getActorId(request) || undefined;
+    
     const body = await request.json();
     
     // Validate input
@@ -79,7 +83,7 @@ export async function POST(request: NextRequest) {
     }
     
     // Create new owner using the service
-    const owner = await OwnerService.createOwner(validatedData);
+    const owner = await OwnerService.createOwner(validatedData, actorId);
     
     return NextResponse.json({
       success: true,

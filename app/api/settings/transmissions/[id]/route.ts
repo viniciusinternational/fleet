@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { SettingsService } from '@/lib/services/settings';
+import { AuditService } from '@/lib/services/audit';
+import { getActorId } from '@/lib/utils/get-actor-id';
 import { hasPermission } from '@/lib/permissions';
 
 // Helper to get user from request (placeholder - should be replaced with actual auth)
@@ -21,6 +23,13 @@ export async function PUT(
     // }
 
     const { id } = await params;
+    
+    // Extract actorId for audit logging
+    const actorId = await getActorId(request) || undefined;
+    
+    // Get before state for audit log
+    const beforeState = actorId ? await AuditService.getBeforeState('TransmissionType', id) : null;
+    
     const body = await request.json();
     const { name, enumValue, isActive } = body;
 
@@ -48,6 +57,18 @@ export async function PUT(
     }
 
     const transmission = await SettingsService.updateTransmissionType(id, updateData);
+
+    // Log audit event
+    if (actorId) {
+      await AuditService.logEvent({
+        action: 'UPDATE',
+        actorId,
+        entityType: 'TransmissionType',
+        entityId: transmission.id,
+        before: beforeState,
+        after: JSON.parse(JSON.stringify(transmission)),
+      });
+    }
 
     return NextResponse.json({
       success: true,
@@ -93,7 +114,25 @@ export async function DELETE(
     // }
 
     const { id } = await params;
+    
+    // Extract actorId for audit logging
+    const actorId = await getActorId(request) || undefined;
+    
+    // Get before state for audit log
+    const beforeState = actorId ? await AuditService.getBeforeState('TransmissionType', id) : null;
+    
     await SettingsService.deleteTransmissionType(id);
+
+    // Log audit event
+    if (actorId) {
+      await AuditService.logEvent({
+        action: 'DELETE',
+        actorId,
+        entityType: 'TransmissionType',
+        entityId: id,
+        before: beforeState,
+      });
+    }
 
     return NextResponse.json({
       success: true,

@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { AuditService } from '@/lib/services/audit';
+import { getActorId } from '@/lib/utils/get-actor-id';
 
 export async function GET(request: NextRequest) {
   try {
@@ -65,6 +67,9 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    // Extract actorId for audit logging
+    const actorId = await getActorId(request) || undefined;
+    
     const body = await request.json();
     const { ownerId, deliveryDate, notes, vehicleIds } = body;
 
@@ -121,6 +126,17 @@ export async function POST(request: NextRequest) {
         owner: true,
       },
     });
+
+    // Log audit event
+    if (actorId) {
+      await AuditService.logEvent({
+        action: 'CREATE',
+        actorId,
+        entityType: 'DeliveryNote',
+        entityId: deliveryNote.id,
+        after: JSON.parse(JSON.stringify(deliveryNote)),
+      });
+    }
 
     return NextResponse.json({
       success: true,
