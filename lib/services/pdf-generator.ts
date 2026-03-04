@@ -1,7 +1,7 @@
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import type { DeliveryNote } from '@/types';
-import { generateQRCodeDataURL, getBaseUrl } from '@/lib/utils/qr-code';
+import { getBaseUrl } from '@/lib/utils/qr-code';
 
 export interface PDFGeneratorOptions {
   companyName?: string;
@@ -141,8 +141,9 @@ export class DeliveryNotePDFGenerator {
     // Add header
     await this.addHeader();
 
-    // Add document title
-    this.addTitle();
+    // Add document title (with optional reference id)
+    const shortId = deliveryNote.id ? deliveryNote.id.slice(-8).toUpperCase() : undefined;
+    this.addTitle(shortId);
 
     // Add delivery information
     this.addDeliveryInfo(deliveryDate, generatedAt);
@@ -157,9 +158,6 @@ export class DeliveryNotePDFGenerator {
     if (notes) {
       this.addNotes(notes);
     }
-
-    // Add QR code (only on first page)
-    await this.addQRCode(deliveryNote);
 
     // Add footer (includes watermark)
     this.addFooter();
@@ -206,69 +204,83 @@ export class DeliveryNotePDFGenerator {
     this.doc.text(companyAddress || '', textX, textY + 5);
     this.doc.text(`Email: ${companyEmail}`, textX, textY + 9);
 
-    // Horizontal line with color
+    // Horizontal line with color; extra spacing below header
     this.doc.setDrawColor(220, 38, 38); // Red #DC2626
     this.doc.setLineWidth(0.8);
-    this.doc.line(14, logoY + logoHeight + 4, 196, logoY + logoHeight + 4);
+    const headerLineY = logoY + logoHeight + 6;
+    this.doc.line(14, headerLineY, 196, headerLineY);
   }
 
-  private addTitle(): void {
-    const yPos = 50;
-    
+  private addTitle(shortId?: string): void {
+    const yPos = 54;
+
     this.doc.setFontSize(20);
     this.doc.setFont('helvetica', 'bold');
     this.doc.setTextColor(220, 38, 38); // Red #DC2626
     this.doc.text('VEHICLE DELIVERY NOTE', 105, yPos, { align: 'center' });
-    
-    // Add underline
+
+    // Underline
     this.doc.setDrawColor(220, 38, 38);
     this.doc.setLineWidth(0.5);
     this.doc.line(70, yPos + 2, 140, yPos + 2);
+
+    // Document reference
+    if (shortId) {
+      this.doc.setFontSize(9);
+      this.doc.setFont('helvetica', 'normal');
+      this.doc.setTextColor(107, 114, 128);
+      this.doc.text(`Delivery note #${shortId}`, 105, yPos + 7, { align: 'center' });
+    }
   }
 
   private addDeliveryInfo(deliveryDate: Date, generatedAt: Date): void {
-    const yPos = 60;
+    const boxX = 14;
+    const boxY = 66;
+    const boxW = 182;
+    const boxH = 20;
+
+    // Light bordered box
+    this.doc.setDrawColor(229, 231, 235);
+    this.doc.setLineWidth(0.3);
+    this.doc.setFillColor(249, 250, 251);
+    this.doc.rect(boxX, boxY, boxW, boxH, 'FD');
+
+    const rowY = boxY + 7;
+    const labelColor = [29, 41, 55] as const;
+    const valueColor = [55, 65, 81] as const;
 
     this.doc.setFontSize(10);
-    this.doc.setFont('helvetica', 'normal');
-    this.doc.setTextColor(55, 65, 81); // Medium gray
-
-    // Delivery Date
     this.doc.setFont('helvetica', 'bold');
-    this.doc.setTextColor(29, 41, 55); // Dark gray
-    this.doc.text('Delivery Date:', 14, yPos);
+    this.doc.setTextColor(...labelColor);
+    this.doc.text('Delivery Date:', boxX + 6, rowY);
+    this.doc.text('Generated:', 105, rowY);
+
     this.doc.setFont('helvetica', 'normal');
-    this.doc.setTextColor(55, 65, 81);
-    this.doc.text(new Date(deliveryDate).toLocaleDateString('en-US', {
+    this.doc.setTextColor(...valueColor);
+    const deliveryStr = new Date(deliveryDate).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
-    }), 50, yPos);
-
-    // Generated Date
-    this.doc.setFont('helvetica', 'bold');
-    this.doc.setTextColor(29, 41, 55);
-    this.doc.text('Generated:', 120, yPos);
-    this.doc.setFont('helvetica', 'normal');
-    this.doc.setTextColor(55, 65, 81);
-    this.doc.text(new Date(generatedAt).toLocaleDateString('en-US', {
+    });
+    const generatedStr = new Date(generatedAt).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
-    }), 145, yPos);
+    });
+    this.doc.text(deliveryStr, 52, rowY);
+    this.doc.text(generatedStr, 125, rowY);
   }
 
   private addOwnerDetails(owner: any): void {
-    const startY = 72;
+    const startY = 92;
 
     this.doc.setFontSize(12);
     this.doc.setFont('helvetica', 'bold');
-    this.doc.setTextColor(29, 41, 55); // Dark gray
+    this.doc.setTextColor(29, 41, 55);
     this.doc.text('Owner Information', 14, startY);
 
-    // Owner details table
     autoTable(this.doc, {
-      startY: startY + 4,
+      startY: startY + 6,
       head: [],
       body: [
         ['Name', owner.name],
@@ -278,44 +290,37 @@ export class DeliveryNotePDFGenerator {
         ['Country', owner.country || 'N/A'],
       ],
       theme: 'grid',
-      headStyles: {
-        fillColor: [71, 85, 105],
-        textColor: [255, 255, 255],
-        fontSize: 10,
-        fontStyle: 'bold',
-      },
       bodyStyles: {
-        fontSize: 9,
-        textColor: [31, 41, 55], // Dark gray
+        fontSize: 10,
+        textColor: [31, 41, 55],
+        cellPadding: 4,
       },
       columnStyles: {
-        0: { 
-          fontStyle: 'bold', 
+        0: {
+          fontStyle: 'bold',
           cellWidth: 40,
-          fillColor: [249, 250, 251], // Light gray background
+          fillColor: [254, 226, 226], // Light red accent
         },
-        1: { 
+        1: {
           cellWidth: 'auto',
         },
       },
       margin: { left: 14, right: 14 },
       styles: {
-        lineColor: [229, 231, 235], // Light gray borders
+        lineColor: [229, 231, 235],
         lineWidth: 0.3,
       },
     });
   }
 
   private addVehiclesTable(vehicles: any[]): void {
-    // Get Y position after owner table
-    const finalY = (this.doc as any).lastAutoTable?.finalY || 130;
+    const finalY = (this.doc as any).lastAutoTable?.finalY || 150;
 
     this.doc.setFontSize(12);
     this.doc.setFont('helvetica', 'bold');
-    this.doc.setTextColor(29, 41, 55); // Dark gray
-    this.doc.text('Vehicle Details', 14, finalY + 10);
+    this.doc.setTextColor(29, 41, 55);
+    this.doc.text('Vehicle Details', 14, finalY + 12);
 
-    // Vehicles table
     const tableData = vehicles.map((vehicle, index) => [
       (index + 1).toString(),
       vehicle.vin,
@@ -327,36 +332,38 @@ export class DeliveryNotePDFGenerator {
     ]);
 
     autoTable(this.doc, {
-      startY: finalY + 14,
+      startY: finalY + 16,
       head: [['#', 'VIN', 'Make', 'Model', 'Year', 'Color', 'Status']],
       body: tableData,
       theme: 'striped',
       headStyles: {
-        fillColor: [71, 85, 105], // Slate gray
+        fillColor: [71, 85, 105],
         textColor: [255, 255, 255],
-        fontSize: 9,
+        fontSize: 10,
         fontStyle: 'bold',
         halign: 'center',
+        cellPadding: 4,
       },
       bodyStyles: {
         fontSize: 9,
-        textColor: [31, 41, 55], // Dark gray
+        textColor: [31, 41, 55],
+        cellPadding: 3,
       },
       alternateRowStyles: {
-        fillColor: [249, 250, 251], // Light gray #F9FAFB
+        fillColor: [249, 250, 251],
       },
       columnStyles: {
         0: { cellWidth: 12, halign: 'center' },
-        1: { cellWidth: 35, fontStyle: 'normal' },
-        2: { cellWidth: 25 },
-        3: { cellWidth: 25 },
-        4: { cellWidth: 15, halign: 'center' },
-        5: { cellWidth: 20 },
+        1: { cellWidth: 38, fontStyle: 'normal' },
+        2: { cellWidth: 26 },
+        3: { cellWidth: 26 },
+        4: { cellWidth: 16, halign: 'center' },
+        5: { cellWidth: 22 },
         6: { cellWidth: 'auto' },
       },
       margin: { left: 14, right: 14 },
       styles: {
-        lineColor: [229, 231, 235], // Light gray borders #E5E7EB
+        lineColor: [229, 231, 235],
         lineWidth: 0.3,
       },
     });
@@ -365,63 +372,39 @@ export class DeliveryNotePDFGenerator {
   private addNotes(notes: string): void {
     const finalY = (this.doc as any).lastAutoTable?.finalY || 200;
 
-    // Check if we need a new page
-    if (finalY > 250) {
+    if (finalY > 245) {
       this.doc.addPage();
       this.addNotesContent(notes, 20);
     } else {
-      this.addNotesContent(notes, finalY + 10);
+      this.addNotesContent(notes, finalY + 14);
     }
   }
 
   private addNotesContent(notes: string, yPos: number): void {
+    const boxX = 14;
+    const boxW = 182;
+    const padding = 6;
+    const lineHeight = 5;
+
     this.doc.setFontSize(12);
     this.doc.setFont('helvetica', 'bold');
-    this.doc.setTextColor(29, 41, 55); // Dark gray
-    this.doc.text('Additional Notes', 14, yPos);
+    this.doc.setTextColor(29, 41, 55);
+    this.doc.text('Additional Notes', boxX, yPos);
 
-    this.doc.setFontSize(9);
+    const splitNotes = this.doc.splitTextToSize(notes, boxW - padding * 2);
+    const contentH = Math.max(splitNotes.length * lineHeight + padding * 2, 24);
+    const boxY = yPos + 2;
+    const boxH = contentH;
+
+    this.doc.setDrawColor(229, 231, 235);
+    this.doc.setLineWidth(0.3);
+    this.doc.setFillColor(249, 250, 251);
+    this.doc.rect(boxX, boxY, boxW, boxH, 'FD');
+
+    this.doc.setFontSize(10);
     this.doc.setFont('helvetica', 'normal');
-    this.doc.setTextColor(55, 65, 81); // Medium gray
-    const splitNotes = this.doc.splitTextToSize(notes, 182);
-    this.doc.text(splitNotes, 14, yPos + 6);
-  }
-
-  private async addQRCode(deliveryNote: DeliveryNote): Promise<void> {
-    if (!deliveryNote.id) return;
-
-    try {
-      const baseUrl = this.options.baseUrl || getBaseUrl();
-      const viewUrl = `${baseUrl}/view/delivery/${deliveryNote.id}`;
-
-      // Generate QR code
-      const qrDataURL = await generateQRCodeDataURL(viewUrl, {
-        size: 150,
-        margin: 2,
-        errorCorrectionLevel: 'M',
-      });
-
-      // Position QR code in bottom right of first page
-      const qrSize = 35; // mm
-      const qrX = 196 - qrSize - 14; // Right margin
-      const qrY = 280 - qrSize; // Bottom area
-
-      this.doc.addImage(qrDataURL, 'PNG', qrX, qrY, qrSize, qrSize);
-
-      // Add text below QR code
-      this.doc.setFontSize(7);
-      this.doc.setFont('helvetica', 'normal');
-      this.doc.setTextColor(107, 114, 128); // Gray
-      const textWidth = this.doc.getTextWidth('Scan for online view');
-      this.doc.text(
-        'Scan for online view',
-        qrX + (qrSize - textWidth) / 2,
-        qrY + qrSize + 4
-      );
-    } catch (error) {
-      console.warn('Error adding QR code:', error);
-      // Continue without QR code
-    }
+    this.doc.setTextColor(55, 65, 81);
+    this.doc.text(splitNotes, boxX + padding, boxY + padding + 4);
   }
 
   private addFooter(): void {
@@ -456,44 +439,35 @@ export class DeliveryNotePDFGenerator {
         }
       }
 
-      // Signature section
+      // Signature section (consistent margins: 14, 120)
       const finalY = (this.doc as any).lastAutoTable?.finalY || 200;
-      const signatureY = Math.max(finalY + 20, 240);
+      const signatureY = Math.max(finalY + 24, 242);
 
-      // Only add signature on last page or if there's space
-      if (i === pageCount && signatureY < 275) {
+      if (i === pageCount && signatureY < 272) {
         this.doc.setFontSize(10);
         this.doc.setFont('helvetica', 'normal');
-        this.doc.setTextColor(31, 41, 55); // Dark gray
+        this.doc.setTextColor(31, 41, 55);
 
-        // Authorized signature
         this.doc.text('_________________________', 14, signatureY);
-        this.doc.text('Authorized Signature', 14, signatureY + 5);
-        this.doc.text('Date: ______________', 14, signatureY + 10);
+        this.doc.text('Authorized Signature', 14, signatureY + 6);
+        this.doc.text('Date: ______________', 14, signatureY + 12);
 
-        // Received by (only if enough space)
-        if (signatureY < 260) {
+        if (signatureY < 258) {
           this.doc.text('_________________________', 120, signatureY);
-          this.doc.text('Received By (Owner)', 120, signatureY + 5);
-          this.doc.text('Date: ______________', 120, signatureY + 10);
+          this.doc.text('Received By (Owner)', 120, signatureY + 6);
+          this.doc.text('Date: ______________', 120, signatureY + 12);
         }
       }
 
-      // Page number
-      this.doc.setFontSize(8);
-      this.doc.setFont('helvetica', 'italic');
-      this.doc.setTextColor(107, 114, 128); // Gray
-      this.doc.text(
-        `Page ${i} of ${pageCount}`,
-        105,
-        290,
-        { align: 'center' }
-      );
-
-      // Footer line
-      this.doc.setDrawColor(229, 231, 235); // Light gray
+      // Footer line and page number
+      this.doc.setDrawColor(229, 231, 235);
       this.doc.setLineWidth(0.3);
       this.doc.line(14, 287, 196, 287);
+
+      this.doc.setFontSize(8);
+      this.doc.setFont('helvetica', 'italic');
+      this.doc.setTextColor(107, 114, 128);
+      this.doc.text(`Page ${i} of ${pageCount}`, 105, 290, { align: 'center' });
     }
   }
 }

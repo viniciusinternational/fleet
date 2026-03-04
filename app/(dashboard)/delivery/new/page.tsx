@@ -62,12 +62,8 @@ export default function NewDeliveryNotePage() {
           if (vehiclesResult.success && vehiclesResult.data) {
             // Handle both response formats
             const vehiclesList = vehiclesResult.data.vehicles || vehiclesResult.data;
-            // Filter to only include vehicles with valid owners
-            const vehiclesWithOwners = vehiclesList.filter((vehicle: Vehicle) => 
-              vehicle.owner && vehicle.owner.id
-            );
             // Filter out vehicles that are already on delivery lists
-            const availableVehicles = vehiclesWithOwners.filter((vehicle: Vehicle) => 
+            const availableVehicles = vehiclesList.filter((vehicle: Vehicle) =>
               !excludedVehicleIds.has(vehicle.id)
             );
             setVehicles(availableVehicles);
