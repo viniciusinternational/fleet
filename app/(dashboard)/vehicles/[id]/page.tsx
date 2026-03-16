@@ -2,19 +2,14 @@
 
 import React from 'react';
 import { useParams } from 'next/navigation';
-import VehicleDetails from '@/components/globals/vehicles/vehicle-details';
+import SimpleVehicleDetailsPage from '@/components/globals/vehicles/simple-vehicle-details-page';
 
 const AdminVehicleDetails: React.FC = () => {
   const params = useParams();
   const vehicleId = params.id as string;
 
-  return (
-    <VehicleDetails
-      vehicleId={vehicleId}
-      backUrl="/dashboard"
-      showEditButton={true}
-    />
-  );
+  return <SimpleVehicleDetailsPage vehicleId={vehicleId} />;
 };
 
 export default AdminVehicleDetails;
+

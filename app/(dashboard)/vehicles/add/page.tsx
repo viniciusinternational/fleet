@@ -34,6 +34,110 @@ import {
 } from 'lucide-react';
 import { VehicleStatus, LocationType, LocationStatus } from '@/types';
 import type { Vehicle, Owner, Location, Source, VehicleFormData } from '@/types';
+type ValidationErrors = Record<string, string>;
+
+const validateBasicStep = (data: VehicleFormData): ValidationErrors => {
+  const errors: ValidationErrors = {};
+  const currentYear = new Date().getFullYear();
+
+  if (!data.vin || String(data.vin).trim().length === 0) {
+    errors.vin = 'VIN is required.';
+  }
+
+  if (!data.make || String(data.make).trim().length === 0) {
+    errors.make = 'Make is required.';
+  }
+
+  if (!data.model || String(data.model).trim().length === 0) {
+    errors.model = 'Model is required.';
+  }
+
+  if (data.year === '' || data.year === undefined || data.year === null) {
+    errors.year = 'Year is required.';
+  } else {
+    const yearNumber = typeof data.year === 'number' ? data.year : parseInt(String(data.year), 10);
+    if (Number.isNaN(yearNumber)) {
+      errors.year = 'Year must be a valid number.';
+    } else if (yearNumber < 1900 || yearNumber > currentYear + 1) {
+      errors.year = `Year must be between 1900 and ${currentYear + 1}.`;
+    }
+  }
+
+  if (!data.color || String(data.color).trim().length === 0) {
+    errors.color = 'Color is required.';
+  }
+
+  if (!data.trim || String(data.trim).trim().length === 0) {
+    errors.trim = 'Trim is required.';
+  }
+
+  if (!data.engineType || String(data.engineType).trim().length === 0) {
+    errors.engineType = 'Engine type is required.';
+  }
+
+  if (!data.fuelType || String(data.fuelType).trim().length === 0) {
+    errors.fuelType = 'Fuel type is required.';
+  }
+
+  if (!data.orderDate || String(data.orderDate).trim().length === 0) {
+    errors.orderDate = 'Order date is required.';
+  }
+
+  if (!data.estimatedDelivery || String(data.estimatedDelivery).trim().length === 0) {
+    errors.estimatedDelivery = 'Estimated delivery date is required.';
+  }
+
+  if (!data.status || String(data.status).trim().length === 0) {
+    errors.status = 'Initial status is required.';
+  }
+
+  if (!data.currentLocationId || String(data.currentLocationId).trim().length === 0) {
+    errors.currentLocationId = 'Current location is required.';
+  }
+
+  if (!data.sourceId || String(data.sourceId).trim().length === 0) {
+    errors.sourceId = 'Source is required.';
+  }
+
+  if (!data.customsStatus || String(data.customsStatus).trim().length === 0) {
+    errors.customsStatus = 'Customs status is required.';
+  }
+
+  if (data.importDuty === '' || data.importDuty === undefined || data.importDuty === null) {
+    errors.importDuty = 'Import duty is required.';
+  } else {
+    const dutyNumber = typeof data.importDuty === 'number' ? data.importDuty : parseFloat(String(data.importDuty));
+    if (Number.isNaN(dutyNumber) || dutyNumber < 0) {
+      errors.importDuty = 'Import duty must be a non-negative number.';
+    }
+  }
+
+  if (!data.images || data.images.length === 0) {
+    errors.images = 'Vehicle images are required. Please upload at least one image.';
+  }
+
+  // Optional numeric fields must be non-negative when provided
+  const numericFields: Array<keyof VehicleFormData> = ['weightKg', 'lengthMm', 'widthMm', 'heightMm'];
+  numericFields.forEach((fieldKey) => {
+    const value = data[fieldKey];
+    if (value !== '' && value !== null && value !== undefined) {
+      const numericValue = typeof value === 'number' ? value : parseFloat(String(value));
+      if (Number.isNaN(numericValue) || numericValue < 0) {
+        errors[fieldKey as string] = 'Value must be a non-negative number.';
+      }
+    }
+  });
+
+  return errors;
+};
+
+const validateShippingStep = (data: VehicleFormData): ValidationErrors => {
+  // All shipping fields are optional based on the server schema.
+  // This helper exists for future extension and parity with basic step validation.
+  const errors: ValidationErrors = {};
+  return errors;
+};
+
 const AddVehicle: React.FC = () => {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -165,9 +269,9 @@ const AddVehicle: React.FC = () => {
     setErrors({});
 
     try {
-      // Validate required fields including images
-      if (!formData.images || formData.images.length === 0) {
-        setErrors({ images: 'Vehicle images are required. Please upload at least one image.' });
+      const validationErrors = validateBasicStep(formData);
+      if (Object.keys(validationErrors).length > 0) {
+        setErrors(validationErrors);
         setIsSavingBasicInfo(false);
         return;
       }
@@ -248,11 +352,25 @@ const AddVehicle: React.FC = () => {
       if (!vehicleResponse.ok) {
         const errorData = await vehicleResponse.json();
         console.error('Vehicle creation error:', errorData);
-        if (errorData.details) {
-          const errorMessages = errorData.details.map((detail: any) => `${detail.path.join('.')}: ${detail.message}`).join(', ');
-          throw new Error(`Vehicle validation failed: ${errorMessages}`);
+
+        const fieldErrors: ValidationErrors = {};
+        if (Array.isArray(errorData.details)) {
+          errorData.details.forEach((detail: any) => {
+            const path = Array.isArray(detail.path) ? detail.path[0] : detail.path;
+            if (typeof path === 'string' && detail.message) {
+              fieldErrors[path] = detail.message;
+            }
+          });
         }
-        throw new Error(errorData.error || 'Failed to create vehicle');
+
+        const submitMessage = errorData.error || 'Failed to create vehicle';
+        setErrors((prev) => ({
+          ...prev,
+          ...fieldErrors,
+          submit: submitMessage,
+        }));
+        setIsSavingBasicInfo(false);
+        return;
       }
 
       const vehicleData = await vehicleResponse.json();
@@ -265,7 +383,10 @@ const AddVehicle: React.FC = () => {
     } catch (error) {
       console.error('Error saving basic vehicle info:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to save basic vehicle information. Please try again.';
-      setErrors({ submit: errorMessage });
+      setErrors((prev) => ({
+        ...prev,
+        submit: errorMessage,
+      }));
     } finally {
       setIsSavingBasicInfo(false);
     }
@@ -365,11 +486,47 @@ const AddVehicle: React.FC = () => {
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (files && files.length > 0) {
-      const newImages = Array.from(files);
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+      const maxSize = 5 * 1024 * 1024; // 5MB
+
+      const incomingFiles = Array.from(files);
+      const validImages: File[] = [];
+      const rejectedMessages: string[] = [];
+
+      incomingFiles.forEach((file) => {
+        if (!allowedTypes.includes(file.type)) {
+          rejectedMessages.push(
+            `${file.name}: Invalid file type. Only JPG, JPEG, and PNG files are allowed.`
+          );
+          return;
+        }
+
+        if (file.size > maxSize) {
+          rejectedMessages.push(
+            `${file.name}: File is too large. Maximum size is 5MB.`
+          );
+          return;
+        }
+
+        validImages.push(file);
+      });
+
       setFormData(prev => ({
         ...prev,
-        images: [...(prev.images || []), ...newImages]
+        images: [...(prev.images || []), ...validImages]
       }));
+
+      if (rejectedMessages.length > 0) {
+        setErrors(prev => ({
+          ...prev,
+          images: rejectedMessages.join(' '),
+        }));
+      } else if (validImages.length > 0) {
+        setErrors(prev => {
+          const { images, ...rest } = prev;
+          return rest;
+        });
+      }
     }
   };
 
@@ -410,6 +567,13 @@ const AddVehicle: React.FC = () => {
         throw new Error('Vehicle basic information must be saved first. Please go back to step 1.');
       }
 
+      const shippingErrors = validateShippingStep(formData);
+      if (Object.keys(shippingErrors).length > 0) {
+        setErrors(shippingErrors);
+        setIsSubmitting(false);
+        return;
+      }
+
       // Create Shipping Details only
       const shippingFormData = new FormData();
 
@@ -439,11 +603,25 @@ const AddVehicle: React.FC = () => {
       if (!shippingResponse.ok) {
         const errorData = await shippingResponse.json();
         console.error('Shipping details creation error:', errorData);
-        if (errorData.details) {
-          const errorMessages = errorData.details.map((detail: any) => `${detail.path.join('.')}: ${detail.message}`).join(', ');
-          throw new Error(`Shipping validation failed: ${errorMessages}`);
+
+        const fieldErrors: ValidationErrors = {};
+        if (Array.isArray(errorData.details)) {
+          errorData.details.forEach((detail: any) => {
+            const path = Array.isArray(detail.path) ? detail.path[0] : detail.path;
+            if (typeof path === 'string' && detail.message) {
+              fieldErrors[path] = detail.message;
+            }
+          });
         }
-        throw new Error(errorData.error || 'Failed to create shipping details');
+
+        const submitMessage = errorData.error || 'Failed to create shipping details';
+        setErrors((prev) => ({
+          ...prev,
+          ...fieldErrors,
+          submit: submitMessage,
+        }));
+        setIsSubmitting(false);
+        return;
       }
 
       setSubmissionStep('complete');
@@ -457,7 +635,10 @@ const AddVehicle: React.FC = () => {
     } catch (error) {
       console.error('Error adding shipping details:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to add shipping details. Please try again.';
-      setErrors({ submit: errorMessage });
+      setErrors((prev) => ({
+        ...prev,
+        submit: errorMessage,
+      }));
     } finally {
       setIsSubmitting(false);
     }
@@ -476,6 +657,8 @@ const AddVehicle: React.FC = () => {
       </div>
     );
   }
+
+  const basicStepErrors = validateBasicStep(formData);
 
   return (
     <div className="min-h-screen bg-muted/30">
@@ -566,8 +749,13 @@ const AddVehicle: React.FC = () => {
                           onChange={(e) => handleInputChange('vin', e.target.value)}
                           placeholder="Vehicle Identification Number"
                           className="bg-muted/30 focus-visible:bg-background transition-colors"
+                          aria-invalid={!!errors.vin}
+                          aria-describedby={errors.vin ? 'vin-error' : undefined}
                           required
                         />
+                        {errors.vin && (
+                          <p id="vin-error" className="text-xs text-red-500 mt-1">{errors.vin}</p>
+                        )}
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="make" className="text-sm font-semibold">Make *</Label>
@@ -581,6 +769,9 @@ const AddVehicle: React.FC = () => {
                             ))}
                           </SelectContent>
                         </Select>
+                        {errors.make && (
+                          <p className="text-xs text-red-500 mt-1">{errors.make}</p>
+                        )}
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="model" className="text-sm font-semibold">Model *</Label>
@@ -598,6 +789,9 @@ const AddVehicle: React.FC = () => {
                             ))}
                           </SelectContent>
                         </Select>
+                        {errors.model && (
+                          <p className="text-xs text-red-500 mt-1">{errors.model}</p>
+                        )}
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="year" className="text-sm font-semibold">Year *</Label>
@@ -609,11 +803,16 @@ const AddVehicle: React.FC = () => {
                           min="1900"
                           max={new Date().getFullYear() + 1}
                           className="bg-muted/30 focus-visible:bg-background transition-colors"
+                          aria-invalid={!!errors.year}
+                          aria-describedby={errors.year ? 'year-error' : undefined}
                           required
                         />
+                        {errors.year && (
+                          <p id="year-error" className="text-xs text-red-500 mt-1">{errors.year}</p>
+                        )}
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="color" className="text-sm font-semibold">Color</Label>
+                        <Label htmlFor="color" className="text-sm font-semibold">Color *</Label>
                         <Select value={formData.color} onValueChange={(value) => handleInputChange('color', value)}>
                           <SelectTrigger className="bg-muted/30 focus:bg-background transition-colors w-full">
                             <SelectValue placeholder="Select color" />
@@ -624,19 +823,27 @@ const AddVehicle: React.FC = () => {
                             ))}
                           </SelectContent>
                         </Select>
+                        {errors.color && (
+                          <p className="text-xs text-red-500 mt-1">{errors.color}</p>
+                        )}
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="trim" className="text-sm font-semibold">Trim</Label>
+                        <Label htmlFor="trim" className="text-sm font-semibold">Trim *</Label>
                         <Input
                           id="trim"
                           value={formData.trim}
                           onChange={(e) => handleInputChange('trim', e.target.value)}
                           placeholder="Vehicle trim level"
                           className="bg-muted/30 focus-visible:bg-background transition-colors"
+                          aria-invalid={!!errors.trim}
+                          aria-describedby={errors.trim ? 'trim-error' : undefined}
                         />
+                        {errors.trim && (
+                          <p id="trim-error" className="text-xs text-red-500 mt-1">{errors.trim}</p>
+                        )}
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="engineType" className="text-sm font-semibold">Engine Type</Label>
+                        <Label htmlFor="engineType" className="text-sm font-semibold">Engine Type *</Label>
                         <Select value={formData.engineType} onValueChange={(value) => handleInputChange('engineType', value)}>
                           <SelectTrigger className="bg-muted/30 focus:bg-background transition-colors w-full">
                             <SelectValue placeholder="Select engine type" />
@@ -647,9 +854,12 @@ const AddVehicle: React.FC = () => {
                             ))}
                           </SelectContent>
                         </Select>
+                        {errors.engineType && (
+                          <p className="text-xs text-red-500 mt-1">{errors.engineType}</p>
+                        )}
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="fuelType" className="text-sm font-semibold">Fuel Type</Label>
+                        <Label htmlFor="fuelType" className="text-sm font-semibold">Fuel Type *</Label>
                         <Select value={formData.fuelType} onValueChange={(value) => handleInputChange('fuelType', value as VehicleFormData['fuelType'])}>
                           <SelectTrigger className="bg-muted/30 focus:bg-background transition-colors w-full">
                             <SelectValue />
@@ -661,6 +871,9 @@ const AddVehicle: React.FC = () => {
                             <SelectItem value="Hybrid">Hybrid</SelectItem>
                           </SelectContent>
                         </Select>
+                        {errors.fuelType && (
+                          <p className="text-xs text-red-500 mt-1">{errors.fuelType}</p>
+                        )}
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="transmission" className="text-sm font-semibold">Transmission</Label>
@@ -701,6 +914,9 @@ const AddVehicle: React.FC = () => {
                           placeholder="0"
                           className="bg-muted/30 focus-visible:bg-background transition-colors"
                         />
+                        {errors.weightKg && (
+                          <p className="text-xs text-red-500 mt-1">{errors.weightKg}</p>
+                        )}
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="lengthMm" className="text-sm font-semibold">Length (mm)</Label>
@@ -712,6 +928,9 @@ const AddVehicle: React.FC = () => {
                           placeholder="0"
                           className="bg-muted/30 focus-visible:bg-background transition-colors"
                         />
+                        {errors.lengthMm && (
+                          <p className="text-xs text-red-500 mt-1">{errors.lengthMm}</p>
+                        )}
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="widthMm" className="text-sm font-semibold">Width (mm)</Label>
@@ -723,6 +942,9 @@ const AddVehicle: React.FC = () => {
                           placeholder="0"
                           className="bg-muted/30 focus-visible:bg-background transition-colors"
                         />
+                        {errors.widthMm && (
+                          <p className="text-xs text-red-500 mt-1">{errors.widthMm}</p>
+                        )}
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="heightMm" className="text-sm font-semibold">Height (mm)</Label>
@@ -734,6 +956,9 @@ const AddVehicle: React.FC = () => {
                           placeholder="0"
                           className="bg-muted/30 focus-visible:bg-background transition-colors"
                         />
+                        {errors.heightMm && (
+                          <p className="text-xs text-red-500 mt-1">{errors.heightMm}</p>
+                        )}
                       </div>
                     </div>
                   </CardContent>
@@ -767,7 +992,10 @@ const AddVehicle: React.FC = () => {
                                 </SelectItem>
                               ))}
                             </SelectContent>
-                          </Select>
+                            </Select>
+                            {errors.currentLocationId && (
+                              <p className="text-xs text-red-500 mt-1">{errors.currentLocationId}</p>
+                            )}
                         </div>
 
                         {formData.currentLocationId && (() => {
@@ -803,33 +1031,46 @@ const AddVehicle: React.FC = () => {
                             ))}
                           </SelectContent>
                         </Select>
+                        {errors.sourceId && (
+                          <p className="text-xs text-red-500 mt-1">{errors.sourceId}</p>
+                        )}
                       </div>
                     </div>
 
                     {/* Second Row: Order Date, Estimated Delivery, Initial Status */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                       <div className="space-y-2">
-                        <Label htmlFor="orderDate" className="text-sm font-semibold">Order Date</Label>
+                        <Label htmlFor="orderDate" className="text-sm font-semibold">Order Date *</Label>
                         <Input
                           id="orderDate"
                           type="date"
                           value={formData.orderDate}
                           onChange={(e) => handleInputChange('orderDate', e.target.value)}
                           className="bg-muted/30 focus-visible:bg-background transition-colors"
+                          aria-invalid={!!errors.orderDate}
+                          aria-describedby={errors.orderDate ? 'orderDate-error' : undefined}
                         />
+                        {errors.orderDate && (
+                          <p id="orderDate-error" className="text-xs text-red-500 mt-1">{errors.orderDate}</p>
+                        )}
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="estimatedDelivery" className="text-sm font-semibold">Estimated Delivery</Label>
+                        <Label htmlFor="estimatedDelivery" className="text-sm font-semibold">Estimated Delivery *</Label>
                         <Input
                           id="estimatedDelivery"
                           type="date"
                           value={formData.estimatedDelivery}
                           onChange={(e) => handleInputChange('estimatedDelivery', e.target.value)}
                           className="bg-muted/30 focus-visible:bg-background transition-colors"
+                          aria-invalid={!!errors.estimatedDelivery}
+                          aria-describedby={errors.estimatedDelivery ? 'estimatedDelivery-error' : undefined}
                         />
+                        {errors.estimatedDelivery && (
+                          <p id="estimatedDelivery-error" className="text-xs text-red-500 mt-1">{errors.estimatedDelivery}</p>
+                        )}
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="status" className="text-sm font-semibold">Initial Status</Label>
+                        <Label htmlFor="status" className="text-sm font-semibold">Initial Status *</Label>
                         <Select value={formData.status} onValueChange={(value) => handleInputChange('status', value as VehicleStatus)}>
                           <SelectTrigger className="bg-muted/30 focus:bg-background transition-colors w-full min-w-[280px] max-w-full">
                             <SelectValue />
@@ -843,6 +1084,9 @@ const AddVehicle: React.FC = () => {
                             <SelectItem value={VehicleStatus.DELIVERED}>Delivered</SelectItem>
                           </SelectContent>
                         </Select>
+                        {errors.status && (
+                          <p className="text-xs text-red-500 mt-1">{errors.status}</p>
+                        )}
                       </div>
                     </div>
 
@@ -1047,7 +1291,7 @@ const AddVehicle: React.FC = () => {
                   <CardContent className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-2">
-                        <Label htmlFor="customsStatus" className="text-sm font-semibold">Customs Status</Label>
+                        <Label htmlFor="customsStatus" className="text-sm font-semibold">Customs Status *</Label>
                         <Select value={formData.customsStatus} onValueChange={(value) => handleInputChange('customsStatus', value as VehicleFormData['customsStatus'])}>
                           <SelectTrigger className="bg-muted/30 focus:bg-background transition-colors w-full">
                             <SelectValue />
@@ -1059,16 +1303,24 @@ const AddVehicle: React.FC = () => {
                             <SelectItem value="Held">Held</SelectItem>
                           </SelectContent>
                         </Select>
+                        {errors.customsStatus && (
+                          <p className="text-xs text-red-500 mt-1">{errors.customsStatus}</p>
+                        )}
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="importDuty" className="text-sm font-semibold">Import Duty (USD)</Label>
+                        <Label htmlFor="importDuty" className="text-sm font-semibold">Import Duty (USD) *</Label>
                         <Input
                           id="importDuty"
                           type="number"
                           value={formatNumberValue(formData.importDuty)}
                           onChange={(e) => handleInputChange('importDuty', e.target.value)}
                           className="bg-muted/30 focus-visible:bg-background transition-colors"
+                          aria-invalid={!!errors.importDuty}
+                          aria-describedby={errors.importDuty ? 'importDuty-error' : undefined}
                         />
+                        {errors.importDuty && (
+                          <p id="importDuty-error" className="text-xs text-red-500 mt-1">{errors.importDuty}</p>
+                        )}
                       </div>
                     </div>
                     <div className="space-y-2">
@@ -1178,7 +1430,7 @@ const AddVehicle: React.FC = () => {
             {currentStep === 0 ? (
               <Button 
                 onClick={saveBasicInfo}
-                disabled={isSavingBasicInfo || !formData.vin || !formData.make || !formData.model || !formData.currentLocationId || !formData.sourceId || !formData.images || formData.images.length === 0}
+                disabled={isSavingBasicInfo || Object.keys(basicStepErrors).length > 0}
                 className="h-11 px-8 shadow-lg shadow-primary/20 transition-all hover:translate-y-[-1px] active:translate-y-[0px]"
               >
                 {isSavingBasicInfo ? (
